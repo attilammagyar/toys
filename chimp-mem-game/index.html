@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en" prefix="og: http://ogp.me/ns#">
+<head>
+  <title>Chimp Memory Game</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="description" content="Test your short term memory: can you beat the results of the chimps in the Primate Research Institute in Inuyama, Japan?" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta property="og:title" content="Chimp Memory Game" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://attilammagyar.github.io/toys/chimp-mem-game" />
+  <meta property="og:image" content="https://attilammagyar.github.io/toys/chimp-mem-game/chimp-mem-game.jpg" />
+  <meta property="og:image:alt" content="Screenshot of the game" />
+  <meta property="og:image:width" content="1280" />
+  <meta property="og:image:height" content="720" />
+  <meta property="og:description" content="Test your short term memory: can you beat the results of the chimps in the Primate Research Institute in Inuyama, Japan?" />
+
+  <link rel="stylesheet" href="chimp-mem-game.css" />
+</head>
+<body>
+  <form id="form" action="#" method="get">
+    <div>
+      <audio id="audio-click" preload="auto">
+        <source src="click.ogg" type="audio/ogg" />
+        <source src="click.mp3" type="audio/mpeg" />
+      </audio>
+      <audio id="audio-wrong" preload="auto">
+        <source src="wrong.ogg" type="audio/ogg" />
+        <source src="wrong.mp3" type="audio/mpeg" />
+      </audio>
+      <audio id="audio-win" preload="auto">
+        <source src="win.ogg" type="audio/ogg" />
+        <source src="win.mp3" type="audio/mpeg" />
+      </audio>
+    </div>
+    <div id="intro" class="screen active">
+      <h1>Chimp Memory Game</h1>
+      <div class="settings">
+        <p>How many numbers do you want to memorize?</p>
+        <div class="options">
+          <div class="card-number">
+            <input type="radio" id="card-number-3" name="card-number" value="3" />
+            <label for="card-number-3">3</label>
+          </div>
+          <div class="card-number">
+            <input type="radio" id="card-number-4" name="card-number" value="4" />
+            <label for="card-number-4">4</label>
+          </div>
+          <div class="card-number">
+            <input type="radio" id="card-number-5" name="card-number" value="5" checked="checked" />
+            <label for="card-number-5">5</label>
+          </div>
+          <div class="card-number">
+            <input type="radio" id="card-number-6" name="card-number" value="6" />
+            <label for="card-number-6">6</label>
+          </div>
+          <div class="card-number">
+            <input type="radio" id="card-number-7" name="card-number" value="7" />
+            <label for="card-number-7">7</label>
+          </div>
+          <div class="card-number">
+            <input type="radio" id="card-number-8" name="card-number" value="8" />
+            <label for="card-number-8">8</label>
+          </div>
+          <div class="card-number">
+            <input type="radio" id="card-number-9" name="card-number" value="9" />
+            <label for="card-number-9">9</label>
+          </div>
+        </div>
+      </div>
+      <div class="settings">
+        <p>Select the difficulty level:</p>
+        <div class="options">
+          <div class="difficulty">
+            <input type="radio" id="difficulty-1" name="difficulty" value="1" checked="checked" />
+            <label for="difficulty-1">Easy</label>
+          </div>
+          <div class="difficulty">
+            <input type="radio" id="difficulty-2" name="difficulty" value="2" />
+            <label for="difficulty-2">Medium</label>
+          </div>
+          <div class="difficulty">
+            <input type="radio" id="difficulty-3" name="difficulty" value="3" />
+            <label for="difficulty-3">Hard</label>
+          </div>
+        </div>
+      </div>
+      <div class="settings">
+        <p>Auto-hide numbers:</p>
+        <div class="options">
+          <div class="auto-hide">
+            <input type="radio" id="auto-hide-0" name="auto-hide" value="off" checked="checked" />
+            <label for="auto-hide-0">Off</label>
+          </div>
+          <div class="auto-hide">
+            <input type="radio" id="auto-hide-1" name="auto-hide" value="210" />
+            <label for="auto-hide-1">.21s</label>
+          </div>
+          <div class="auto-hide">
+            <input type="radio" id="auto-hide-2" name="auto-hide" value="430" />
+            <label for="auto-hide-2">.43s</label>
+          </div>
+          <div class="auto-hide">
+            <input type="radio" id="auto-hide-3" name="auto-hide" value="650" />
+            <label for="auto-hide-3">.65s</label>
+          </div>
+          <div class="auto-hide">
+            <input type="radio" id="auto-hide-4" name="auto-hide" value="1000" />
+            <label for="auto-hide-4">1s</label>
+          </div>
+          <div class="auto-hide">
+            <input type="radio" id="auto-hide-5" name="auto-hide" value="2000" />
+            <label for="auto-hide-5">2s</label>
+          </div>
+          <div class="auto-hide">
+            <input type="radio" id="auto-hide-6" name="auto-hide" value="4000" />
+            <label for="auto-hide-6">4s</label>
+          </div>
+          <div class="auto-hide">
+            <input type="radio" id="auto-hide-7" name="auto-hide" value="8000" />
+            <label for="auto-hide-7">8s</label>
+          </div>
+        </div>
+      </div>
+      <div class="settings">
+        <button id="start" type="submit">Start Game!</button>
+      </div>
+      <p>
+        Test your short term memory: can you beat the results of the
+        chimps in the
+        <a href="https://en.wikipedia.org/wiki/Primate_Research_Institute"
+          target="_blank">Primate Research Institute</a> in Inuyama, Japan?
+        Memorize the randomly scattered numbers, then click or touch
+        them in ascending order - if you can.
+      </p>
+      <p>
+        This game is a clone of the memory test shown in
+        <a href="https://www.youtube.com/watch?v=ktkjUjcZid0"
+          target="_blank">Mindfield S03E01: The Cognitive Tradeoff Hypothesis (24:21)</a>
+        and in <a href="https://www.youtube.com/watch?v=zsXP8qeFF6A"
+          target="_blank">this video from BBC Earth (3:42)</a>.
+      </p>
+      <p>
+        <a href="https://github.com/attilammagyar/toys"
+          target="_blank">Source code on GitHub</a>
+      </p>
+      <p>
+        (By the way, this website doesn't use any cookies.)
+      </p>
+    </div>
+    <div id="game" class="screen">
+      <div id="sound-settings">
+        <input type="checkbox" id="mute" name="mute" checked="checked" />
+        <label for="mute">
+          <img id="sound-on" src="sound-on.png" alt="Sound: ON" title="Sound: ON" />
+          <img id="sound-off" src="sound-off.png" alt="Sound: OFF" title="Sound: OFF" />
+        </label>
+      </div>
+      <div id="status">
+        <span id="status-text"></span>
+      </div>
+      <button id="start-round">
+        Start
+      </button>
+    </div>
+    <div id="end" class="screen">
+      <h1>Statistics</h1>
+      <table id="statistics">
+        <tr><th>Score:</th><td id="stats-score"></td></tr>
+        <tr><th>Perfect rounds:</th><td id="stats-perfect-rounds"></td></tr>
+        <tr><th>Average memorization time:</th><td id="stats-mem-time-avg"></td></tr>
+        <tr><th>Median memorization time:</th><td id="stats-mem-time-median"></td></tr>
+        <tr><th>Fastest memorization time:</th><td id="stats-mem-time-min"></td></tr>
+        <tr><th>Slowest memorization time:</th><td id="stats-mem-time-max"></td></tr>
+      </table>
+      <div class="settings">
+        <a id="tweet" href="#" target="_blank">Share on Twitter</a>
+      </div>
+      <div class="settings">
+        <button id="restart">New Game</button>
+      </div>
+    </div>
+  </form>
+  <script type="text/javascript" src="chimp-mem-game.js"></script>
+</body>
+</html>

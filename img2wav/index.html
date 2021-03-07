@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en" prefix="og: http://ogp.me/ns#">
+<head>
+  <title>Image to WAV</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="description" content="Generate a sound which reproduces a picture in its spectrogram (a.k.a. image synth)" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta property="og:title" content="Image to WAV" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://attilammagyar.github.io/toys/img2wav" />
+  <meta property="og:image" content="https://attilammagyar.github.io/toys/img2wav/img2wav.jpg" />
+  <meta property="og:image:alt" content="Screenshot of the app" />
+  <meta property="og:image:width" content="1280" />
+  <meta property="og:image:height" content="720" />
+  <meta property="og:description" content="Generate a sound which reproduces a picture in its spectrogram (a.k.a. image synth)" />
+
+  <link rel="stylesheet" href="img2wav.css" />
+</head>
+<body>
+  <h1>Image to WAV</h1>
+  <p>
+    Turn an image into sound: this image synth toy can generate a sound which
+    reproduces a picture when you look at its spectrogram (see:
+    <a href="https://en.wikipedia.org/wiki/Steganography#Hiding_an_image_within_a_soundfile">
+      steganography</a>).
+    For the best results, use an image with few bright spots and high contrast.
+    <a href="#demo">See the demo video below</a>.
+  </p>
+  <form id="form" action="#" method="get">
+    <div class="input-group">
+      <div class="input">
+        <label for="image">Pick an image:</label>
+        <input id="image" name="image" type="file"
+          accept=".gif,.jpg,.jpeg,.png,.webp,image/gif,image/jpeg,image/png,image/webp" />
+        <label for="image">(left channel = red + blue, right channel = green + blue)</label>
+      </div>
+    </div>
+    <div class="input-group">
+      <div class="input">
+        <label for="sample-rate">Sample rate:</label>
+        <select id="sample-rate" name="sample-rate">
+          <option value="8000">8 kHz (poor quality, fast rendering)</option>
+          <option value="11025">11.025 kHz</option>
+          <option value="16000">16 kHz</option>
+          <option value="22050" selected>22.05 kHz</option>
+          <option value="44100">44.1 kHz (CD quality)</option>
+          <option value="48000">48 kHz (professional quality)</option>
+          <option value="96000">96 kHz (slow!)</option>
+          <option value="192000">192 kHz (slow!)</option>
+        </select>
+      </div>
+      <div class="input">
+        <label for="length">Length:</label>
+        <input id="length" name="length" type="number"
+          min="0.1" max="600" step="0.1" value="3" />
+        <label for="length">seconds</label>
+      </div>
+    </div>
+    <div class="input-group">
+      <div class="input">
+        <label for="lowest">Frequency range:</label>
+        <input id="lowest" name="lowest" type="number"
+          min="1" max="24000" value="60" />
+        -<input id="highest" name="highest" type="number"
+          min="1" max="24000" value="8000" />Hz
+      </div>
+    </div>
+    <div class="input-group">
+      <div class="input">
+        <label for="invert">Invert colors:</label>
+        <input id="invert" name="invert" type="checkbox" />
+      </div>
+      <div class="input">
+        <label for="contrast">Increase contrast:</label>
+        <input id="contrast" name="contrast" type="checkbox" checked />
+      </div>
+      <div class="input">
+        <label for="random-phase">Random phase:</label>
+        <input id="random-phase" name="random-phase" type="checkbox" checked />
+      </div>
+    </div>
+    <div id="image-display-container" class="display">
+      <div id="image-display"></div>
+      <div id="image-cursor"></div>
+    </div>
+    <div id="problems"></div>
+    <div class="input-group">
+      <div class="input">
+        <button id="generate" type="submit" disabled>Generate</button>
+        <button id="stop" disabled>Stop!</button>
+      </div>
+    </div>
+  </form>
+  <div id="status" class="display">
+    <div id="progressbar-1">
+      <canvas id="waveform"></canvas>
+    </div>
+    <div id="progressbar-2"></div>
+    <div id="audio-cursor"></div>
+    <div id="progress-text"></div>
+  </div>
+  <div id="results" class="hidden">
+    <div>
+      <audio id="listen" controls></audio>
+    </div>
+    <div>
+      <a id="download" class="disabled">Download</a>
+    </div>
+  </div>
+  <h2 id="demo">Demo</h2>
+  <p class="demo">
+    <video controls>
+      <source src="img2wav.mp4" type="video/mp4">
+      <source src="img2wav.webm" type="video/webm">
+        Download demo video:
+        <a href="img2wav.mp4">MP4</a>
+        <a href="img2wav.webm">WEBM</a>
+    </video>
+  </p>
+  <p>
+    <a href="https://github.com/attilammagyar/toys"
+      target="_blank">Source code on GitHub</a>
+  </p>
+  <script type="text/javascript" src="img2wav.js"></script>
+</body>
+</html>
+

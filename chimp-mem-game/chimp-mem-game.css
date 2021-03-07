@@ -1,0 +1,301 @@
+* {
+  font-family: Verdana, sans-serif;
+  color: #bbc;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  background-color: #000000;
+  width: 100vw;
+}
+
+div.screen {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  transition: opacity 0.4s ease-in-out;
+  height: 1vmin;
+  overflow: hidden;
+  width: 100vw;
+  z-index: 0;
+}
+
+div.screen.active {
+  opacity: 1;
+  z-index: 10;
+  height: 99vh;
+  overflow: visible;
+}
+
+div.card {
+  display: inline-block;
+  width: 10vw;
+  height: 16vh;
+  margin: 0.75vh 0.75vw;
+  font-size: 12vh;
+  line-height: 16vh;
+  font-weight: bold;
+  text-align: center;
+  cursor: pointer;
+  transition: color 0.1s ease-in-out, background-color 0.1s ease-in-out;
+  border-radius: 1vmin;
+  z-index: 15;
+}
+
+div.card.revealed {
+  color: rgba(208, 208, 222, 1);
+  background-color: #000;
+}
+
+div.card.hidden {
+  color: rgba(0, 0, 0, 0);
+  background-color: #000;
+}
+
+div.card.wrong {
+  background-color: #800000;
+}
+
+div.card.expected {
+  background-color: #007000;
+}
+
+div.card.value_hidden {
+  color: rgba(112, 112, 122, 0);
+  background-color: #70707a;
+}
+
+#status {
+  height: 10vh;
+  line-height: 10vh;
+  font-size: 3.3vh;
+  color: red;
+  padding: 0 3vw 0 0;
+  text-align: right;
+}
+
+div.settings {
+  margin-top: 2vh;
+  text-align: center;
+}
+
+div.options {
+  margin-top: 0;
+  margin-bottom: 1.5vmax;
+  text-align: center;
+}
+
+div.card-number {
+  display: inline-block;
+  width: 5vmax;
+  height: 4.2vmax;
+  margin: 0.3vmax;
+}
+
+div.difficulty {
+  display: inline-block;
+}
+
+div.difficulty label {
+  cursor: pointer;
+  display: block;
+  height: 4.2vmax;
+  width: 16vmax;
+  margin: 0.3vmax;
+  border: solid 0.3vmax #bbc;
+  border-radius: 12vmax;
+  font-size: 3vmax;
+  line-height: 4.2vmax;
+  background-color: #000;
+}
+
+div.auto-hide {
+  display: inline-block;
+}
+
+div.auto-hide label {
+  cursor: pointer;
+  display: block;
+  height: 4.2vmax;
+  width: 7.5vmax;
+  margin: 0.05vmax;
+  border: solid 0.3vmax #bbc;
+  border-radius: 2vmax;
+  font-size: 3vmax;
+  line-height: 4.2vmax;
+  background-color: #000;
+}
+
+div.settings input[type="radio"] {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+div.card-number label {
+  cursor: pointer;
+  display: block;
+  width: 5vmax;
+  height: 4.2vmax;
+  line-height: 4.2vmax;
+  font-size: 3vmax;
+  text-align: center;
+  border-radius: 2vmax;
+  border: solid 0.3vmax #bbc;
+}
+
+div.settings input[type="radio"]:checked + label {
+  background-color: #bbc;
+  color: #000;
+}
+
+button {
+  cursor: pointer;
+  height: 8vmax;
+  width: 42vmax;
+  font-weight: bold;
+  border: outset 0.5vmax #bbc;
+  border-radius: 15vmax;
+  font-size: 3.5vmax;
+  line-height: 3.5vmax;
+  background-color: #000;
+}
+
+#sound-settings {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 10vh;
+  line-height: 10vh;
+  z-index: 20;
+}
+
+#sound-settings input[type="checkbox"],
+#status input[type="checkbox"] {
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+#status label img,
+#sound-settings label img {
+  cursor: pointer;
+  padding-top: 1.6vh;
+  margin-left: 1vmin;
+  height: 7vh;
+  width: 7vh;
+}
+
+#sound-settings input[type="checkbox"]:checked + label #sound-on {
+  display: none;
+}
+
+#sound-settings input[type="checkbox"]:not(:checked) + label #sound-on {
+  display: auto;
+}
+
+#sound-settings input[type="checkbox"]:checked + label #sound-off {
+  display: auto;
+}
+
+#sound-settings input[type="checkbox"]:not(:checked) + label #sound-off {
+  display: none;
+}
+
+@media only screen and (orientation: portrait) {
+  div.card {
+    display: inline-block;
+    width: 16vw;
+    height: 9.5vh;
+    margin: 0.75vh 0.75vw;
+    font-size: 8vh;
+    line-height: 10vh;
+  }
+}
+
+.screen h1,
+.screen p {
+  text-align: center;
+  margin: 3vmin auto 2vmin auto;
+  width: 80vw;
+}
+
+.screen h1 {
+  font-size: 3.5vmax;
+}
+
+.screen p {
+  font-size: 2.4vmax;
+  line-height: 3.6vmax;
+}
+
+.screen p a {
+  color: #8787ff;
+  font-weight: bold;
+}
+
+#statistics {
+  margin: auto;
+}
+
+#statistics tr th,
+#statistics tr td {
+  font-weight: normal;
+  font-size: 2.5vmax;
+  min-width: 20vw;
+}
+
+#statistics th {
+  text-align: left;
+}
+
+#statistics tr {
+  text-align: right;
+}
+
+#tweet {
+  cursor: pointer;
+  display: inline-block;
+  height: 5vmax;
+  width: 36vmax;
+  font-weight: normal;
+  border: outset 0.3vmax #bbc;
+  border-radius: 15vmax;
+  font-size: 2.5vmax;
+  line-height: 5vmax;
+  background-color: #000;
+}
+
+#start-round {
+  display: none;
+  width: 0;
+  height: 0;
+  border-radius: 10vh;
+  border: outset 1vmax #bbc;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 8vh;
+  line-height: 8vh;
+  background-color: #000;
+}
+
+#start-round.visible {
+  display: block;
+  position: absolute;
+  width: 80vw;
+  height: 20vh;
+  bottom: 10vh;
+  left: 10vw;
+  z-index: 30;
+}

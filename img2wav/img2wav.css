@@ -1,0 +1,204 @@
+html, body {
+  background: #000;
+  color: #bbc;
+  padding: 0;
+  margin: 0;
+}
+
+p {
+  width: 90vw;
+  text-align: center;
+  margin: 3vmin auto;
+}
+
+p.demo video {
+  max-width: 90vw;
+  max-height: 90vh;
+  margin: 2vmin;
+}
+
+a {
+  color: #8787ff;
+  font-weight: bold;
+}
+
+body {
+  text-align: center;
+  font-family: sans-serif;
+  font-size: 3vmin;
+}
+
+input, select {
+  font-size: 3vmin;
+  height: 5.5vmin;
+  line-height: 5.5vmin;
+  border-radius: 1vmin;
+  background: #000008;
+  color: #cce;
+  text-align: center;
+  border: inset 0.3vmin #66d;
+}
+
+input {
+  width: 8em;
+}
+
+select {
+  width: 15em;
+}
+
+input[type="checkbox"],
+input[type="file"] {
+  width: auto;
+  height: auto;
+}
+
+button,
+#download {
+  display: inline-block;
+  min-width: 36vw;
+  height: 7vh;
+  line-height: 7vh;
+  background: #116;
+  color: #ddf;
+  margin: 1vmin;
+  font-weight: bold;
+  font-size: 3.5vmin;
+  border-radius: 2vmin;
+  border: outset 0.3vmin #66d;
+  text-decoration: none;
+}
+
+button:disabled,
+#download.disabled {
+  background: #668;
+}
+
+#stop {
+  border: outset 0.3vmin #d66;
+  background: #611;
+}
+
+#stop:disabled {
+  background: #655;
+}
+
+#results audio {
+  width: 80vw;
+}
+
+div, canvas, img {
+  padding: 0;
+  margin: 0;
+}
+
+.display {
+  margin: 5vmin 1vmin;
+  border: inset 0.5vmin #66d;
+  border-radius: 2vmin;
+  overflow: hidden;
+  box-shadow: 0.5vmin 0.5vmin 1vmin 0.5vmin #001 inset;
+  background: #000;
+}
+
+#status {
+  position: relative;
+  text-align: left;
+  left: 3vw;
+  width: 90vw;
+  height: 20vh;
+}
+
+#progressbar-1 {
+  position: relative;
+  width: 0;
+  height: 20vh;
+}
+
+#progressbar-2 {
+  position: relative;
+  top: -20vh;
+  left: 0;
+  width: 90vw;
+  height: 20vh;
+  opacity: 0.6;
+  background: #112;
+}
+
+#progress-text {
+  position: relative;
+  display: inline-block;
+  margin: 0;
+  padding: 0;
+  top: -59vh;
+  left: 1vw;
+}
+
+#waveform {
+  position: relative;
+  width: 90vw;
+  height: 20vh;
+}
+
+#audio-cursor {
+  position: relative;
+  top: -40vh;
+  left: -1vmin;
+  width: 0;
+  height: 20vh;
+  border-left: solid 0.3vmin #cce;
+  border-right: solid 0.3vmin #003;
+}
+
+#problems {
+  color: #ff9;
+}
+
+#problems li {
+  display: inline-block;
+  list-style-type: none;
+  border: solid 0.3vmin #ff9;
+  border-radius: 0.6vmin;
+  margin: 1vmin;
+  font-family: sans-serif;
+  font-size: 3vmin;
+  padding: 1vmin 5vmin;
+}
+
+#problems li span.fatal {
+  font-weight: bold;
+  color: #f97;
+}
+
+#image-display-container {
+  display: inline-block;
+  margin: auto;
+  overflow-y: hidden;
+  max-height: 36vh;
+  min-width: 5vmin;
+  min-height: 5vmin;
+}
+
+#image-display img {
+  max-width: 80vw;
+  max-height: 36vh;
+  min-width: 15px;
+  min-height: 15px;
+}
+
+#image-cursor {
+  position: relative;
+  margin-top: -37vh;
+  left: -1vw;
+  width: 0;
+  height: 37vh;
+  border-left: solid 0.3vmin #cce;
+  border-right: solid 0.3vmin #003;
+}
+
+div.input {
+  display: inline-block;
+  margin: 0.6vmin 2vmin;
+  height: 2.5em;
+  line-height: 2.5em;
+}
