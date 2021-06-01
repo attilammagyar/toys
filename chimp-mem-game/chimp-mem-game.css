@@ -83,50 +83,42 @@ div.settings {
 }
 
 div.options {
-  margin-top: 0;
-  margin-bottom: 1.5vmax;
+  display: inline-block;
+  height: 2.8vmax;
+  margin: 0 0 0.2vmax 0;
+  padding: 0;
   text-align: center;
 }
 
-div.card-number {
+div.options div {
   display: inline-block;
-  width: 5vmax;
-  height: 4.2vmax;
-  margin: 0.3vmax;
+  margin: 0;
+  padding: 0;
 }
 
-div.difficulty {
-  display: inline-block;
+div.options label {
+  cursor: pointer;
+  display: block;
+  height: 2.8vmax;
+  line-height: 2.8vmax;
+  font-size: 2.2vmax;
+  margin: 0.05vmax;
+  border: solid 0.3vmax #bbc;
+  border-radius: 12vmax;
+  background-color: #000;
+}
+
+div.cards label,
+div.rounds label {
+  width: 5vmax;
 }
 
 div.difficulty label {
-  cursor: pointer;
-  display: block;
-  height: 4.2vmax;
-  width: 16vmax;
-  margin: 0.3vmax;
-  border: solid 0.3vmax #bbc;
-  border-radius: 12vmax;
-  font-size: 3vmax;
-  line-height: 4.2vmax;
-  background-color: #000;
-}
-
-div.auto-hide {
-  display: inline-block;
+  width: 15vmax;
 }
 
 div.auto-hide label {
-  cursor: pointer;
-  display: block;
-  height: 4.2vmax;
-  width: 7.5vmax;
-  margin: 0.05vmax;
-  border: solid 0.3vmax #bbc;
-  border-radius: 2vmax;
-  font-size: 3vmax;
-  line-height: 4.2vmax;
-  background-color: #000;
+  width: 7.2vmax;
 }
 
 div.settings input[type="radio"] {
@@ -137,18 +129,6 @@ div.settings input[type="radio"] {
   opacity: 0;
   width: 0;
   height: 0;
-}
-
-div.card-number label {
-  cursor: pointer;
-  display: block;
-  width: 5vmax;
-  height: 4.2vmax;
-  line-height: 4.2vmax;
-  font-size: 3vmax;
-  text-align: center;
-  border-radius: 2vmax;
-  border: solid 0.3vmax #bbc;
 }
 
 div.settings input[type="radio"]:checked + label {
@@ -163,8 +143,8 @@ button {
   font-weight: bold;
   border: outset 0.5vmax #bbc;
   border-radius: 15vmax;
-  font-size: 3.5vmax;
-  line-height: 3.5vmax;
+  font-size: 3.2vmax;
+  line-height: 3.2vmax;
   background-color: #000;
 }
 
@@ -219,7 +199,7 @@ button {
     width: 16vw;
     height: 9.5vh;
     margin: 0.75vh 0.75vw;
-    font-size: 8vh;
+    font-size: 7vh;
     line-height: 10vh;
   }
 }
@@ -232,11 +212,11 @@ button {
 }
 
 .screen h1 {
-  font-size: 3.5vmax;
+  font-size: 3.2vmax;
 }
 
 .screen p {
-  font-size: 2.4vmax;
+  font-size: 2.2vmax;
   line-height: 3.6vmax;
 }
 
@@ -285,8 +265,8 @@ button {
   border: outset 1vmax #bbc;
   cursor: pointer;
   font-weight: bold;
-  font-size: 8vh;
-  line-height: 8vh;
+  font-size: 7vh;
+  line-height: 7vh;
   background-color: #000;
 }
 

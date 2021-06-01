@@ -39,33 +39,33 @@
       <div class="settings">
         <p>How many numbers do you want to memorize?</p>
         <div class="options">
-          <div class="card-number">
-            <input type="radio" id="card-number-3" name="card-number" value="3" />
-            <label for="card-number-3">3</label>
+          <div class="cards">
+            <input type="radio" id="cards-3" name="cards" value="3" />
+            <label for="cards-3">3</label>
           </div>
-          <div class="card-number">
-            <input type="radio" id="card-number-4" name="card-number" value="4" />
-            <label for="card-number-4">4</label>
+          <div class="cards">
+            <input type="radio" id="cards-4" name="cards" value="4" />
+            <label for="cards-4">4</label>
           </div>
-          <div class="card-number">
-            <input type="radio" id="card-number-5" name="card-number" value="5" checked="checked" />
-            <label for="card-number-5">5</label>
+          <div class="cards">
+            <input type="radio" id="cards-5" name="cards" value="5" checked="checked" />
+            <label for="cards-5">5</label>
           </div>
-          <div class="card-number">
-            <input type="radio" id="card-number-6" name="card-number" value="6" />
-            <label for="card-number-6">6</label>
+          <div class="cards">
+            <input type="radio" id="cards-6" name="cards" value="6" />
+            <label for="cards-6">6</label>
           </div>
-          <div class="card-number">
-            <input type="radio" id="card-number-7" name="card-number" value="7" />
-            <label for="card-number-7">7</label>
+          <div class="cards">
+            <input type="radio" id="cards-7" name="cards" value="7" />
+            <label for="cards-7">7</label>
           </div>
-          <div class="card-number">
-            <input type="radio" id="card-number-8" name="card-number" value="8" />
-            <label for="card-number-8">8</label>
+          <div class="cards">
+            <input type="radio" id="cards-8" name="cards" value="8" />
+            <label for="cards-8">8</label>
           </div>
-          <div class="card-number">
-            <input type="radio" id="card-number-9" name="card-number" value="9" />
-            <label for="card-number-9">9</label>
+          <div class="cards">
+            <input type="radio" id="cards-9" name="cards" value="9" />
+            <label for="cards-9">9</label>
           </div>
         </div>
       </div>
@@ -83,6 +83,23 @@
           <div class="difficulty">
             <input type="radio" id="difficulty-3" name="difficulty" value="3" />
             <label for="difficulty-3">Hard</label>
+          </div>
+        </div>
+      </div>
+      <div class="settings">
+        <p>Number of rounds:</p>
+        <div class="options">
+          <div class="rounds">
+            <input type="radio" id="rounds-0" name="rounds" value="5" />
+            <label for="rounds-0">5</label>
+          </div>
+          <div class="rounds">
+            <input type="radio" id="rounds-1" name="rounds" value="10" checked="checked" />
+            <label for="rounds-1">10</label>
+          </div>
+          <div class="rounds">
+            <input type="radio" id="rounds-2" name="rounds" value="20" />
+            <label for="rounds-2">20</label>
           </div>
         </div>
       </div>
@@ -168,8 +185,10 @@
       <h1>Statistics</h1>
       <table id="statistics">
         <tr><th>Score:</th><td id="stats-score"></td></tr>
+        <tr><th>Rounds:</th><td id="stats-rounds"></td></tr>
         <tr><th>Perfect rounds:</th><td id="stats-perfect-rounds"></td></tr>
-        <tr><th>Average memorization time:</th><td id="stats-mem-time-avg"></td></tr>
+        <tr><th>Mean memorization time:</th><td id="stats-mem-time-mean"></td></tr>
+        <tr><th>Standard deviation:</th><td id="stats-mem-time-sd"></td></tr>
         <tr><th>Median memorization time:</th><td id="stats-mem-time-median"></td></tr>
         <tr><th>Fastest memorization time:</th><td id="stats-mem-time-min"></td></tr>
         <tr><th>Slowest memorization time:</th><td id="stats-mem-time-max"></td></tr>

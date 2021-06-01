@@ -6,15 +6,14 @@ function $(id) { return document.getElementById(id); }
 
 var CTH = {
     CARDS: 40,
-    ROUNDS: 10,
 
     EASY: 1,
     MEDIUM: 2,
     HARD: 3,
 
     URL: "https://attilammagyar.github.io/toys/chimp-mem-game",
-    SHARE_TEXT: "I just scored {score} in the Chimp Memorization Game on {difficulty} difficulty with {numbers} numbers.",
-    SHARE_STATS: " My fastest memorization time was {min}s (avg: {avg}s, median: {median}s).",
+    SHARE_TEXT: "I just scored {score} in the Chimp Memorization Game on {difficulty} difficulty with {numbers} numbers in {rounds} rounds.",
+    SHARE_STATS: " My fastest memorization time was {min}s (mean: {mean}s, median: {median}s, standard deviation: {sd}s).",
     SHARE_AUTO_HIDE: " The numbers were automatically hidden after {auto-hide}s.",
     SHARE_PERFECT_ROUNDS: " I had {perfect_rounds}.",
     SHARE_HASHTAGS: " #MindField",
@@ -23,6 +22,7 @@ var CTH = {
     mute_node: null,
     audio_nodes: null,
     numbers: 3,
+    rounds: 10,
     card_nodes: [],
     card_values: [],
     expected_values: [],
@@ -50,15 +50,16 @@ var CTH = {
     statistics: function (arr)
     {
         var l = arr.length,
-            avg, median, sum, i, m;
+            mean, sd, median, sum, i, m, d;
 
         if (l < 1) {
             return {
                 "valid": false,
                 "min": "?",
                 "max": "?",
-                "avg": "?",
-                "median": "?"
+                "mean": "?",
+                "median": "?",
+                "sd": "?"
             };
         }
 
@@ -68,7 +69,14 @@ var CTH = {
             sum += arr[i];
         }
 
-        avg = sum / l;
+        mean = sum / l;
+
+        for (i = 0, sum = 0; i < l; ++i) {
+            d = arr[i] - mean;
+            sum += d * d;
+        }
+
+        sd = Math.sqrt(sum / l);
 
         m = Math.floor(l / 2);
 
@@ -82,8 +90,9 @@ var CTH = {
             "valid": true,
             "min": CTH.format_stats(arr[0]),
             "max": CTH.format_stats(arr[l - 1]),
-            "avg": CTH.format_stats(avg),
-            "median": CTH.format_stats(median)
+            "mean": CTH.format_stats(mean),
+            "median": CTH.format_stats(median),
+            "sd": CTH.format_stats(sd)
         };
     },
 
@@ -98,7 +107,7 @@ var CTH = {
     {
         $("status-text").innerHTML = (
             "Score: " + String(CTH.score)
-            + " (Round " + String(CTH.round) + "/" + String(CTH.ROUNDS) + ")"
+            + " (Round " + String(CTH.round) + "/" + String(CTH.rounds) + ")"
         );
     },
 
@@ -201,6 +210,8 @@ var CTH = {
             CTH.done_memorizing = true;
             if (CTH.auto_hide <= 0) {
                 CTH.memorization_times.push(now - CTH.memorization_start);
+            } else {
+                CTH.memorization_times.push(CTH.auto_hide / 1000);
             }
             CTH.hide_card_values();
         }
@@ -333,7 +344,7 @@ var CTH = {
             CTH.start_round_btn_node.setAttribute("class", "");
         }
 
-        if (CTH.round <= CTH.ROUNDS) {
+        if (CTH.round <= CTH.rounds) {
             setTimeout(function () {
                 CTH.hide_cards();
                 CTH.update_status();
@@ -389,6 +400,7 @@ var CTH = {
                 .replace("{score}", CTH.format_number_with_units(CTH.score, "point"))
                 .replace("{numbers}", String(CTH.numbers))
                 .replace("{difficulty}", difficulty)
+                .replace("{rounds}", CTH.rounds)
         );
 
         if (CTH.auto_hide > 0) {
@@ -404,7 +416,8 @@ var CTH = {
                 share_text += (
                     CTH.SHARE_STATS
                         .replace("{min}", stats["min"])
-                        .replace("{avg}", stats["avg"])
+                        .replace("{mean}", stats["mean"])
+                        .replace("{sd}", stats["sd"])
                         .replace("{median}", stats["median"])
                 );
             }
@@ -429,19 +442,22 @@ var CTH = {
             ].join("")
         );
 
+        $("stats-rounds").innerHTML = CTH.rounds;
         $("stats-score").innerHTML = CTH.score;
         $("stats-perfect-rounds").innerHTML = CTH.perfect_rounds;
 
         if (stats["valid"]) {
-            $("stats-mem-time-avg").innerHTML = stats["avg"] + "s";
+            $("stats-mem-time-mean").innerHTML = stats["mean"] + "s";
             $("stats-mem-time-min").innerHTML = stats["min"] + "s";
             $("stats-mem-time-max").innerHTML = stats["max"] + "s";
             $("stats-mem-time-median").innerHTML = stats["median"] + "s";
+            $("stats-mem-time-sd").innerHTML = stats["sd"] + "s";
         } else {
-            $("stats-mem-time-avg").innerHTML = "N/A";
+            $("stats-mem-time-mean").innerHTML = "N/A";
             $("stats-mem-time-min").innerHTML = "N/A";
             $("stats-mem-time-max").innerHTML = "N/A";
             $("stats-mem-time-median").innerHTML = "N/A";
+            $("stats-mem-time-sd").innerHTML = "N/A";
         }
 
         $("game").setAttribute("class", "screen");
@@ -453,7 +469,7 @@ var CTH = {
         var i, radio_btn;
 
         for (i = 3; i < 10; ++i) {
-            if ($("card-number-" + String(i)).checked) {
+            if ($("cards-" + String(i)).checked) {
                 CTH.numbers = i;
                 break;
             }
@@ -466,8 +482,18 @@ var CTH = {
             }
         }
 
+        for (i = 0; i < 3; ++i) {
+            radio_btn = $("rounds-" + String(i));
+
+            if (radio_btn.checked) {
+                CTH.rounds = Number(radio_btn.value);
+                break;
+            }
+        }
+
         for (i = 0; i < 8; ++i) {
-            radio_btn = $("auto-hide-" + String(i))
+            radio_btn = $("auto-hide-" + String(i));
+
             if (radio_btn.checked) {
                 if (i === 0) {
                     CTH.auto_hide = null;
