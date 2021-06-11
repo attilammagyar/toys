@@ -72,6 +72,7 @@ button,
 button:disabled,
 #download.disabled {
   background: #668;
+  border-color: #779;
 }
 
 #stop {
@@ -81,6 +82,7 @@ button:disabled,
 
 #stop:disabled {
   background: #655;
+  border-color: #977;
 }
 
 #results audio {
