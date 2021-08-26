@@ -24,6 +24,7 @@
         image_input, image_display,
         sample_rate_input, length_input, invert_input, random_phase_input, contrast_input,
         lowest_freq_input, highest_freq_input,
+        scale_type_input,
         generate_button, stop_button, download_button,
         listen, audio_cursor, image_cursor, problems_box,
 
@@ -35,6 +36,7 @@
         invert, random_phase, contrast,
         pixel_to_amplitudes,
         scale_amplitudes,
+        scale_type,
 
         img, img_col_1, img_col_2, img_col_1_x,
         img_canvas_ctx,
@@ -96,13 +98,24 @@
         normalizer = 0.0;
 
         freq = new Float64Array(height);
-        phase = new Float64Array(height);
-        d = log(highest_freq / lowest_freq) / log(2.0);
 
-        for (y = 0; y < height; ++y) {
-            f = lowest_freq * Math.pow(2.0, (d * (1.0 - y / height)));
-            freq[y] = 2.0 * PI * f;
+        if (scale_type === "log") {
+            d = log(highest_freq / lowest_freq) / log(2.0);
+
+            for (y = 0; y < height; ++y) {
+                f = lowest_freq * Math.pow(2.0, (d * (1.0 - y / height)));
+                freq[y] = 2.0 * PI * f;
+            }
+        } else {
+            d = highest_freq - lowest_freq;
+
+            for (y = 0; y < height; ++y) {
+                f = lowest_freq + d * (1.0 - y / height);
+                freq[y] = 2.0 * PI * f;
+            }
         }
+
+        phase = new Float64Array(height);
 
         if (random_phase) {
             r = 1511;
@@ -551,6 +564,7 @@
         contrast = contrast_input.checked;
         lowest_freq = Number(lowest_freq_input.value);
         highest_freq = Number(highest_freq_input.value);
+        scale_type = scale_type_input.value;
     }
 
     function find_problems()
@@ -697,12 +711,14 @@
         contrast_input = $("contrast");
         lowest_freq_input = $("lowest");
         highest_freq_input = $("highest");
+        scale_type_input = $("scale-type");
 
         image_input.onchange = load_image;
         sample_rate_input.onchange = find_problems;
         length_input.onchange = find_problems;
         invert_input.onchange = find_problems;
         random_phase_input.onchange = find_problems;
+        scale_type_input.onchange = find_problems;
         lowest_freq_input.onchange = find_problems;
         highest_freq_input.onchange = find_problems;
 
