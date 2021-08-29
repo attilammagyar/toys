@@ -55,7 +55,9 @@
         editor_side_2_preview,
         editor_mode,
         editor_buttons_new,
-        editor_buttons_current;
+        editor_buttons_current,
+        editor_button_save,
+        editor_button_save_new;
 
     function main()
     {
@@ -99,6 +101,8 @@
         editor_side_2_preview = $("side-2-preview");
         editor_buttons_current = $("editor-buttons-current");
         editor_buttons_new = $("editor-buttons-new");
+        editor_button_save = $("edit-save");
+        editor_button_save_new = $("edit-save-new");
 
         $("practise-form").onsubmit = stop_event;
         $("editor-form").onsubmit = stop_event;
@@ -117,11 +121,12 @@
         $("all-cards-back").onclick = handle_all_cards_back_click;
         $("menu-edit").onclick = handle_menu_edit_click;
         $("edit-cancel").onclick = handle_edit_cancel_click;
-        $("edit-save").onclick = handle_edit_save_click;
         $("menu-create").onclick = handle_menu_create_click;
         $("no-cards-create").onclick = handle_menu_create_click;
-        $("edit-save-new").onclick = handle_edit_save_new_click;
         $("edit-back").onclick = handle_edit_cancel_click;
+
+        editor_button_save.onclick = handle_edit_save_click;
+        editor_button_save_new.onclick = handle_edit_save_new_click;
 
         editor_note_inputs = [];
         editor_note_origs = [];
@@ -498,9 +503,13 @@
         if (mode === "current-card") {
             show(editor_buttons_current);
             hide(editor_buttons_new);
+            editor_button_save.disabled = false;
+            editor_button_save_new.disabled = true;
         } else {
             hide(editor_buttons_current);
             show(editor_buttons_new);
+            editor_button_save.disabled = true;
+            editor_button_save_new.disabled = false;
         }
     }
 
