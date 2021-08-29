@@ -1,0 +1,567 @@
+* {
+  font-family: Verdana, sans-serif;
+  color: #c8c8d2;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  background-color: #000;
+}
+
+#practise-screen.hidden,
+#practise-card.hidden {
+  display: none;
+}
+
+#practise-card {
+  text-align: center;
+  width: 94vw;
+  margin-left: 3vw;
+  margin-right: 3vw;
+  min-height: 60vh;
+}
+
+#practise-card p {
+  padding-top: 4.5vh;
+  font-size: 7vmin;
+  line-height: 8.4vmin;
+  text-align: center;
+  opacity: 1.0;
+  transition: opacity 0.3s;
+}
+
+#practise-card-notes {
+  font-size: 5vmin;
+  margin: 2vmin;
+  margin-top: 5vmin;
+  padding: 0;
+  text-align: left;
+}
+
+#practise-card p.hidden,
+#practise-card div.hidden {
+  transition: opacity 0s;
+  opacity: 0.0;
+}
+
+#practise-card-index {
+  color: #889;
+  font-size: 5vmin;
+}
+
+#format {
+  font-size: 2.8vmin;
+  margin: 2vmin 10vmin;
+}
+
+span.furigana {
+  border: solid 0.5vmin;
+  border-radius: 2vmin;
+  background-color: #112;
+  border-color: #224;
+}
+
+#practise-card span.furigana {
+  transition: background-color 0.3s, border-color 0.3s;
+  background-color: transparent;
+  border-color: transparent;
+}
+
+#practise-card.furigana-visible span.furigana {
+  transition: background-color 0.0s, border-color 0.0s;
+  background-color: #112;
+  border-color: #224;
+}
+
+span.furigana ruby rt {
+  color: #ccd;
+  font-size: 4.5vmin;
+}
+
+#practise-card span.furigana ruby rt {
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+#practise-card.furigana-visible span.furigana ruby rt {
+  opacity: 1.0;
+  transition: opacity 0.0s;
+}
+
+#format span.furigana ruby rt {
+  font-size: 2.0vmin;
+}
+
+#format code {
+  font-family: monospace;
+}
+
+div.example {
+  background-color: #0b0b0d;
+  margin: 1vmin;
+  padding: 1vmin;
+  word-wrap: break-word;
+  margin-bottom: 2vmin;
+}
+
+#practise-card-notes rt {
+  font-size: 3.2vmin;
+}
+
+#practise-card-notes li {
+  margin: 1.5vmin;
+  padding: 1vmin;
+  background-color: #111;
+}
+
+#grade {
+  display: block;
+  margin-top: 1vmin;
+  margin-left: 5vw;
+  margin-right: 5vw;
+  width: 80vw;
+  height: 11vmin;
+  text-align: center;
+  opacity: 1.0;
+  transition: opacity 0.25s, height 0.25s;
+}
+
+#grade.hidden {
+  opacity: 0;
+  transition: opacity 0.1s, height 0.1s;
+  height: 0;
+  padding: 0;
+  border-style: none;
+  overflow: hidden;
+}
+
+button,
+a.button {
+  display: inline-block;
+  font-size: 5vmin;
+  line-height: 6vmin;
+  font-weight: bold;
+  padding: 1.2vmin 4vmin;
+  border-style: outset;
+  border-width: 0.7vmin;
+  border-radius: 3vmin;
+  margin: 0.3vmin;
+  text-decoration: none;
+}
+
+#grade button {
+  min-width: 18vw;
+}
+
+button#grade-bad {
+  background-color: #800;
+  color: #eee;
+  border-color: #600;
+}
+
+button#grade-soso {
+  background-color: #873;
+  color: #ffffff;
+  border-color: #762;
+}
+
+button#grade-good {
+  background-color: #275;
+  color: #ffffff;
+  border-color: #174;
+}
+
+div#stats {
+  position: absolute;
+  z-index: 10;
+  top: 1vh;
+  right: 1vw;
+  font-size: 5vmin;
+}
+
+#all-cards-back,
+#menu-button {
+  background-color: #223;
+  border-color: #112;
+  margin: 1vmin;
+  padding: 1.2vmin 3vmin;
+  font-family: Verdana, sans-serif;
+}
+
+#learn-button {
+  background-color: #163;
+  border-color: #141;
+  color: #ded;
+  transition: width 0.2s, height 0.2s, opacity 0.2s;
+  width: auto;
+  height: auto;
+  opacity: 1.0;
+}
+
+#learn-button.hidden {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+#menu {
+  z-index: 1000;
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  min-width: 86vmin;
+  min-height: 93vh;
+  max-width: 93vw;
+  background-color: #111;
+  transition: left 0.2s, opacity 0.2s;
+  opacity: 1;
+  box-shadow: 2vmin 2vmin 1vmin #060608;
+}
+
+#menu.hidden {
+  left: -110vw;
+  opacity: 0;
+  transition: left 0.1s, opacity 0.1s;
+}
+
+#menu li {
+  border-bottom: solid 1px #000;
+}
+
+#menu a {
+  display: inline-block;
+  font-weight: bold;
+  font-size: 5vmin;
+  line-height: 8vmin;
+  margin: 1.5vmin;
+  padding: 1.5vmin;
+  min-width: 72vmin;
+  text-decoration: none;
+  background-color: #111;
+  transition: background-color 0.2s, color 0.2s;
+  border-radius: 1vmin;
+}
+
+#menu a:hover {
+  background-color: #223;
+  color: #dde;
+}
+
+#load-screen.hidden {
+  display: none;
+}
+
+#load-dragndrop {
+  padding: 1vmin;
+  margin: 1vmin 3vmin;
+  overflow: auto;
+  background-color: #000;
+  border: dotted 0.3vmin #445;
+  border-radius: 2vmin;
+  font-size: 5vmin;
+  height: 30vmin;
+  line-height: 30vmin;
+  text-align: center;
+}
+
+#load-dragndrop:hover {
+  border: dotted 0.6vmin #445;
+  margin: 0.7vmin 2.7vmin;
+  background-color: #111;
+}
+
+div.input {
+  margin: 0.6vmin 1vw;
+  text-align: center;
+  padding: 1vmin;
+}
+
+div.input textarea,
+div.input input {
+  font-size: 4vmin;
+  height: 6vmin;
+  line-height: 6vmin;
+  border-radius: 1vmin;
+  border: inset 0.3vmin #445;
+  background-color: #111;
+  color: #cce;
+  width: 90vw;
+  padding: 0.2vmin 1vmin;
+  margin: 0.5vmin;
+  margin-bottom: 1vmin;
+}
+
+#editor-form div.input textarea {
+  position: relative;
+  z-index: 100;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+#editor-form div.input textarea:focus {
+  opacity: 1;
+  transition: opacity 0.2s;
+}
+
+#side-1-preview,
+#side-2-preview {
+  vertical-align: top;
+  position: relative;
+  display: inline-block;
+  font-size: 4vmin;
+  line-height: 6vmin;
+  border-radius: 1vmin;
+  border: inset 0.3vmin #445;
+  background-color: #111;
+  color: #cce;
+  width: 90vw;
+  padding: 0.2vmin 1vmin;
+  margin: 0.5vmin;
+  z-index: 99;
+  text-align: left;
+  overflow: auto;
+  top: -38vmin;
+  height: 36vmin;
+  margin-bottom: -36vmin;
+}
+
+#editor-form span.furigana ruby rt {
+  font-size: 2.7vmin;
+}
+
+div.input textarea {
+  height: 36vmin;
+}
+
+div.input label {
+  display: block;
+  font-size: 4vmin;
+  height: 6vmin;
+  line-height: 6vmin;
+}
+
+div.input button {
+  border-color: #115;
+  min-width: 20vw;
+  background-color: #226;
+  color: #eee;
+}
+
+#no-cards {
+  font-size: 5vmin;
+  line-height: 8vmin;
+  padding-top: 20vh;
+  width: 70vw;
+  margin: auto;
+  height: 30vh;
+  text-align: center;
+}
+
+#no-cards a {
+  color: #77f;
+  font-weight: bold;
+}
+
+#no-cards.hidden {
+  display: none;
+}
+
+#message {
+  position: absolute;
+  font-size: 5vmin;
+  top: 1vmin;
+  left: 10vw;
+  right: 10vw;
+  text-align: center;
+  padding: 1.2vmin;
+  background-color: rgba(70, 70, 35, 0.9);
+  border-radius: 1vmin;
+  transition: top 0.3s;
+}
+
+#message.hidden {
+  top: -60vh;
+  transition: top 1.5s;
+}
+
+h1 {
+  font-size: 6vmin;
+  text-align: center;
+  padding: 2vmin;
+}
+
+#confirm {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2000;
+  background: rgba(0, 0, 0, 0.7);
+  text-align: center;
+  font-size: 5vmin;
+}
+
+#confirm.hidden {
+  display: none;
+}
+
+#confirm-window {
+  margin: 15vh 10vmin 2vmin 10vmin;
+  padding: 3vmin;
+  border-radius: 3vmin;
+  border: outset #984;
+  background-color: #ba5;
+  box-shadow: 2vmin 2vmin 1vmin #060608;
+}
+
+#confirm-message {
+  color: #000;
+  margin-bottom: 5vmin;
+}
+
+#confirm-yes,
+#confirm-no {
+  background-color: #641;
+  border-color: #641;
+  margin-left: 5vmin;
+  margin-right: 5vmin;
+  color: #eee;
+}
+
+#confirm-no {
+  background-color: #641;
+  border-color: #641;
+}
+
+#editor-screen.hidden {
+  display: none;
+}
+
+#editor-screen div.hidden {
+  opacity: 0;
+  height: 0;
+  margin: 0;
+  overflow: hidden;
+  transition: opacity 0.5s height 0.5s;
+}
+
+#all-cards span,
+#all-cards rt,
+#all-cards dt,
+#all-cards dd,
+#all-cards ruby,
+#all-cards div,
+#all-cards li {
+  font-family: serif;
+}
+
+#all-cards span.furigana {
+  border-radius: 0.2em;
+  border: solid 1px #333;
+}
+
+#all-cards span.furigana ruby rt {
+  font-size: 57%;
+  color: rgba(220, 220, 220, 0.75);
+  opacity: 1.0;
+}
+
+#all-cards dt {
+  float: left;
+  width: 50%;
+  margin-right: 1em;
+}
+
+#all-cards dd {
+  display: table-cell;
+  width: 50%;
+  padding: 0;
+}
+
+#all-cards div.score,
+#all-cards div.notes {
+  clear: both;
+  font-size: 80%;
+  margin-top: 0.2em;
+}
+
+#all-cards div.notes rt {
+  font-size: 57%;
+}
+
+#all-cards div.with_furigana {
+  margin-top: 0.5em;
+  color: rgba(220, 220, 220, 0.85);
+}
+
+#all-cards div.expand {
+  clear: both;
+}
+
+#all-cards ol {
+  padding: 0.6em;
+}
+
+#all-cards ol li {
+  clear: both;
+  break-inside: avoid;
+  page-break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  margin-left: 2em;
+}
+
+#all-cards ol > li {
+  border: solid 1px #333;
+  padding: 0.2em;
+  margin: 0.2em;
+  margin-left: 3.5em;
+}
+
+#all-cards-nav {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 1vmin;
+}
+
+#all-cards.hidden {
+  display: none;
+}
+
+#editor-screen button {
+  margin: 0.3vmin 2vmin;
+}
+
+@media print {
+  * {
+    color: #000;
+  }
+
+  html, body {
+    background-color: #fff;
+  }
+
+  #all-cards span.furigana ruby rt {
+    color: rgba(0, 0, 0, 0.75);
+  }
+
+  #all-cards div.with_furigana {
+    margin-top: 0.5em;
+    color: rgba(0, 0, 0, 0.85);
+  }
+
+  #all-cards ol > li {
+    border: solid 1px #ddd;
+  }
+
+  #all-cards span.furigana {
+    border: solid 1px #ddd;
+  }
+
+  #all-cards-nav {
+    display: none;
+  }
+}
