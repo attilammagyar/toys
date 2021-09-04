@@ -8,6 +8,7 @@
             "You have unsaved changes in the card editor."
             + " Are you sure you want to navigate away and lose those changes?"
         ),
+        routing,
         deck,
         menu,
         menu_export,
@@ -18,7 +19,7 @@
         practise_screen,
         load_screen,
         current_card,
-        current_card_ref,
+        current_card_ref = null,
         answered,
         score,
         next_card_ref_ref,
@@ -63,6 +64,61 @@
     {
         initialize_gui();
         restore_state();
+        route();
+    }
+
+    function route()
+    {
+        var url = String(window.location.href),
+            match, num;
+
+        routing = true;
+
+        if (match = url.match(/#([qe])-([0-9]+)$/)) {
+            num = Number(match[2]) - 1;
+
+            if (num >= 0 && num < deck["cards"].length) {
+                store_pick(num);
+                show_practise_screen();
+                show_current_card();
+
+                if (match[1] === "e") {
+                    edit_current_card();
+                }
+
+                routing = false;
+
+                return;
+            }
+        } else if (match = url.match(/#load$/)) {
+            start_practising();
+            handle_load_confirmation();
+            routing = false;
+
+            return;
+        } else if (match = url.match(/#new$/)) {
+            start_practising();
+            hide(practise_screen);
+            show_editor("new-card", "", "", []);
+            routing = false;
+
+            return;
+        } else if (match = url.match(/#all$/)) {
+            start_practising();
+            hide(practise_screen);
+            show_all_cards();
+            routing = false;
+
+            return;
+        } else if (url.match(/#top$/)) {
+            if (current_card_ref !== null) {
+                routing = false;
+
+                return;
+            }
+        }
+
+        routing = false;
         start_practising();
     }
 
@@ -158,10 +214,10 @@
 
         populate_editor("new-card", "", "", []);
 
-        window.ondrop = stop_event;
-        window.ondragover = stop_event;
-
+        window.addEventListener("drop", stop_event);
+        window.addEventListener("dragover", stop_event);
         window.addEventListener("beforeunload", handle_beforeunload);
+        window.addEventListener("popstate", handle_popstate);
     }
 
     function $(obj)
@@ -183,9 +239,15 @@
 
     function handle_menu_button_click(evt)
     {
-        show(menu);
+        show_menu();
 
         return stop_event(evt);
+    }
+
+    function show_menu()
+    {
+        push_history("top");
+        show(menu);
     }
 
     function handle_hide_menu_click(evt)
@@ -255,13 +317,13 @@
 
     function handle_load_confirmation()
     {
+        push_history("load");
         hide(practise_screen);
         show(load_screen);
     }
 
     function handle_load_cancel_click(evt)
     {
-        hide(load_screen);
         hide(menu);
         show_practise_screen();
 
@@ -270,7 +332,10 @@
 
     function show_practise_screen()
     {
+        hide(menu);
+        hide(all_cards);
         hide(load_screen);
+        hide(editor_screen);
         show(practise_screen);
 
         if (deck["cards"].length > 0) {
@@ -315,12 +380,20 @@
 
     function handle_menu_show_all_click(evt)
     {
+        show_all_cards();
+
+        return stop_event(evt);
+    }
+
+    function show_all_cards()
+    {
         var cards = deck["cards"],
             notes = deck["notes"],
             html = [],
             card,
             i, l;
 
+        push_history("all");
         hide(menu);
         hide(practise_screen);
 
@@ -334,20 +407,21 @@
         all_cards_list.innerHTML = html.join("");
 
         show(all_cards);
-
-        return stop_event(evt);
     }
 
     function card_to_list_item_html(index, card, notes)
     {
+        index = String(index);
+
         return [
-            "<li value=\"" + String(index) + "\">",
+            "<li value=\"" + index + "\">",
                 "<dt>",
                     card_side_to_list_item_html(card["side_2"]),
                 "</dt>",
                 "<dd>",
                     "<div>",
                         card_side_to_list_item_html(card["side_1"]),
+                        "<a class=\"edit\" href=\"#e-" + index + "\">Edit and learn this card</a>",
                     "</div>",
                     "<div class=\"notes\">",
                         format_notes(notes, card["note_refs"]),
@@ -433,7 +507,8 @@
     function handle_all_cards_back_click(evt)
     {
         hide(all_cards);
-        show(practise_screen);
+        show_practise_screen();
+        show_current_card();
         all_cards_list.innerHTML = "";
 
         return stop_event(evt);
@@ -447,6 +522,14 @@
             return stop_event(evt);
         }
 
+        edit_current_card();
+
+        return stop_event(evt);
+    }
+
+    function edit_current_card()
+    {
+        hide(menu);
         hide(practise_screen);
         show_editor(
             "current-card",
@@ -455,11 +538,26 @@
             current_card["note_refs"]
         );
 
-        return stop_event(evt);
+        push_history("e-" + String(current_card_ref + 1));
+    }
+
+    function push_history(hash)
+    {
+        var url;
+
+        if (routing) {
+            return;
+        }
+
+        url = new URL(window.location);
+        url.hash = hash;
+
+        window.history.pushState({}, document.title, url);
     }
 
     function show_editor(mode, side_1, side_2, note_refs)
     {
+        hide(all_cards);
         populate_editor(mode, side_1, side_2, note_refs);
         show(editor_screen);
         editor_side_1.focus();
@@ -567,13 +665,12 @@
     function close_editor()
     {
         if (current_card) {
-            console.log(current_card);
             show_current_card();
         }
 
         show_editor("new-card", "", "", []);
         hide(editor_screen);
-        show(practise_screen);
+        show_practise_screen();
     }
 
     function handle_edit_save_click(evt)
@@ -614,15 +711,14 @@
         hide(practise_screen);
 
         show_editor("new-card", "", "", []);
+        push_history("new");
 
         return stop_event(evt);
     }
 
     function handle_edit_save_new_click(evt)
     {
-        var new_note_created;
-
-        new_note_created = add_card(
+        add_card(
             editor_side_1.value,
             editor_side_2.value,
             collect_notes_from_editor()
@@ -1169,7 +1265,12 @@
 
     function update_title()
     {
-        document.title = deck["name"] ? deck["name"] + " - Flashcards" : "Flashcards";
+        document.title = make_title();
+    }
+
+    function make_title()
+    {
+        return deck["name"] ? deck["name"] + " - Flashcards" : "Flashcards";
     }
 
     function store_state()
@@ -1264,6 +1365,8 @@
                 current_card["note_refs"]
             );
         }
+
+        push_history("q-" + String(current_card_ref + 1));
     }
 
     function show_question(question, answer, note_refs)
@@ -1402,6 +1505,11 @@
 
             return EDITOR_EXIT_CONFIRM;
         }
+    }
+
+    function handle_popstate(evt)
+    {
+        route();
     }
 
     function run_tests()

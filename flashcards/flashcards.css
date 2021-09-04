@@ -43,6 +43,8 @@ html, body {
 #practise-card div.hidden {
   transition: opacity 0s;
   opacity: 0.0;
+  height: 0;
+  overflow: hidden;
 }
 
 #practise-card-index {
@@ -531,6 +533,11 @@ h1 {
   display: none;
 }
 
+#all-cards a.edit {
+  color: #88e;
+  font-weight: bold;
+}
+
 #editor-screen button {
   margin: 0.3vmin 2vmin;
 }
@@ -561,6 +568,7 @@ h1 {
     border: solid 1px #ddd;
   }
 
+  #all-cards a.edit,
   #all-cards-nav {
     display: none;
   }
