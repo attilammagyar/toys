@@ -1405,7 +1405,7 @@
         reveal_furigana();
         show(practice_answer);
         show(practice_notes);
-        next_action = show_grade_form();
+        next_action = show_grade_form;
     }
 
     function show_grade_form()
