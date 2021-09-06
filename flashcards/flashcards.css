@@ -9,12 +9,12 @@ html, body {
   background-color: #000;
 }
 
-#practise-screen.hidden,
-#practise-card.hidden {
+#practice-screen.hidden,
+#practice-card.hidden {
   display: none;
 }
 
-#practise-card {
+#practice-card {
   text-align: center;
   width: 94vw;
   margin-left: 3vw;
@@ -22,7 +22,7 @@ html, body {
   min-height: 60vh;
 }
 
-#practise-card p {
+#practice-card p {
   padding-top: 4.5vh;
   font-size: 7vmin;
   line-height: 8.4vmin;
@@ -31,7 +31,7 @@ html, body {
   transition: opacity 0.3s;
 }
 
-#practise-card-notes {
+#practice-card-notes {
   font-size: 5vmin;
   margin: 2vmin;
   margin-top: 5vmin;
@@ -39,15 +39,15 @@ html, body {
   text-align: left;
 }
 
-#practise-card p.hidden,
-#practise-card div.hidden {
+#practice-card p.hidden,
+#practice-card div.hidden {
   transition: opacity 0s;
   opacity: 0.0;
   height: 0;
   overflow: hidden;
 }
 
-#practise-card-index {
+#practice-card-index {
   color: #889;
   font-size: 5vmin;
 }
@@ -64,13 +64,13 @@ span.furigana {
   border-color: #224;
 }
 
-#practise-card span.furigana {
+#practice-card span.furigana {
   transition: background-color 0.3s, border-color 0.3s;
   background-color: transparent;
   border-color: transparent;
 }
 
-#practise-card.furigana-visible span.furigana {
+#practice-card.furigana-visible span.furigana {
   transition: background-color 0.0s, border-color 0.0s;
   background-color: #112;
   border-color: #224;
@@ -81,12 +81,12 @@ span.furigana ruby rt {
   font-size: 4.5vmin;
 }
 
-#practise-card span.furigana ruby rt {
+#practice-card span.furigana ruby rt {
   opacity: 0;
   transition: opacity 0.3s;
 }
 
-#practise-card.furigana-visible span.furigana ruby rt {
+#practice-card.furigana-visible span.furigana ruby rt {
   opacity: 1.0;
   transition: opacity 0.0s;
 }
@@ -107,11 +107,11 @@ div.example {
   margin-bottom: 2vmin;
 }
 
-#practise-card-notes rt {
+#practice-card-notes rt {
   font-size: 3.2vmin;
 }
 
-#practise-card-notes li {
+#practice-card-notes li {
   margin: 1.5vmin;
   padding: 1vmin;
   background-color: #111;

@@ -16,7 +16,7 @@
         load_input,
         load_cancel,
         no_cards,
-        practise_screen,
+        practice_screen,
         load_screen,
         current_card,
         current_card_ref = null,
@@ -26,11 +26,11 @@
         note_ids,
         card_refs,
         to_learn,
-        practise_card,
-        practise_index,
-        practise_question,
-        practise_answer,
-        practise_notes,
+        practice_card,
+        practice_index,
+        practice_question,
+        practice_answer,
+        practice_notes,
         stats,
         grade_form,
         next_action,
@@ -79,7 +79,7 @@
 
             if (num >= 0 && num < deck["cards"].length) {
                 store_pick(num);
-                show_practise_screen();
+                show_practice_screen();
                 show_current_card();
 
                 if (match[1] === "e") {
@@ -98,14 +98,14 @@
             return;
         } else if (match = url.match(/#new$/)) {
             start_practising();
-            hide(practise_screen);
+            hide(practice_screen);
             show_editor("new-card", "", "", []);
             routing = false;
 
             return;
         } else if (match = url.match(/#all$/)) {
             start_practising();
-            hide(practise_screen);
+            hide(practice_screen);
             show_all_cards();
             routing = false;
 
@@ -133,13 +133,13 @@
         load_dragndrop = $("load-dragndrop");
         load_input = $("load-input");
         load_screen = $("load-screen");
-        practise_screen = $("practise-screen")
+        practice_screen = $("practice-screen")
         no_cards = $("no-cards");
-        practise_card = $("practise-card");
-        practise_index = $("practise-card-index");
-        practise_question = $("practise-card-question");
-        practise_answer = $("practise-card-answer");
-        practise_notes = $("practise-card-notes");
+        practice_card = $("practice-card");
+        practice_index = $("practice-card-index");
+        practice_question = $("practice-card-question");
+        practice_answer = $("practice-card-answer");
+        practice_notes = $("practice-card-notes");
         grade_form = $("grade");
         stats = $("stats");
         learn_button = $("learn-button");
@@ -160,7 +160,7 @@
         editor_button_save = $("edit-save");
         editor_button_save_new = $("edit-save-new");
 
-        $("practise-form").onsubmit = stop_event;
+        $("practice-form").onsubmit = stop_event;
         $("editor-form").onsubmit = stop_event;
         $("load-form").onsubmit = stop_event;
         $("menu-button").onclick = handle_menu_button_click;
@@ -210,7 +210,7 @@
         load_dragndrop.ondrop = handle_file_drop;
         load_dragndrop.ondragover = stop_event;
 
-        practise_card.onclick = handle_practise_card_click;
+        practice_card.onclick = handle_practice_card_click;
 
         populate_editor("new-card", "", "", []);
 
@@ -318,33 +318,33 @@
     function handle_load_confirmation()
     {
         push_history("load");
-        hide(practise_screen);
+        hide(practice_screen);
         show(load_screen);
     }
 
     function handle_load_cancel_click(evt)
     {
         hide(menu);
-        show_practise_screen();
+        show_practice_screen();
 
         return stop_event(evt);
     }
 
-    function show_practise_screen()
+    function show_practice_screen()
     {
         hide(menu);
         hide(all_cards);
         hide(load_screen);
         hide(editor_screen);
-        show(practise_screen);
+        show(practice_screen);
 
         if (deck["cards"].length > 0) {
             hide(no_cards);
-            show(practise_card);
+            show(practice_card);
         } else {
             show(no_cards);
             stats.innerHTML = "";
-            hide(practise_card);
+            hide(practice_card);
             hide(grade_form);
             hide(learn_button);
         }
@@ -395,7 +395,7 @@
 
         push_history("all");
         hide(menu);
-        hide(practise_screen);
+        hide(practice_screen);
 
         all_cards_list.innerHTML = "";
 
@@ -507,7 +507,7 @@
     function handle_all_cards_back_click(evt)
     {
         hide(all_cards);
-        show_practise_screen();
+        show_practice_screen();
         show_current_card();
         all_cards_list.innerHTML = "";
 
@@ -530,7 +530,7 @@
     function edit_current_card()
     {
         hide(menu);
-        hide(practise_screen);
+        hide(practice_screen);
         show_editor(
             "current-card",
             current_card["side_1"],
@@ -670,7 +670,7 @@
 
         show_editor("new-card", "", "", []);
         hide(editor_screen);
-        show_practise_screen();
+        show_practice_screen();
     }
 
     function handle_edit_save_click(evt)
@@ -683,7 +683,7 @@
         close_editor();
         show_message("Card #" + String(current_card_ref + 1) + " saved.", 2400);
         show_current_card();
-        show_practise_screen();
+        show_practice_screen();
 
         return stop_event(evt);
     }
@@ -708,7 +708,7 @@
     function handle_menu_create_click(evt)
     {
         hide(menu);
-        hide(practise_screen);
+        hide(practice_screen);
 
         show_editor("new-card", "", "", []);
         push_history("new");
@@ -996,7 +996,7 @@
 
             update_title();
             store_state();
-            show_practise_screen();
+            show_practice_screen();
         };
 
         reader.readAsText(file);
@@ -1280,7 +1280,7 @@
 
     function start_practising()
     {
-        show_practise_screen();
+        show_practice_screen();
 
         if (deck["cards"].length < 1) {
             return;
@@ -1372,15 +1372,15 @@
     function show_question(question, answer, note_refs)
     {
         hide(grade_form);
-        hide(practise_answer);
-        hide(practise_notes);
+        hide(practice_answer);
+        hide(practice_notes);
         hide_furigana();
 
         stats.innerHTML = String(score) + " / " + String(answered);
-        practise_index.innerHTML = String(current_card_ref + 1) + ".";
-        practise_question.innerHTML = format_text(question);
-        practise_answer.innerHTML = format_text(answer);
-        practise_notes.innerHTML = format_notes(deck["notes"], note_refs);
+        practice_index.innerHTML = String(current_card_ref + 1) + ".";
+        practice_question.innerHTML = format_text(question);
+        practice_answer.innerHTML = format_text(answer);
+        practice_notes.innerHTML = format_notes(deck["notes"], note_refs);
 
         if (question.match(/\{[^|}]*\|[^|}]*\}/)) {
             next_action = reveal_furigana;
@@ -1391,20 +1391,20 @@
 
     function hide_furigana()
     {
-        practise_card.setAttribute("class", "");
+        practice_card.setAttribute("class", "");
     }
 
     function reveal_furigana()
     {
-        practise_card.setAttribute("class", "furigana-visible");
+        practice_card.setAttribute("class", "furigana-visible");
         next_action = reveal_answer;
     }
 
     function reveal_answer()
     {
         reveal_furigana();
-        show(practise_answer);
-        show(practise_notes);
+        show(practice_answer);
+        show(practice_notes);
         next_action = show_grade_form();
     }
 
@@ -1469,7 +1469,7 @@
         );
     }
 
-    function handle_practise_card_click(evt)
+    function handle_practice_card_click(evt)
     {
         if (next_action) {
             next_action();
