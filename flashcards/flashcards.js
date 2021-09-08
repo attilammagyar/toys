@@ -583,7 +583,12 @@
                 show(editor_note_containers[i]);
             } else {
                 v = "";
-                hide(editor_note_containers[i]);
+
+                if (i > 4) {
+                    hide(editor_note_containers[i]);
+                } else {
+                    show(editor_note_containers[i]);
+                }
             }
 
             editor_note_inputs[i].value = v;
