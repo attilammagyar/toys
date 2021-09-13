@@ -8,7 +8,7 @@
             "You have unsaved changes in the card editor."
             + " Are you sure you want to navigate away and lose those changes?"
         ),
-        routing,
+        is_routing,
         deck,
         menu,
         menu_export,
@@ -72,7 +72,7 @@
         var url = String(window.location.href),
             match, num;
 
-        routing = true;
+        is_routing = true;
 
         if (match = url.match(/#([qe])-([0-9]+)$/)) {
             num = Number(match[2]) - 1;
@@ -86,39 +86,39 @@
                     edit_current_card();
                 }
 
-                routing = false;
+                is_routing = false;
 
                 return;
             }
         } else if (match = url.match(/#load$/)) {
             start_practising();
             handle_load_confirmation();
-            routing = false;
+            is_routing = false;
 
             return;
         } else if (match = url.match(/#new$/)) {
             start_practising();
             hide(practice_screen);
             show_editor("new-card", "", "", []);
-            routing = false;
+            is_routing = false;
 
             return;
         } else if (match = url.match(/#all$/)) {
             start_practising();
             hide(practice_screen);
             show_all_cards();
-            routing = false;
+            is_routing = false;
 
             return;
         } else if (url.match(/#top$/)) {
             if (current_card_ref !== null) {
-                routing = false;
+                is_routing = false;
 
                 return;
             }
         }
 
-        routing = false;
+        is_routing = false;
         start_practising();
     }
 
@@ -545,7 +545,7 @@
     {
         var url;
 
-        if (routing) {
+        if (is_routing) {
             return;
         }
 
