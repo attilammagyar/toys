@@ -1,6 +1,6 @@
 * {
   font-family: Verdana, sans-serif;
-  color: #c8c8d2;
+  color: #e0e0f0;
   margin: 0;
   padding: 0;
 }
@@ -157,19 +157,19 @@ a.button {
 }
 
 button#grade-bad {
-  background-color: #800;
-  color: #eee;
-  border-color: #600;
+  background-color: #900;
+  color: #ffffff;
+  border-color: #700;
 }
 
 button#grade-soso {
-  background-color: #873;
+  background-color: #983;
   color: #ffffff;
   border-color: #762;
 }
 
 button#grade-good {
-  background-color: #275;
+  background-color: #295;
   color: #ffffff;
   border-color: #174;
 }
@@ -184,17 +184,17 @@ div#stats {
 
 #all-cards-back,
 #menu-button {
-  background-color: #223;
-  border-color: #112;
+  background-color: #347;
+  border-color: #234;
   margin: 1vmin;
   padding: 1.2vmin 3vmin;
   font-family: Verdana, sans-serif;
 }
 
 #learn-button {
-  background-color: #163;
-  border-color: #141;
-  color: #ded;
+  background-color: #173;
+  border-color: #151;
+  color: #efe;
   transition: width 0.2s, height 0.2s, opacity 0.2s;
   width: auto;
   height: auto;
@@ -217,7 +217,6 @@ div#stats {
   min-width: 86vmin;
   min-height: 93vh;
   max-width: 93vw;
-  background-color: #111;
   transition: left 0.2s, opacity 0.2s;
   opacity: 1;
   box-shadow: 2vmin 2vmin 1vmin #060608;
@@ -242,13 +241,17 @@ div#stats {
   padding: 1.5vmin;
   min-width: 72vmin;
   text-decoration: none;
-  background-color: #111;
   transition: background-color 0.2s, color 0.2s;
   border-radius: 1vmin;
 }
 
+#menu,
+#menu a {
+  background-color: #181828;
+}
+
 #menu a:hover {
-  background-color: #223;
+  background-color: #235;
   color: #dde;
 }
 
@@ -346,10 +349,10 @@ div.input label {
 }
 
 div.input button {
-  border-color: #115;
+  border-color: #125;
   min-width: 20vw;
-  background-color: #226;
-  color: #eee;
+  background-color: #237;
+  color: #eef;
 }
 
 #no-cards {
