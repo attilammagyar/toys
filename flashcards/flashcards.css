@@ -403,6 +403,7 @@ h1 {
   padding: 2vmin;
 }
 
+#alert,
 #confirm {
   position: fixed;
   top: 0;
@@ -415,10 +416,12 @@ h1 {
   font-size: 5vmin;
 }
 
+#alert.hidden,
 #confirm.hidden {
   display: none;
 }
 
+#alert-window,
 #confirm-window {
   margin: 15vh 10vmin 2vmin 10vmin;
   padding: 3vmin;
@@ -428,11 +431,13 @@ h1 {
   box-shadow: 2vmin 2vmin 1vmin #060608;
 }
 
+#alert-message,
 #confirm-message {
   color: #000;
   margin-bottom: 5vmin;
 }
 
+#alert-ok,
 #confirm-yes,
 #confirm-no {
   background-color: #641;

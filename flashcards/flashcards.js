@@ -38,6 +38,9 @@
         message,
         message_timeout,
         last_order_reset,
+        alert_modal,
+        alert_message,
+        alert_callback,
         confirm_modal,
         confirm_message,
         confirm_callback,
@@ -145,6 +148,8 @@
         learn_button = $("learn-button");
         message = $("message");
         menu_export = $("menu-export");
+        alert_modal = $("alert");
+        alert_message = $("alert-message");
         confirm_modal = $("confirm");
         confirm_message = $("confirm-message");
         all_cards = $("all-cards");
@@ -167,6 +172,7 @@
         $("menu-hide").onclick = handle_hide_menu_click;
         $("menu-load").onclick = handle_menu_load_click;
         $("no-cards-load").onclick = handle_menu_load_click;
+        $("alert-ok").onclick = handle_alert_ok_click;
         $("confirm-yes").onclick = handle_confirm_yes_click;
         $("confirm-no").onclick = handle_confirm_no_click;
         $("load-cancel").onclick = handle_load_cancel_click;
@@ -288,6 +294,24 @@
             );
         } else {
             handle_load_confirmation();
+        }
+
+        return stop_event(evt);
+    }
+
+    function show_alert(message, callback)
+    {
+        alert_message.innerHTML = message;
+        alert_callback = callback;
+        show(alert_modal);
+    }
+
+    function handle_alert_ok_click(evt)
+    {
+        hide(alert_modal);
+
+        if (alert_callback) {
+            alert_callback();
         }
 
         return stop_event(evt);
@@ -974,7 +998,7 @@
             handle_error;
 
         handle_error = function () {
-            alert("Error reading file: " + String(reader.error || "unknown error"));
+            show_alert("Error reading file: " + quote_html(String(reader.error || "unknown error")));
         };
 
         reader.onerror = handle_error;
@@ -987,7 +1011,7 @@
             try {
                 load_deck_from_string(reader.result);
             } catch (error) {
-                alert(error);
+                show_alert(quote_html(error));
                 return;
             }
 
@@ -1157,7 +1181,7 @@
 
         if (!(raw_deck.hasOwnProperty("notes") && raw_deck.hasOwnProperty("cards"))
         ) {
-            throw "the deck must have the following keys 'notes', 'cards'";
+            throw "the deck must have the following keys: 'notes', 'cards'";
         }
 
         if (raw_deck.hasOwnProperty("name") && typeof(raw_deck["name"]) !== "string") {
@@ -1430,7 +1454,7 @@
                 load_deck_from_file(evt.dataTransfer.files[0]);
             }
         } else {
-            alert("Your browser does not seem to support drag and drop.");
+            show_alert("Your browser does not seem to support drag and drop.");
         }
 
         return stop_event(evt);
