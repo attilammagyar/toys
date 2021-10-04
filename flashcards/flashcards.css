@@ -100,7 +100,7 @@ span.furigana ruby rt {
 }
 
 div.example {
-  background-color: #0b0b0d;
+  background-color: #000;
   margin: 1vmin;
   padding: 1vmin;
   word-wrap: break-word;
@@ -255,6 +255,11 @@ div#stats {
   color: #dde;
 }
 
+#load-screen {
+  background-color: #111;
+  padding-bottom: 5vmin;
+}
+
 #load-screen.hidden {
   display: none;
 }
@@ -275,7 +280,7 @@ div#stats {
 #load-dragndrop:hover {
   border: dotted 0.6vmin #445;
   margin: 0.7vmin 2.7vmin;
-  background-color: #111;
+  background-color: #112;
 }
 
 div.input {
@@ -291,7 +296,7 @@ div.input input {
   line-height: 6vmin;
   border-radius: 1vmin;
   border: inset 0.3vmin #445;
-  background-color: #111;
+  background-color: #000;
   color: #cce;
   width: 90vw;
   padding: 0.2vmin 1vmin;
@@ -320,7 +325,7 @@ div.input input {
   line-height: 6vmin;
   border-radius: 1vmin;
   border: inset 0.3vmin #445;
-  background-color: #111;
+  background-color: #000;
   color: #cce;
   width: 90vw;
   padding: 0.2vmin 1vmin;
@@ -440,6 +445,10 @@ h1 {
 #confirm-no {
   background-color: #641;
   border-color: #641;
+}
+
+#editor-screen {
+  background: #111;
 }
 
 #editor-screen.hidden {
