@@ -169,7 +169,7 @@ button {
 }
 
 #status label img,
-#sound-settings label img {
+#sound-settings label svg {
   cursor: pointer;
   padding-top: 1.6vh;
   margin-left: 1vmin;
