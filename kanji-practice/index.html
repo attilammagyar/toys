@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Kanji Practice</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="description" content="A writing based, minimalistic flashcard (SRS, Spaced Repetition System) app for learning Japanese kanji." />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta property="og:title" content="Kanji Practice" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://attilammagyar.github.io/toys/kanji-practice" />
+  <meta property="og:image" content="https://attilammagyar.github.io/toys/kanji-practice/kanji-practice.jpg" />
+  <meta property="og:image:alt" content="Screenshot of the app" />
+  <meta property="og:image:width" content="1280" />
+  <meta property="og:image:height" content="720" />
+  <meta property="og:description" content="A writing based, minimalistic flashcard (SRS, Spaced Repetition System) app for learning Japanese kanji." />
+
+  <link rel="stylesheet" href="kanji-practice.css" />
+</head>
+<body>
+  <a id="top" name="top"></a>
+  <div id="message" class="hidden"></div>
+
+  <div id="alert" class="hidden">
+    <div id="alert-window">
+      <div id="alert-message"></div>
+      <div>
+        <a id="alert-ok" class="button" href="#">OK</a>
+      </div>
+    </div>
+  </div>
+
+  <div id="confirm" class="hidden">
+    <div id="confirm-window">
+      <div id="confirm-message"></div>
+      <div>
+        <a id="confirm-yes" class="button" href="#">Yes</a>
+        <a id="confirm-no" class="button" href="#">No</a>
+      </div>
+    </div>
+  </div>
+
+  <div id="editor-screen" class="hidden">
+    <form id="editor-form" action="#" method="get">
+      <h1>Edit card</h1>
+      <div class="input">
+        <label for="kanji">Word (kanji):</label>
+        <input type="text" id="kanji" name="kanji" /><br/>
+      </div>
+      <div class="input">
+        <label for="pronunciation">Pronunciation:</label>
+        <input type="text" id="pronunciation" name="pronunciation" /><br/>
+      </div>
+      <div class="input">
+        <label for="meaning">Meaning:</label>
+        <input type="text" id="meaning" name="meaning" /><br/>
+      </div>
+      <div class="input" id="editor-buttons-current">
+        <button id="edit-save" type="submit">Save</button>
+        <button id="edit-cancel">Cancel</button>
+      </div>
+      <div class="input" id="editor-buttons-new">
+        <button id="edit-save-new" type="submit">Save &amp; New</button>
+        <button id="edit-back">Back</button>
+      </div>
+    </form>
+  </div>
+
+  <div id="practice-screen" class="hidden">
+    <form id="practice-form" action="#" method="get">
+      <a id="menu-button" class="button" href="#" title="Menu">
+        <svg class="icon" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+         <g>
+          <title>Menu</title>
+          <path id="svg_17" opacity="NaN" fill-opacity="0" stroke-width="44" stroke="#ffffff" fill="none"/>
+          <rect id="svg_18" height="30" width="300" y="100" x="100" stroke-width="44" stroke="#ffffff" fill="#ffffff"/>
+          <rect id="svg_20" height="30" width="300" y="235" x="100" stroke-width="44" stroke="#ffffff" fill="#ffffff"/>
+          <rect id="svg_21" height="30" width="300" y="370" x="100" stroke-width="44" stroke="#ffffff" fill="#ffffff"/>
+         </g>
+        </svg>
+      </a>
+      <a id="teach-button" class="button" href="#" title="Teach">
+        <svg class="icon" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+         <g>
+          <title>Teach</title>
+          <rect fill-opacity="0" stroke="#e0e0f0" id="svg_8" height="320" width="420" y="40" x="40" stroke-width="30" fill="#000000"/>
+          <ellipse stroke-width="5" stroke="#ffffff" ry="60" rx="60" id="svg_1" cy="210" cx="110" fill="#ffffff"/>
+          <ellipse ry="200" rx="79" id="svg_3" cy="480" cx="110" stroke-width="5" stroke="#ffffff" fill="#ffffff"/>
+          <ellipse transform="rotate(40 171.728 351.09)" stroke="#ffffff" ry="40" rx="100" id="svg_5" cy="351.08964" cx="171.7284" stroke-width="5" fill="#ffffff"/>
+          <path transform="rotate(-56 274.082 340.095)" id="svg_7" d="m274.08218,380.09523c-52.48619,0 -95,-17.90055 -95,-40c0,-22.09945 42.51381,-40 95,-40c52.48619,0 95,17.90055 95,40c0,22.09945 -42.51381,40 -95,40z" opacity="undefined" stroke-width="5" stroke="#ffffff" fill="#ffffff"/>
+         </g>
+        </svg>
+      </a>
+      <a id="details-button" class="button" href="#" title="Kanji details">
+        <svg class="icon" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+         <g>
+          <title>Info</title>
+          <ellipse fill-opacity="0" ry="210" rx="210" id="svg_10" cy="250" cx="250" stroke-width="44" stroke="#ffffff" fill="#ffffff"/>
+          <rect id="svg_11" height="120" width="53" y="250" x="220" stroke-width="30" stroke="#ffffff" fill="#ffffff"/>
+          <ellipse ry="30" rx="30" id="svg_13" cy="160" cx="250" stroke-width="30" stroke="#ffffff" fill="#ffffff"/>
+         </g>
+        </svg>
+      </a>
+      <a id="hint-button" class="button" href="#" title="Hint">?</a>
+      <a id="clear-button" class="button" href="#" title="Clear">
+        <svg class="icon" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+         <g>
+          <title>Clear</title>
+          <rect transform="rotate(45 295.081 204.996)" stroke="#ffffff" id="svg_1" height="300" width="180" y="54.99589" x="205.08078" fill="#fff"/>
+          <rect transform="rotate(45 151.27 348.848)" stroke-width="31" fill-opacity="0" id="svg_3" height="120" width="150" y="288.84756" x="76.26984" stroke="#ffffff" fill="#0fffff"/>
+         </g>
+        </svg>
+      </a>
+      <a id="learn-button" class="button hidden" href="#" title="Learn">+</a>
+      <ul id="menu" class="hidden">
+        <li><a id="menu-hide" href="#">&larr; Hide menu</a></li>
+        <li><a id="menu-create" href="#">Create cards</a></li>
+        <li><a id="menu-edit" href="#">Edit card</a></li>
+        <li><a id="menu-load" href="#">Load deck from JSON</a></li>
+        <li><a id="menu-export-json" href="#">Save deck as JSON</a></li>
+        <li><a id="menu-add-tsv" href="#">Add new cards from TSV</a></li>
+        <li><a id="menu-import-tsv" href="#">Import deck from TSV</a></li>
+        <li><a id="menu-export-tsv" href="#">Export deck as TSV</a></li>
+        <li>
+          <a href="https://github.com/attilammagyar/toys"
+            target="_blank">Source code on GitHub</a>
+        </li>
+        <li>
+          <a href="https://kanjivg.tagaini.net/"
+            target="_blank">KanjiVG</a>
+        </li>
+        <li>
+          <a href="https://www.edrdg.org/wiki/index.php/KANJIDIC_Project"
+            target="_blank">KANJIDIC</a>
+        </li>
+      </ul>
+      <div id="no-cards">
+        The deck of flashcards is empty.<br/>
+        <a id="no-cards-create" href="#">Create some cards</a>,
+        <a id="no-cards-load" href="#">load a previously saved deck from JSON</a>,
+        or
+        <a id="no-cards-import" href="#">import a deck from TSV</a>.
+      </div>
+      <div id="stats"></div>
+      <div id="grade" class="hidden">
+        <button id="grade-bad">Bad</button>
+        <button id="grade-soso">So-so</button>
+        <button id="grade-good">Good</button>
+      </div>
+      <div id="practice-card">
+        <div id="practice-info">
+          <div id="practice-kanji"></div>
+          <div id="practice-pronunciation"></div>
+          <div id="practice-meaning"></div>
+        </div>
+        <div>
+          <canvas width="720" height="720" id="practice-canvas"></canvas>
+        </div>
+      </div>
+      <div id="practice-kanji-details" class="hidden">
+        <div id="practice-kanji-detials-buttons">
+          <a id="practice-kanji-details-close" class="button" href="#" title="Close">X</a>
+        </div>
+        <div id="practice-kanji-details-content">
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div id="load-screen" class="hidden">
+    <form id="load-form" action="#" method="get">
+      <h1 id="load-screen-title">Load deck</h1>
+      <div id="load-dragndrop">Drag and drop a file here</div>
+      <div class="input">
+        <label for="load-input">Or pick a file:</label>
+        <input id="load-input" name="load-input" type="file"
+          accept=".json,application/json" />
+      </div>
+      <div class="input" id="tsv-info" class="hidden">
+        <label>
+          Format: <code>KANJI &lt;tab&gt; PRONUNCIATION &lt;tab&gt; MEANING</code>
+        </label>
+        <label for="load-tsv-header">
+          Ignore the first row (TSV header):
+          <input id="load-tsv-header" name="load-tsv-header" type="checkbox" checked="checked" />
+        </label>
+      </div>
+      <div class="input">
+        <button id="load-cancel">Cancel</button>
+      </div>
+    </form>
+  </div>
+
+  <script type="text/javascript" src="kanji-practice.js"></script>
+  <script type="text/javascript" src="kanjivg.js"></script>
+  <script type="text/javascript" src="kanjidic.js"></script>
+</body>
+</html>
