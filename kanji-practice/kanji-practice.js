@@ -626,7 +626,7 @@
         }
 
         if (!has_info) {
-            html.push("<h1>" + quote_html(c) + "</h1>");
+            html.push("<h1 lang=\"ja\">" + quote_html(c) + "</h1>");
             html.push("<div>(no details available)</div>")
         }
 
@@ -647,22 +647,26 @@
         grade = (0 < grade && grade < GRADES.length) ? GRADES[grade] : "";
 
         return [
-            "<" + kanji_node + ">" + quote_html(kanji) + "</" + kanji_node + ">",
+            "<" + kanji_node + " lang=\"ja\">" + quote_html(kanji) + "</" + kanji_node + ">",
             "<table>",
             make_kanji_detail_row("Grade", grade),
             make_kanji_detail_row("JLPT (1-4)", jlpt),
-            make_kanji_detail_row("Radical names", rad_names.join("、 ")),
-            make_kanji_detail_row("On readings", on_readings.join("、 ")),
-            make_kanji_detail_row("Kun readings", kun_readings.join("、 ")),
-            make_kanji_detail_row("Nanori", nanoris.join("、 ")),
+            make_kanji_detail_row("Radical names", rad_names.join("、 "), "ja"),
+            make_kanji_detail_row("On readings", on_readings.join("、 "), "ja"),
+            make_kanji_detail_row("Kun readings", kun_readings.join("、 "), "ja"),
+            make_kanji_detail_row("Nanori", nanoris.join("、 "), "ja"),
             make_kanji_detail_row("Meanings", meanings.join("; ")),
             "</table>"
         ].join("");
     }
 
-    function make_kanji_detail_row(title, text)
+    function make_kanji_detail_row(title, text, lang)
     {
-        return "<tr><th>" + title + ":</th><td>" + quote_html(text) + "</td></tr>";
+        return (
+            "<tr><th>" + title + ":</th><td"
+            + (lang ? " lang=\"" + lang + "\"" : "") + ">"
+            + quote_html(text) + "</td></tr>"
+        );
     }
 
     function save_revealed_snapshot()
