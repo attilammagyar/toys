@@ -41,6 +41,24 @@
     </div>
   </div>
 
+  <div id="deck-properties-screen" class="hidden">
+    <form id="deck-properties-form" action="#" method="get">
+      <h1>Deck properties</h1>
+      <div class="input">
+        <label for="deck-name">Deck name:</label>
+        <input type="text" id="deck-name" name="deck-name" /><br/>
+      </div>
+      <div class="input">
+        <label for="meaning-language">Meaning's language:</label>
+        <select id="meaning-language" name="meaning-language"></select><br/>
+      </div>
+      <div class="input">
+        <button id="deck-save" type="submit">Save</button>
+        <button id="deck-back">Back</button>
+      </div>
+    </form>
+  </div>
+
   <div id="editor-screen" class="hidden">
     <form id="editor-form" action="#" method="get">
       <h1>Edit card</h1>
@@ -115,6 +133,7 @@
       <a id="learn-button" class="button hidden" href="#" title="Learn">+</a>
       <ul id="menu" class="hidden">
         <li><a id="menu-hide" href="#">&larr; Hide menu</a></li>
+        <li><a id="menu-deck" href="#">Deck properties</a></li>
         <li><a id="menu-create" href="#">Create cards</a></li>
         <li><a id="menu-edit" href="#">Edit card</a></li>
         <li><a id="menu-load" href="#">Load deck from JSON</a></li>

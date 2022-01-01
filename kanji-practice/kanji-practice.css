@@ -297,6 +297,7 @@ div.input {
 }
 
 div.input textarea,
+div.input select,
 div.input input {
   font-size: 4vmin;
   height: 6vmin;
@@ -466,6 +467,10 @@ h1 {
 
 #editor-screen button {
   margin: 0.3vmin 2vmin;
+}
+
+#deck-properties-screen.hidden {
+  display: none;
 }
 
 @media all and (orientation:landscape) {

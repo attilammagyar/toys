@@ -7,6 +7,10 @@
             "You have unsaved changes in the card editor."
             + " Are you sure you want to navigate away and lose those changes?"
         ),
+        DECK_PROPERTIES_EDITOR_EXIT_CONFIRM = (
+            "You have unsaved changes in the deck properties editor."
+            + " Are you sure you want to navigate away and lose those changes?"
+        ),
         CANVAS_SIZE = 720,
         KANJIVG_SIZE = 109,
         SCALE = CANVAS_SIZE / KANJIVG_SIZE,
@@ -65,6 +69,8 @@
         confirm_modal,
         confirm_message,
         confirm_callback,
+        deck_properties_screen,
+        deck_button_save,
         editor_screen,
         editor_kanji,
         editor_kanji_orig,
@@ -110,12 +116,204 @@
         practice_kanji,
         practice_pronunciation,
         practice_kanji_details,
-        practice_kanji_details_content;
+        practice_kanji_details_content,
+        deck_name_orig,
+        meaning_language_orig,
+        deck_name,
+        meaning_language,
+        language_codes = [
+            {"code": "", "name": "Unknown"},
+            {"code": "ab", "name": "Abkhazian"},
+            {"code": "aa", "name": "Afar"},
+            {"code": "af", "name": "Afrikaans"},
+            {"code": "ak", "name": "Akan"},
+            {"code": "sq", "name": "Albanian"},
+            {"code": "am", "name": "Amharic"},
+            {"code": "ar", "name": "Arabic"},
+            {"code": "an", "name": "Aragonese"},
+            {"code": "hy", "name": "Armenian"},
+            {"code": "as", "name": "Assamese"},
+            {"code": "av", "name": "Avaric"},
+            {"code": "ae", "name": "Avestan"},
+            {"code": "ay", "name": "Aymara"},
+            {"code": "az", "name": "Azerbaijani"},
+            {"code": "bm", "name": "Bambara"},
+            {"code": "ba", "name": "Bashkir"},
+            {"code": "eu", "name": "Basque"},
+            {"code": "be", "name": "Belarusian"},
+            {"code": "bn", "name": "Bengali"},
+            {"code": "bi", "name": "Bislama"},
+            {"code": "bs", "name": "Bosnian"},
+            {"code": "br", "name": "Breton"},
+            {"code": "bg", "name": "Bulgarian"},
+            {"code": "my", "name": "Burmese"},
+            {"code": "ca", "name": "Catalan, Valencian"},
+            {"code": "ch", "name": "Chamorro"},
+            {"code": "ce", "name": "Chechen"},
+            {"code": "ny", "name": "Chichewa, Chewa, Nyanja"},
+            {"code": "zh", "name": "Chinese"},
+            {"code": "cv", "name": "Chuvash"},
+            {"code": "kw", "name": "Cornish"},
+            {"code": "co", "name": "Corsican"},
+            {"code": "cr", "name": "Cree"},
+            {"code": "hr", "name": "Croatian"},
+            {"code": "cs", "name": "Czech"},
+            {"code": "da", "name": "Danish"},
+            {"code": "dv", "name": "Divehi, Dhivehi, Maldivian"},
+            {"code": "nl", "name": "Dutch, Flemish"},
+            {"code": "dz", "name": "Dzongkha"},
+            {"code": "en", "name": "English"},
+            {"code": "eo", "name": "Esperanto"},
+            {"code": "et", "name": "Estonian"},
+            {"code": "ee", "name": "Ewe"},
+            {"code": "fo", "name": "Faroese"},
+            {"code": "fj", "name": "Fijian"},
+            {"code": "fi", "name": "Finnish"},
+            {"code": "fr", "name": "French"},
+            {"code": "ff", "name": "Fulah"},
+            {"code": "gl", "name": "Galician"},
+            {"code": "ka", "name": "Georgian"},
+            {"code": "de", "name": "German"},
+            {"code": "el", "name": "Greek, Modern (1453-)"},
+            {"code": "gn", "name": "Guarani"},
+            {"code": "gu", "name": "Gujarati"},
+            {"code": "ht", "name": "Haitian, Haitian Creole"},
+            {"code": "ha", "name": "Hausa"},
+            {"code": "he", "name": "Hebrew"},
+            {"code": "hz", "name": "Herero"},
+            {"code": "hi", "name": "Hindi"},
+            {"code": "ho", "name": "Hiri Motu"},
+            {"code": "hu", "name": "Hungarian"},
+            {"code": "ia", "name": "Interlingua (International Auxiliary Language Association)"},
+            {"code": "id", "name": "Indonesian"},
+            {"code": "ie", "name": "Interlingue, Occidental"},
+            {"code": "ga", "name": "Irish"},
+            {"code": "ig", "name": "Igbo"},
+            {"code": "ik", "name": "Inupiaq"},
+            {"code": "io", "name": "Ido"},
+            {"code": "is", "name": "Icelandic"},
+            {"code": "it", "name": "Italian"},
+            {"code": "iu", "name": "Inuktitut"},
+            {"code": "ja", "name": "Japanese"},
+            {"code": "jv", "name": "Javanese"},
+            {"code": "kl", "name": "Kalaallisut, Greenlandic"},
+            {"code": "kn", "name": "Kannada"},
+            {"code": "kr", "name": "Kanuri"},
+            {"code": "ks", "name": "Kashmiri"},
+            {"code": "kk", "name": "Kazakh"},
+            {"code": "km", "name": "Central Khmer"},
+            {"code": "ki", "name": "Kikuyu, Gikuyu"},
+            {"code": "rw", "name": "Kinyarwanda"},
+            {"code": "ky", "name": "Kirghiz, Kyrgyz"},
+            {"code": "kv", "name": "Komi"},
+            {"code": "kg", "name": "Kongo"},
+            {"code": "ko", "name": "Korean"},
+            {"code": "ku", "name": "Kurdish"},
+            {"code": "kj", "name": "Kuanyama, Kwanyama"},
+            {"code": "la", "name": "Latin"},
+            {"code": "lb", "name": "Luxembourgish, Letzeburgesch"},
+            {"code": "lg", "name": "Ganda"},
+            {"code": "li", "name": "Limburgan, Limburger, Limburgish"},
+            {"code": "ln", "name": "Lingala"},
+            {"code": "lo", "name": "Lao"},
+            {"code": "lt", "name": "Lithuanian"},
+            {"code": "lu", "name": "Luba-Katanga"},
+            {"code": "lv", "name": "Latvian"},
+            {"code": "gv", "name": "Manx"},
+            {"code": "mk", "name": "Macedonian"},
+            {"code": "mg", "name": "Malagasy"},
+            {"code": "ms", "name": "Malay"},
+            {"code": "ml", "name": "Malayalam"},
+            {"code": "mt", "name": "Maltese"},
+            {"code": "mi", "name": "Maori"},
+            {"code": "mr", "name": "Marathi"},
+            {"code": "mh", "name": "Marshallese"},
+            {"code": "mn", "name": "Mongolian"},
+            {"code": "na", "name": "Nauru"},
+            {"code": "nv", "name": "Navajo, Navaho"},
+            {"code": "nd", "name": "North Ndebele"},
+            {"code": "ne", "name": "Nepali"},
+            {"code": "ng", "name": "Ndonga"},
+            {"code": "nb", "name": "Norwegian Bokmål"},
+            {"code": "nn", "name": "Norwegian Nynorsk"},
+            {"code": "no", "name": "Norwegian"},
+            {"code": "ii", "name": "Sichuan Yi, Nuosu"},
+            {"code": "nr", "name": "South Ndebele"},
+            {"code": "oc", "name": "Occitan"},
+            {"code": "oj", "name": "Ojibwa"},
+            {"code": "cu", "name": "Church Slavic, Old Slavonic, Church Slavonic, Old Bulgarian, Old Church Slavonic"},
+            {"code": "om", "name": "Oromo"},
+            {"code": "or", "name": "Oriya"},
+            {"code": "os", "name": "Ossetian, Ossetic"},
+            {"code": "pa", "name": "Punjabi, Panjabi"},
+            {"code": "pi", "name": "Pali"},
+            {"code": "fa", "name": "Persian"},
+            {"code": "pl", "name": "Polish"},
+            {"code": "ps", "name": "Pashto, Pushto"},
+            {"code": "pt", "name": "Portuguese"},
+            {"code": "qu", "name": "Quechua"},
+            {"code": "rm", "name": "Romansh"},
+            {"code": "rn", "name": "Rundi"},
+            {"code": "ro", "name": "Romanian, Moldavian, Moldovan"},
+            {"code": "ru", "name": "Russian"},
+            {"code": "sa", "name": "Sanskrit"},
+            {"code": "sc", "name": "Sardinian"},
+            {"code": "sd", "name": "Sindhi"},
+            {"code": "se", "name": "Northern Sami"},
+            {"code": "sm", "name": "Samoan"},
+            {"code": "sg", "name": "Sango"},
+            {"code": "sr", "name": "Serbian"},
+            {"code": "gd", "name": "Gaelic, Scottish Gaelic"},
+            {"code": "sn", "name": "Shona"},
+            {"code": "si", "name": "Sinhala, Sinhalese"},
+            {"code": "sk", "name": "Slovak"},
+            {"code": "sl", "name": "Slovenian"},
+            {"code": "so", "name": "Somali"},
+            {"code": "st", "name": "Southern Sotho"},
+            {"code": "es", "name": "Spanish, Castilian"},
+            {"code": "su", "name": "Sundanese"},
+            {"code": "sw", "name": "Swahili"},
+            {"code": "ss", "name": "Swati"},
+            {"code": "sv", "name": "Swedish"},
+            {"code": "ta", "name": "Tamil"},
+            {"code": "te", "name": "Telugu"},
+            {"code": "tg", "name": "Tajik"},
+            {"code": "th", "name": "Thai"},
+            {"code": "ti", "name": "Tigrinya"},
+            {"code": "bo", "name": "Tibetan"},
+            {"code": "tk", "name": "Turkmen"},
+            {"code": "tl", "name": "Tagalog"},
+            {"code": "tn", "name": "Tswana"},
+            {"code": "to", "name": "Tonga (Tonga Islands)"},
+            {"code": "tr", "name": "Turkish"},
+            {"code": "ts", "name": "Tsonga"},
+            {"code": "tt", "name": "Tatar"},
+            {"code": "tw", "name": "Twi"},
+            {"code": "ty", "name": "Tahitian"},
+            {"code": "ug", "name": "Uighur, Uyghur"},
+            {"code": "uk", "name": "Ukrainian"},
+            {"code": "ur", "name": "Urdu"},
+            {"code": "uz", "name": "Uzbek"},
+            {"code": "ve", "name": "Venda"},
+            {"code": "vi", "name": "Vietnamese"},
+            {"code": "vo", "name": "Volapük"},
+            {"code": "wa", "name": "Walloon"},
+            {"code": "cy", "name": "Welsh"},
+            {"code": "wo", "name": "Wolof"},
+            {"code": "fy", "name": "Western Frisian"},
+            {"code": "xh", "name": "Xhosa"},
+            {"code": "yi", "name": "Yiddish"},
+            {"code": "yo", "name": "Yoruba"},
+            {"code": "za", "name": "Zhuang, Chuang"},
+            {"code": "zu", "name": "Zulu"}
+        ],
+        known_languages = {};
 
     function main()
     {
         kanjivg = window.kanjivg;
         kanjidic = window.kanjidic;
+        initialize_languages();
         initialize_gui();
         restore_state();
         route();
@@ -169,7 +367,7 @@
         } else if (match = url.match(/#new$/)) {
             start_practising();
             hide(practice_screen);
-            show_editor("new-card", "", "", "");
+            show_card_editor("new-card", "", "", "");
             is_routing = false;
 
             return;
@@ -189,6 +387,12 @@
 
                 return;
             }
+        } else if (url.match(/#deck-properties/)) {
+            start_practising();
+            show_deck_properties_editor();
+            is_routing = false;
+
+            return;
         }
 
         is_routing = false;
@@ -223,6 +427,7 @@
         confirm_modal = $("confirm");
         confirm_message = $("confirm-message");
         editor_screen = $("editor-screen");
+        deck_properties_screen = $("deck-properties-screen");
         editor_kanji = $("kanji");
         editor_pronunciation = $("pronunciation");
         editor_meaning = $("meaning");
@@ -240,9 +445,14 @@
         practice_pronunciation.onclick = handle_pronunciation_click;
         practice_kanji_details = $("practice-kanji-details");
         practice_kanji_details_content = $("practice-kanji-details-content");
+        deck_name = $("deck-name");
+        meaning_language = $("meaning-language");
+        deck_name_orig = null;
+        meaning_language_orig = null;
 
         $("practice-form").onsubmit = stop_event;
         $("editor-form").onsubmit = stop_event;
+        $("deck-properties-form").onsubmit = stop_event;
         $("load-form").onsubmit = stop_event;
         $("menu-button").onclick = handle_menu_button_click;
         $("menu-hide").onclick = handle_hide_menu_click;
@@ -261,6 +471,9 @@
         $("menu-edit").onclick = handle_menu_edit_click;
         $("edit-cancel").onclick = handle_edit_cancel_click;
         $("menu-create").onclick = handle_menu_create_click;
+        $("menu-deck").onclick = handle_menu_deck_click;
+        $("deck-save").onclick = handle_deck_properties_save_click;
+        $("deck-back").onclick = handle_deck_properties_cancel_click;
         $("no-cards-create").onclick = handle_menu_create_click;
         $("edit-back").onclick = handle_edit_cancel_click;
         $("clear-button").onclick = handle_clear_click;
@@ -283,7 +496,7 @@
 
         practice_card.onclick = handle_practice_card_click;
 
-        populate_editor("new-card", "", "", "");
+        populate_card_editor("new-card", "", "", "");
 
         window.addEventListener("drop", stop_event);
         window.addEventListener("dragover", stop_event);
@@ -291,6 +504,17 @@
         window.addEventListener("popstate", handle_popstate);
 
         initialize_canvas();
+    }
+
+    function initialize_languages()
+    {
+        var kl = known_languages,
+            i, l, lng;
+
+        for (i = 0, l = language_codes.length; i < l; ++i) {
+            lng = language_codes[i];
+            kl["l" + lng["code"]] = lng["name"];
+        }
     }
 
     function initialize_canvas()
@@ -986,6 +1210,7 @@
         hide(menu);
         hide(load_screen);
         hide(editor_screen);
+        hide(deck_properties_screen);
         show(practice_screen);
 
         if (deck["cards"].length > 0) {
@@ -1040,6 +1265,108 @@
             .replace(/'/g, "&#039;");
     }
 
+    function handle_menu_deck_click(evt)
+    {
+        push_history("deck-properties");
+        show_deck_properties_editor();
+
+        return stop_event(evt);
+    }
+
+    function show_deck_properties_editor()
+    {
+        var i, l, o, lc, c, ml;
+
+        hide(menu);
+        hide(practice_screen);
+
+        deck_name_orig = deck["name"];
+        deck_name.value = deck["name"];
+
+        ml = deck["meaning_language"];
+        meaning_language_orig = ml;
+        meaning_language.innerHTML = "";
+
+        for (i = 0, l = language_codes.length; i < l; ++i) {
+            lc = language_codes[i];
+            c = lc["code"];
+
+            o = document.createElement("option");
+            o.innerText = lc["name"];
+            o.setAttribute("value", c);
+
+            if (ml == c) {
+                o.setAttribute("selected", "selected");
+            }
+
+            meaning_language.appendChild(o);
+        }
+
+        show(deck_properties_screen);
+    }
+
+    function handle_deck_properties_save_click(evt)
+    {
+        close_deck_properties_editor();
+
+        deck["name"] = deck_name.value;
+        deck["meaning_language"] = meaning_language.value;
+
+        show_message("Deck properties saved.", 2400);
+
+        if (current_card) {
+            show_current_card();
+        }
+
+        show_practice_screen();
+
+        return stop_event(evt);
+    }
+
+    function handle_deck_properties_cancel_click(evt)
+    {
+        if (is_deck_properties_editor_dirty()) {
+            ask_for_confirmation(
+                DECK_PROPERTIES_EDITOR_EXIT_CONFIRM,
+                close_deck_properties_editor
+            );
+        } else {
+            close_deck_properties_editor();
+        }
+
+        return stop_event(evt);
+    }
+
+    function is_deck_properties_editor_dirty()
+    {
+        if (deck_name_orig === null && meaning_language_orig === null) {
+            return false;
+        }
+
+        if (deck_name_orig !== deck_name.value) {
+            return true;
+        }
+
+        if (meaning_language_orig !== meaning_language.value) {
+            return true;
+        }
+
+        return false;
+    }
+
+    function close_deck_properties_editor()
+    {
+        deck_name_orig = null;
+        meaning_language_orig = null;
+
+        if (current_card) {
+            show_current_card();
+        }
+
+        hide(deck_properties_screen);
+        show_practice_screen();
+    }
+
     function handle_menu_edit_click(evt)
     {
         hide(menu);
@@ -1057,7 +1384,7 @@
     {
         hide(menu);
         hide(practice_screen);
-        show_editor(
+        show_card_editor(
             "current-card",
             current_card["kanji"],
             current_card["pronunciation"],
@@ -1081,14 +1408,14 @@
         window.history.pushState({}, document.title, url);
     }
 
-    function show_editor(mode, kanji, pronunciation, meaning)
+    function show_card_editor(mode, kanji, pronunciation, meaning)
     {
-        populate_editor(mode, kanji, pronunciation, meaning);
+        populate_card_editor(mode, kanji, pronunciation, meaning);
         show(editor_screen);
         editor_kanji.focus();
     }
 
-    function populate_editor(mode, kanji, pronunciation, meaning)
+    function populate_card_editor(mode, kanji, pronunciation, meaning)
     {
         editor_mode = mode;
 
@@ -1098,6 +1425,7 @@
         editor_pronunciation.value = pronunciation;
         editor_pronunciation_orig = pronunciation;
 
+        editor_meaning.setAttribute("lang", deck["meaning_language"]);
         editor_meaning.value = meaning;
         editor_meaning_orig = meaning;
 
@@ -1116,16 +1444,16 @@
 
     function handle_edit_cancel_click(evt)
     {
-        if (is_editor_dirty()) {
-            ask_for_confirmation(EDITOR_EXIT_CONFIRM, close_editor);
+        if (is_card_editor_dirty()) {
+            ask_for_confirmation(EDITOR_EXIT_CONFIRM, close_card_editor);
         } else {
-            close_editor();
+            close_card_editor();
         }
 
         return stop_event(evt);
     }
 
-    function is_editor_dirty()
+    function is_card_editor_dirty()
     {
         if (editor_kanji_orig !== editor_kanji.value) {
             return true;
@@ -1142,13 +1470,13 @@
         return false;
     }
 
-    function close_editor()
+    function close_card_editor()
     {
         if (current_card) {
             show_current_card();
         }
 
-        show_editor("new-card", "", "", "");
+        show_card_editor("new-card", "", "", "");
         hide(editor_screen);
         show_practice_screen();
     }
@@ -1379,7 +1707,7 @@
             editor_pronunciation.value,
             editor_meaning.value
         );
-        close_editor();
+        close_card_editor();
         show_message("Card #" + String(current_card_ref + 1) + " saved.", 2400);
         show_current_card();
         show_practice_screen();
@@ -1399,7 +1727,7 @@
         hide(menu);
         hide(practice_screen);
 
-        show_editor("new-card", "", "", "");
+        show_card_editor("new-card", "", "", "");
         push_history("new");
 
         return stop_event(evt);
@@ -1431,7 +1759,7 @@
             show_current_card();
         }
 
-        show_editor("new-card", "", "", "");
+        show_card_editor("new-card", "", "", "");
         show_message("Added card #" + String(deck["cards"].length) + " to the deck.", 2400);
 
         return stop_event(evt);
@@ -1525,6 +1853,7 @@
         return JSON.stringify(
             {
                 "name": deck["name"],
+                "meaning_language": deck["meaning_language"],
                 "cards": exported_cards
             },
             null,
@@ -1915,6 +2244,9 @@
 
         deck = {
             "name": raw_deck.hasOwnProperty("name") ? raw_deck["name"] : "",
+            "meaning_language": raw_deck.hasOwnProperty("meaning_language")
+                ? raw_deck["meaning_language"]
+                : "",
             "cards": []
         };
         raw_cards = raw_deck["cards"];
@@ -1972,7 +2304,8 @@
             scores,
             score,
             dump,
-            i, j, l, ll;
+            lang_valid,
+            i, j, l, ll, ml;
 
         if (typeof(raw_deck) !== "object" || !raw_deck) {
             throw "the deck should be an JSON object";
@@ -2013,6 +2346,18 @@
 
             if (!card[3].match(/^[012]*$/)) {
                 throw "grades must be a string of integers between 0 and 2: " + dump;
+            }
+        }
+
+        if (raw_deck.hasOwnProperty("meaning_language")) {
+            ml = raw_deck["meaning_language"];
+
+            if (typeof(ml) !== "string") {
+                throw "'meaning_language' must be a string"
+            }
+
+            if (ml !== "" && !known_languages.hasOwnProperty("l" + ml)) {
+                throw "unknown language code: '" + ml + "'";
             }
         }
     }
@@ -2220,6 +2565,7 @@
         current_card["kanji"],
         practice_kanji.innerHTML = quote_html(current_card["kanji"]);
         practice_pronunciation.innerHTML = quote_html(current_card["pronunciation"]);
+        practice_meaning.setAttribute("lang", deck["meaning_language"]);
         practice_meaning.innerHTML = quote_html(current_card["meaning"]);
     }
 
@@ -2288,12 +2634,20 @@
     {
         store_state();
 
-        if (is_editor_dirty()) {
+        if (is_card_editor_dirty()) {
             show_message(EDITOR_EXIT_CONFIRM, 6000);
             evt.preventDefault();
             evt.returnValue = EDITOR_EXIT_CONFIRM;
 
             return EDITOR_EXIT_CONFIRM;
+        }
+
+        if (is_deck_properties_editor_dirty()) {
+            show_message(DECK_PROPERTIES_EDITOR_EXIT_CONFIRM, 6000);
+            evt.preventDefault();
+            evt.returnValue = DECK_PROPERTIES_EDITOR_EXIT_CONFIRM;
+
+            return DECK_PROPERTIES_EDITOR_EXIT_CONFIRM;
         }
     }
 
@@ -2315,6 +2669,7 @@
             ];
         }
 
+        initialize_languages();
 
         QUnit.module("state_handling", function () {
             QUnit.test("load_deck", function(assert) {
@@ -2389,6 +2744,20 @@
                             "cards": [
                                 ["kanji", "pronunciation", "meaning", "0123"]
                             ]
+                        },
+                        "invalid meaning language type": {
+                            "name": "test deck",
+                            "meaning_language": 42,
+                            "cards": [
+                                ["kanji", "pronunciation", "meaning", "012"]
+                            ]
+                        },
+                        "unknown meaning language": {
+                            "name": "test deck",
+                            "meaning_language": "unknownlanguage",
+                            "cards": [
+                                ["kanji", "pronunciation", "meaning", "012"]
+                            ]
                         }
                     };
 
@@ -2446,6 +2815,7 @@
                     JSON.parse(export_deck_as_json_string(false)),
                     {
                         "name": "example.tsv",
+                        "meaning_language": "",
                         "cards": [
                             ["kanji 1", "pronunciation \\x\t\r\n\\1", "meaning \\x\t\r\n\\1", ""],
                             ["katakana 2", "katakana 2", "meaning 2", "210"]
@@ -2468,6 +2838,7 @@
                     JSON.parse(export_deck_as_json_string(false)),
                     {
                         "name": "example.tsv",
+                        "meaning_language": "",
                         "cards": [
                             ["kanji 1", "pronunciation \\x\t\r\n\\1", "meaning \\x\t\r\n\\1", ""],
                             ["katakana 2", "katakana 2", "meaning 2", "210"]
@@ -2559,6 +2930,7 @@
                     JSON.parse(export_deck_as_json_string(false)),
                     {
                         "name": "test deck",
+                        "meaning_language": "",
                         "cards": [
                             ["kanji 1", "pronunciation 1", "meaning 1", "222"],
                             ["kanji 2", "pronunciation 2", "meaning 2", "111"],
@@ -2575,6 +2947,7 @@
             QUnit.test("export_load", function(assert) {
                 var deck = {
                         "name": "test deck",
+                        "meaning_language": "",
                         "cards": [
                             [
                                 "kanji 1 (perfect)",
@@ -2593,6 +2966,18 @@
 
                 load_deck(deck);
                 assert.deepEqual(JSON.parse(export_deck_as_json_string(false)), deck);
+
+                load_deck({"name": "test deck", "cards": []});
+                assert.deepEqual(
+                    JSON.parse(export_deck_as_json_string(false)),
+                    {"name": "test deck", "meaning_language": "", "cards": []}
+                );
+
+                load_deck({"name": "test deck", "meaning_language": "hu", "cards": []});
+                assert.deepEqual(
+                    JSON.parse(export_deck_as_json_string(false)),
+                    {"name": "test deck", "meaning_language": "hu", "cards": []}
+                );
             });
 
             QUnit.test("add_card", function(assert) {
@@ -2622,6 +3007,7 @@
                     JSON.parse(export_deck_as_json_string(false)),
                     {
                         "name": "test deck",
+                        "meaning_language": "",
                         "cards": [
                             [
                                 "kanji 1",
@@ -2672,6 +3058,7 @@
                     JSON.parse(export_deck_as_json_string(false)),
                     {
                         "name": "test deck",
+                        "meaning_language": "",
                         "cards": [
                             [
                                 "kanji modified",
