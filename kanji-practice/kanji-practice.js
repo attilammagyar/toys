@@ -78,6 +78,9 @@
         editor_pronunciation_orig,
         editor_meaning,
         editor_meaning_orig,
+        editor_notes,
+        editor_notes_preview,
+        editor_notes_orig,
         editor_mode,
         editor_buttons_new,
         editor_buttons_current,
@@ -117,10 +120,13 @@
         practice_pronunciation,
         practice_kanji_details,
         practice_kanji_details_content,
+        practice_kanji_details_notes,
         deck_name_orig,
         meaning_language_orig,
         deck_name,
         meaning_language,
+        notes_language,
+        notes_language_orig,
         language_codes = [
             {"code": "", "name": "Unknown"},
             {"code": "ab", "name": "Abkhazian"},
@@ -367,7 +373,7 @@
         } else if (match = url.match(/#new$/)) {
             start_practising();
             hide(practice_screen);
-            show_card_editor("new-card", "", "", "");
+            show_card_editor("new-card", "", "", "", "");
             is_routing = false;
 
             return;
@@ -405,7 +411,14 @@
 
         message_timeout = null;
 
-        load_deck({"name": "flashcards", "cards": []});
+        load_deck(
+            {
+                "name": "flashcards",
+                "meaning_language": "en",
+                "notes_language": "ja",
+                "cards": []
+            }
+        );
         menu = $("menu");
         load_dragndrop = $("load-dragndrop");
         load_input = $("load-input");
@@ -435,9 +448,12 @@
         editor_buttons_new = $("editor-buttons-new");
         editor_button_save = $("edit-save");
         editor_button_save_new = $("edit-save-new");
+        editor_notes = $("notes");
+        editor_notes_preview = $("notes-preview");
         editor_kanji_orig = "";
         editor_pronunciation_orig = "";
         editor_meaning_orig = "";
+        editor_notes_orig = "";
         practice_meaning = $("practice-meaning");
         practice_kanji = $("practice-kanji");
         practice_kanji.onclick = handle_kanji_click;
@@ -445,10 +461,13 @@
         practice_pronunciation.onclick = handle_pronunciation_click;
         practice_kanji_details = $("practice-kanji-details");
         practice_kanji_details_content = $("practice-kanji-details-content");
+        practice_kanji_details_notes = $("practice-kanji-details-notes");
         deck_name = $("deck-name");
         meaning_language = $("meaning-language");
+        notes_language = $("notes-language");
         deck_name_orig = null;
         meaning_language_orig = null;
+        notes_language_orig = null;
 
         $("practice-form").onsubmit = stop_event;
         $("editor-form").onsubmit = stop_event;
@@ -482,6 +501,8 @@
         $("details-button").onclick = handle_kanji_details_click;
         $("practice-kanji-details-close").onclick = handle_kanji_details_close_click;
 
+        editor_notes.onblur = handle_editor_notes_blur;
+        editor_notes.onchange = handle_editor_notes_blur;
         editor_button_save.onclick = handle_edit_save_click;
         editor_button_save_new.onclick = handle_edit_save_new_click;
 
@@ -496,7 +517,7 @@
 
         practice_card.onclick = handle_practice_card_click;
 
-        populate_card_editor("new-card", "", "", "");
+        populate_card_editor("new-card", "", "", "", "");
 
         window.addEventListener("drop", stop_event);
         window.addEventListener("dragover", stop_event);
@@ -782,6 +803,7 @@
     {
         hide(practice_kanji_details);
 
+        practice_kanji_details_notes.innerHTML = "<h1>Notes</h1><div>" + format_text(current_card["notes"]) + "</div>";
         practice_kanji_details_content.innerHTML = build_kanji_details();
 
         push_history("q-" + String(current_card_ref + 1) + "-" + String(current_character_ref + 1));
@@ -1256,6 +1278,23 @@
         return handle_grade_click(evt, 2);
     }
 
+    function format_text(text)
+    {
+        return (
+            quote_html(text)
+                .replace(
+                    /\{([^|}]*?)\|([^}]*)\}/g,
+                    "<span class=\"furigana\"><ruby>$1<rt>$2</rt></ruby></span>"
+                )
+                .replace(/\{([^}]*)\}/g, "<small>($1)</small>")
+                .replace(/_([^_]*)_/g, "<em>$1</em>")
+                .replace(/\*([^*]*)\*/g, "<strong>$1</strong>")
+                .replace(/-+&gt;/g, "&rarr;")
+                .replace(/&lt;-+/g, "&larr;")
+                .replace(/\n/g, "<br/>")
+        );
+    }
+
     function quote_html(text)
     {
         return text.replace(/&/g, "&amp;")
@@ -1275,17 +1314,27 @@
 
     function show_deck_properties_editor()
     {
-        var i, l, o, lc, c, ml;
-
         hide(menu);
         hide(practice_screen);
 
         deck_name_orig = deck["name"];
         deck_name.value = deck["name"];
 
-        ml = deck["meaning_language"];
-        meaning_language_orig = ml;
-        meaning_language.innerHTML = "";
+        meaning_language_orig = populate_language_selector(
+            meaning_language, deck["meaning_language"]
+        );
+        notes_language_orig = populate_language_selector(
+            notes_language, deck["notes_language"]
+        );
+
+        show(deck_properties_screen);
+    }
+
+    function populate_language_selector(select_node, selected_lang_code)
+    {
+        var i, l, o, lc, c;
+
+        select_node.innerHTML = "";
 
         for (i = 0, l = language_codes.length; i < l; ++i) {
             lc = language_codes[i];
@@ -1295,14 +1344,14 @@
             o.innerText = lc["name"];
             o.setAttribute("value", c);
 
-            if (ml == c) {
+            if (selected_lang_code == c) {
                 o.setAttribute("selected", "selected");
             }
 
-            meaning_language.appendChild(o);
+            select_node.appendChild(o);
         }
 
-        show(deck_properties_screen);
+        return selected_lang_code;
     }
 
     function handle_deck_properties_save_click(evt)
@@ -1311,6 +1360,7 @@
 
         deck["name"] = deck_name.value;
         deck["meaning_language"] = meaning_language.value;
+        deck["notes_language"] = notes_language.value;
 
         show_message("Deck properties saved.", 2400);
 
@@ -1339,7 +1389,7 @@
 
     function is_deck_properties_editor_dirty()
     {
-        if (deck_name_orig === null && meaning_language_orig === null) {
+        if (deck_name_orig === null && meaning_language_orig === null && notes_language_orig === null) {
             return false;
         }
 
@@ -1348,6 +1398,10 @@
         }
 
         if (meaning_language_orig !== meaning_language.value) {
+            return true;
+        }
+
+        if (notes_language_orig !== notes_language.value) {
             return true;
         }
 
@@ -1388,7 +1442,8 @@
             "current-card",
             current_card["kanji"],
             current_card["pronunciation"],
-            current_card["meaning"]
+            current_card["meaning"],
+            current_card["notes"]
         );
 
         push_history("e-" + String(current_card_ref + 1));
@@ -1408,14 +1463,14 @@
         window.history.pushState({}, document.title, url);
     }
 
-    function show_card_editor(mode, kanji, pronunciation, meaning)
+    function show_card_editor(mode, kanji, pronunciation, meaning, notes)
     {
-        populate_card_editor(mode, kanji, pronunciation, meaning);
+        populate_card_editor(mode, kanji, pronunciation, meaning, notes);
         show(editor_screen);
         editor_kanji.focus();
     }
 
-    function populate_card_editor(mode, kanji, pronunciation, meaning)
+    function populate_card_editor(mode, kanji, pronunciation, meaning, notes)
     {
         editor_mode = mode;
 
@@ -1428,6 +1483,11 @@
         editor_meaning.setAttribute("lang", deck["meaning_language"]);
         editor_meaning.value = meaning;
         editor_meaning_orig = meaning;
+
+        editor_notes.setAttribute("lang", deck["notes_language"]);
+        editor_notes.value = notes;
+        editor_notes_preview.setAttribute("lang", deck["notes_language"]);
+        editor_notes_preview.innerHTML = format_text(notes);
 
         if (mode === "current-card") {
             show(editor_buttons_current);
@@ -1476,7 +1536,7 @@
             show_current_card();
         }
 
-        show_card_editor("new-card", "", "", "");
+        show_card_editor("new-card", "", "", "", "");
         hide(editor_screen);
         show_practice_screen();
     }
@@ -1705,7 +1765,8 @@
         replace_current_card(
             kanji,
             editor_pronunciation.value,
-            editor_meaning.value
+            editor_meaning.value,
+            editor_notes.value
         );
         close_card_editor();
         show_message("Card #" + String(current_card_ref + 1) + " saved.", 2400);
@@ -1715,11 +1776,12 @@
         return stop_event(evt);
     }
 
-    function replace_current_card(kanji, pronunciation, meaning)
+    function replace_current_card(kanji, pronunciation, meaning, notes)
     {
         current_card["kanji"] = kanji;
         current_card["pronunciation"] = pronunciation;
         current_card["meaning"] = meaning;
+        current_card["notes"] = notes;
     }
 
     function handle_menu_create_click(evt)
@@ -1727,10 +1789,17 @@
         hide(menu);
         hide(practice_screen);
 
-        show_card_editor("new-card", "", "", "");
+        show_card_editor("new-card", "", "", "", "");
         push_history("new");
 
         return stop_event(evt);
+    }
+
+    function handle_editor_notes_blur(evt)
+    {
+        editor_notes_preview.innerHTML = format_text(editor_notes.value);
+
+        return true;
     }
 
     function handle_edit_save_new_click(evt)
@@ -1749,7 +1818,8 @@
         add_card(
             kanji,
             editor_pronunciation.value,
-            editor_meaning.value
+            editor_meaning.value,
+            editor_notes.value
         );
 
         if (deck["cards"].length === 1) {
@@ -1759,18 +1829,18 @@
             show_current_card();
         }
 
-        show_card_editor("new-card", "", "", "");
+        show_card_editor("new-card", "", "", "", "");
         show_message("Added card #" + String(deck["cards"].length) + " to the deck.", 2400);
 
         return stop_event(evt);
     }
 
-    function add_card(kanji, pronunciation, meaning)
+    function add_card(kanji, pronunciation, meaning, notes)
     {
         var cards = deck["cards"];
 
         to_learn.push(cards.length);
-        cards.push(create_card(kanji, pronunciation, meaning, []));
+        cards.push(create_card(kanji, pronunciation, meaning, notes, []));
     }
 
     function show_message(text, hide_after)
@@ -1845,6 +1915,7 @@
                     card["kanji"],
                     card["pronunciation"],
                     card["meaning"],
+                    card["notes"],
                     exported_grades.join("")
                 ]
             );
@@ -1854,6 +1925,7 @@
             {
                 "name": deck["name"],
                 "meaning_language": deck["meaning_language"],
+                "notes_language": deck["notes_language"],
                 "cards": exported_cards
             },
             null,
@@ -1876,7 +1948,7 @@
     {
         var cards = deck["cards"],
             lines = [],
-            header = "Word (kanji)\tPronunciation\tMeaning",
+            header = "Word (kanji)\tPronunciation\tMeaning\tNotes",
             grades_header = [],
             most_grades = 0,
             card, grades, exported_grades,
@@ -1914,6 +1986,7 @@
                     quote_tsv(card["kanji"]),
                     quote_tsv(card["pronunciation"]),
                     quote_tsv(card["meaning"]),
+                    quote_tsv(card["notes"]),
                     exported_grades.join("\t")
                 ].join("\t")
             );
@@ -2012,13 +2085,13 @@
             cards = [],
             grades = "",
             format,
-            kanji, pronunciation, meaning, grades_str, grade,
+            kanji, pronunciation, meaning, notes, grades_idx, grades_str, grade,
             i, l, ll, j, lll, line;
 
         if (ignore_grades) {
-            format = "KANJI <TAB> PRONUNCIATION <TAB> MEANING";
+            format = "KANJI <TAB> PRONUNCIATION <TAB> MEANING <TAB> NOTES";
         } else {
-            format = "KANJI <TAB> PRONUNCIATION <TAB> MEANING <TAB> GRADE (0-2) <TAB> GRADE (0-2) <TAB> ...";
+            format = "KANJI <TAB> PRONUNCIATION <TAB> MEANING <TAB> NOTES <TAB> GRADE (0-2) <TAB> GRADE (0-2) <TAB> ...";
         }
 
         for (i = 0, l = lines.length; i < l; ++i) {
@@ -2042,8 +2115,16 @@
             pronunciation = unquote_tsv(line[1]);
             meaning = unquote_tsv(line[2]);
 
+            if (ll > 3 && !line[3].match(/^[0-2]?$/)) {
+                notes = unquote_tsv(line[3]);
+                grades_idx = 4;
+            } else {
+                grades_idx = 3;
+                notes = "";
+            }
+
             if (!ignore_grades) {
-                grades = line.splice(3);
+                grades = line.splice(grades_idx);
 
                 for (j = 0, lll = grades.length; j < lll; ++j) {
                     grade = grades[j].trim();
@@ -2066,7 +2147,7 @@
                 pronunciation = kanji;
             }
 
-            cards.push([kanji, pronunciation, meaning, grades]);
+            cards.push([kanji, pronunciation, meaning, notes, grades]);
         }
 
         return cards;
@@ -2140,7 +2221,7 @@
             raw_cards = tsv_to_raw_cards(tsv_str, ignore_tsv_header, true),
             cards = deck["cards"],
             existing_cards = {},
-            kanji, meaning, pronunciation, error,
+            kanji, meaning, notes, pronunciation, error,
             i, l, c, h;
 
         try {
@@ -2151,33 +2232,29 @@
 
         for (i = 0, l = cards.length; i < l; ++i) {
             c = cards[i];
-            existing_cards[card_to_hash(c["kanji"], c["pronunciation"], c["meaning"])] = true;
+            existing_cards[card_to_hash(c["kanji"], c["pronunciation"], c["meaning"], c["notes"])] = true;
         }
 
         for (i = 0, l = raw_cards.length; i < l; ++i) {
-            if (ignore_tsv_header && i < 1) {
-                ignore_tsv_header = false;
-                continue;
-            }
-
             c = raw_cards[i];
             kanji = c[0];
             pronunciation = c[1];
             meaning = c[2];
-            h = card_to_hash(kanji, pronunciation, meaning);
+            notes = c[3];
+            h = card_to_hash(kanji, pronunciation, meaning, notes);
 
             if (!existing_cards.hasOwnProperty(h)) {
                 ++added;
-                add_card(kanji, pronunciation, meaning);
+                add_card(kanji, pronunciation, meaning, notes);
             }
         }
 
         return added;
     }
 
-    function card_to_hash(kanji, pronunciation, meaning)
+    function card_to_hash(kanji, pronunciation, meaning, notes)
     {
-        return "c" + kanji + "\t" + pronunciation + "\t" + meaning;
+        return "c" + kanji + "\t" + pronunciation + "\t" + meaning + "\t" + notes;
     }
 
     function load_deck_from_json_file(file)
@@ -2221,6 +2298,7 @@
             raw_cards,
             raw_card,
             raw_grades,
+            notes,
             grades,
             error,
             i, l, j, ll;
@@ -2247,13 +2325,17 @@
             "meaning_language": raw_deck.hasOwnProperty("meaning_language")
                 ? raw_deck["meaning_language"]
                 : "",
+            "notes_language": raw_deck.hasOwnProperty("notes_language")
+                ? raw_deck["notes_language"]
+                : "",
             "cards": []
         };
         raw_cards = raw_deck["cards"];
 
         for (i = 0, l = raw_cards.length; i < l; ++i) {
             raw_card = raw_cards[i];
-            raw_grades = raw_card[3];
+            notes = raw_card.length > 4 ? raw_card[3] : "";
+            raw_grades = raw_card.length > 4 ? raw_card[4] : raw_card[3];
 
             grades = [];
 
@@ -2267,7 +2349,7 @@
                 }
             }
 
-            cards.push(create_card(raw_card[0], raw_card[1], raw_card[2], grades));
+            cards.push(create_card(raw_card[0], raw_card[1], raw_card[2], notes, grades));
         }
 
         deck["cards"] = cards;
@@ -2284,12 +2366,13 @@
         return deck;
     }
 
-    function create_card(kanji, pronunciation, meaning, grades)
+    function create_card(kanji, pronunciation, meaning, notes, grades)
     {
         return {
             "kanji": kanji,
             "pronunciation": pronunciation,
             "meaning": meaning,
+            "notes": notes,
             "grades": grades,
             "score": calculate_score(grades),
             "studied": 0,
@@ -2304,8 +2387,8 @@
             scores,
             score,
             dump,
-            lang_valid,
-            i, j, l, ll, ml;
+            grades,
+            i, j, l, ll;
 
         if (typeof(raw_deck) !== "object" || !raw_deck) {
             throw "the deck should be an JSON object";
@@ -2329,8 +2412,8 @@
             card = cards[i];
             dump = JSON.stringify(card);
 
-            if (!(Array.isArray(card) && card.length === 4)) {
-                throw "all cards must be arrays of 4 elements: " + card;
+            if (!(Array.isArray(card) && (card.length >= 4 || card.length <= 5))) {
+                throw "all cards must be arrays of 4 or 5 elements: " + card;
             }
 
             if (
@@ -2338,27 +2421,40 @@
                 || typeof(card[1]) !== "string"
                 || typeof(card[2]) !== "string"
                 || typeof(card[3]) !== "string"
+                || (card.length >= 5 && typeof(card[4]) !== "string")
             ) {
-                throw "elements of a card (kanji, pronunciation, meaning, grades) must be strings: " + dump;
+                throw "elements of a card (kanji, pronunciation, meaning, notes, grades) must be strings: " + dump;
             }
 
             validate_kanji(card[0]);
 
-            if (!card[3].match(/^[012]*$/)) {
+            grades = (card.length > 4) ? card[4] : card[3];
+
+            if (!grades.match(/^[012]*$/)) {
                 throw "grades must be a string of integers between 0 and 2: " + dump;
             }
         }
 
-        if (raw_deck.hasOwnProperty("meaning_language")) {
-            ml = raw_deck["meaning_language"];
+        validate_language_code(raw_deck, "meaning_language");
+        validate_language_code(raw_deck, "notes_language");
+    }
 
-            if (typeof(ml) !== "string") {
-                throw "'meaning_language' must be a string"
-            }
+    function validate_language_code(raw_deck, lang_field)
+    {
+        var lang;
 
-            if (ml !== "" && !known_languages.hasOwnProperty("l" + ml)) {
-                throw "unknown language code: '" + ml + "'";
-            }
+        if (!raw_deck.hasOwnProperty(lang_field)) {
+            return;
+        }
+
+        lang = raw_deck[lang_field];
+
+        if (typeof(lang) !== "string") {
+            throw "'" + lang_field + "' must be a string"
+        }
+
+        if (lang !== "" && !known_languages.hasOwnProperty("l" + lang)) {
+            throw "unknown language code for '" + lang_field + "': '" + lang + "'";
         }
     }
 
@@ -2721,42 +2817,64 @@
                                 ["kanji", "pronunciation", null, ""]
                             ]
                         },
-                        "a card's scores element is not a string": {
+                        "a card's notes element is not a string": {
                             "name": "test deck",
                             "cards": [
                                 ["kanji", "pronunciation", "meaning", null]
                             ]
                         },
+                        "a card's scores element is not a string": {
+                            "name": "test deck",
+                            "cards": [
+                                ["kanji", "pronunciation", "meaning", "notes", null]
+                            ]
+                        },
                         "a card has an non-numeric score": {
                             "name": "test deck",
                             "cards": [
-                                ["kanji", "pronunciation", "meaning", "a"]
+                                ["kanji", "pronunciation", "meaning", "notes", "a"]
                             ]
                         },
                         "a card has an invalid score": {
                             "name": "test deck",
                             "cards": [
-                                ["kanji", "pronunciation", "meaning", "3"]
+                                ["kanji", "pronunciation", "meaning", "notes", "3"]
                             ]
                         },
                         "a card's scores are not a string of 0 1 or 2": {
                             "name": "test deck",
                             "cards": [
-                                ["kanji", "pronunciation", "meaning", "0123"]
+                                ["kanji", "pronunciation", "meaning", "notes", "0123"]
                             ]
                         },
                         "invalid meaning language type": {
                             "name": "test deck",
                             "meaning_language": 42,
                             "cards": [
-                                ["kanji", "pronunciation", "meaning", "012"]
+                                ["kanji", "pronunciation", "meaning", "notes", "012"]
                             ]
                         },
                         "unknown meaning language": {
                             "name": "test deck",
                             "meaning_language": "unknownlanguage",
                             "cards": [
-                                ["kanji", "pronunciation", "meaning", "012"]
+                                ["kanji", "pronunciation", "meaning", "notes", "012"]
+                            ]
+                        },
+                        "invalid notes language type": {
+                            "name": "test deck",
+                            "meaning_language": "hu",
+                            "notes_language": 42,
+                            "cards": [
+                                ["kanji", "pronunciation", "meaning", "notes", "012"]
+                            ]
+                        },
+                        "unknown notes language": {
+                            "name": "test deck",
+                            "meaning_language": "hu",
+                            "notes_language": "unknownlanguage",
+                            "cards": [
+                                ["kanji", "pronunciation", "meaning", "notes", "012"]
                             ]
                         }
                     };
@@ -2777,8 +2895,8 @@
                     invalid_decks = {
                         "missing pronunciation": "kanji",
                         "missing meaning": "kanji\tpronunciation",
-                        "kanji contains unknown characters": "☃\tpronunciation\tmeaning",
-                        "a grade is invalid": "kanji\tpronunciation\tmeaning\t2\t3\t0"
+                        "kanji contains unknown characters": "☃\tpronunciation\tmeaning\tnotes",
+                        "a grade is invalid": "kanji\tpronunciation\tmeaning\tnotes\t2\t3\t0"
                     };
 
                 for (key in invalid_decks) {
@@ -2798,15 +2916,15 @@
 
                 assert.equal(
                     export_deck_as_tsv_string(),
-                    "Word (kanji)\tPronunciation\tMeaning"
+                    "Word (kanji)\tPronunciation\tMeaning\tNotes"
                 );
 
                 import_deck_from_tsv_string(
                     "example.tsv",
                     [
-                        "kanji 1\tpronunciation \\x\\t\\r\\n\\\\1\tmeaning \\x\\t\\r\\n\\\\1\t\t",
+                        "kanji 1\tpronunciation \\x\\t\\r\\n\\\\1\tmeaning \\x\\t\\r\\n\\\\1\tnotes \\x\\t\\r\\n\\\\1\t\t",
                         "",
-                        "katakana 2\t\tmeaning 2\t2\t1\t0\t\t\t",
+                        "katakana 2\t\tmeaning 2\tnotes 2\t2\t1\t0\t\t\t",
                         ""
                     ].join("\r\n"),
                     false
@@ -2816,9 +2934,10 @@
                     {
                         "name": "example.tsv",
                         "meaning_language": "",
+                        "notes_language": "",
                         "cards": [
-                            ["kanji 1", "pronunciation \\x\t\r\n\\1", "meaning \\x\t\r\n\\1", ""],
-                            ["katakana 2", "katakana 2", "meaning 2", "210"]
+                            ["kanji 1", "pronunciation \\x\t\r\n\\1", "meaning \\x\t\r\n\\1", "notes \\x\t\r\n\\1", ""],
+                            ["katakana 2", "katakana 2", "meaning 2", "notes 2", "210"]
                         ]
                     }
                 );
@@ -2826,10 +2945,10 @@
                 import_deck_from_tsv_string(
                     "example.tsv",
                     [
-                        "Word (kanji)\tPronunciation\tMeaning",
-                        "kanji 1\tpronunciation \\x\\t\\r\\n\\\\1\tmeaning \\x\\t\\r\\n\\\\1\t\t",
+                        "Word (kanji)\tPronunciation\tMeaning\tNotes",
+                        "kanji 1\tpronunciation \\x\\t\\r\\n\\\\1\tmeaning \\x\\t\\r\\n\\\\1\tnotes \\x\\t\\r\\n\\\\1\t\t",
                         "",
-                        "katakana 2\t\tmeaning 2\t2\t1\t0\t\t",
+                        "katakana 2\t\tmeaning 2\tnotes 2\t2\t1\t0\t\t",
                         ""
                     ].join("\r\n"),
                     true
@@ -2839,9 +2958,10 @@
                     {
                         "name": "example.tsv",
                         "meaning_language": "",
+                        "notes_language": "",
                         "cards": [
-                            ["kanji 1", "pronunciation \\x\t\r\n\\1", "meaning \\x\t\r\n\\1", ""],
-                            ["katakana 2", "katakana 2", "meaning 2", "210"]
+                            ["kanji 1", "pronunciation \\x\t\r\n\\1", "meaning \\x\t\r\n\\1", "notes \\x\t\r\n\\1", ""],
+                            ["katakana 2", "katakana 2", "meaning 2", "notes 2", "210"]
                         ]
                     }
                 );
@@ -2849,10 +2969,38 @@
                 assert.equal(
                     export_deck_as_tsv_string(),
                     [
-                        "Word (kanji)\tPronunciation\tMeaning\tGrade\tGrade\tGrade",
-                        "kanji 1\tpronunciation \\\\x\\t\\r\\n\\\\1\tmeaning \\\\x\\t\\r\\n\\\\1\t\t\t",
-                        "katakana 2\tkatakana 2\tmeaning 2\t2\t1\t0",
+                        "Word (kanji)\tPronunciation\tMeaning\tNotes\tGrade\tGrade\tGrade",
+                        "kanji 1\tpronunciation \\\\x\\t\\r\\n\\\\1\tmeaning \\\\x\\t\\r\\n\\\\1\tnotes \\\\x\\t\\r\\n\\\\1\t\t\t",
+                        "katakana 2\tkatakana 2\tmeaning 2\tnotes 2\t2\t1\t0",
                     ].join("\r\n")
+                );
+
+                import_deck_from_tsv_string(
+                    "example.tsv",
+                    [
+                        "kanji 1\tpronunciation 1\tmeaning 1",
+                        "kanji 2\tpronunciation 2\tmeaning 2\tnotes 2",
+                        "kanji 3\tpronunciation 3\tmeaning 3\t2\t1",
+                        "kanji 4\tpronunciation 4\tmeaning 4\tnotes 4\t2\t2",
+                        "kanji 5\tpronunciation 5\tmeaning 5",
+                        ""
+                    ].join("\r\n"),
+                    false
+                );
+                assert.deepEqual(
+                    JSON.parse(export_deck_as_json_string(false)),
+                    {
+                        "name": "example.tsv",
+                        "meaning_language": "",
+                        "notes_language": "",
+                        "cards": [
+                            ["kanji 1", "pronunciation 1", "meaning 1", "", ""],
+                            ["kanji 2", "pronunciation 2", "meaning 2", "notes 2", ""],
+                            ["kanji 3", "pronunciation 3", "meaning 3", "", "21"],
+                            ["kanji 4", "pronunciation 4", "meaning 4", "notes 4", "22"],
+                            ["kanji 5", "pronunciation 5", "meaning 5", "", ""],
+                        ]
+                    }
                 );
             });
 
@@ -2863,7 +3011,7 @@
                     invalid_decks = {
                         "missing pronunciation": "kanji",
                         "missing meaning": "kanji\tpronunciation",
-                        "kanji contains unknown characters": "☃\tpronunciation\tmeaning"
+                        "kanji contains unknown characters": "☃\tpronunciation\tmeaning\tnotes"
                     };
 
                 load_deck(
@@ -2874,12 +3022,14 @@
                                 "kanji 1",
                                 "pronunciation 1",
                                 "meaning 1",
+                                "notes 1",
                                 "222"
                             ],
                             [
                                 "kanji 2",
                                 "pronunciation 2",
                                 "meaning 2",
+                                "notes 2",
                                 "111"
                             ]
                         ]
@@ -2906,11 +3056,12 @@
                 added_without_ignored_header = add_cards_from_tsv_string(
                     "example.tsv",
                     [
-                        "kanji 2\tpronunciation 2\tmeaning 2",
+                        "kanji 2\tpronunciation 2\tmeaning 2\tnotes 2",
                         "",
-                        "katakana 1\t\tkatakana meaning 1",
-                        "kanji 3\tpronunciation \\x\\t\\r\\n\\\\3\tmeaning \\x\\t\\r\\n\\\\3\t2\t1\t0",
-                        "kanji 1\tpronunciation 1\tmeaning 1\t0\t0\t0",
+                        "katakana 1\t\tkatakana meaning 1\tkatakana notes 2",
+                        "kanji 3\tpronunciation \\x\\t\\r\\n\\\\3\tmeaning \\x\\t\\r\\n\\\\3\tnotes \\x\\t\\r\\n\\\\3\t2\t1\t0",
+                        "kanji 1\tpronunciation 1\tmeaning 1\tnotes 1\t0\t0\t0",
+                        "kanji 4\tpronunciation 4\tmeaning 4\t1\t1\t1",
                         ""
                     ].join("\r\n"),
                     false
@@ -2918,10 +3069,11 @@
                 added_with_ignored_header = add_cards_from_tsv_string(
                     "example.tsv",
                     [
-                        "Word\tPronunciation\tMeaning (header row)",
-                        "kanji 1\tpronunciation 1\tmeaning 1",
-                        "katakana 2\t\tkatakana meaning 2\t0\t1\t2",
-                        "kanji 2\tpronunciation 2\tmeaning 2",
+                        "Word\tPronunciation\tMeaning (header row)\tNotes (header row)",
+                        "kanji 1\tpronunciation 1\tmeaning 1\tnotes 1",
+                        "katakana 2\t\tkatakana meaning 2\tkatakana notes 2\t0\t1\t2",
+                        "kanji 2\tpronunciation 2\tmeaning 2\tnotes 2",
+                        "kanji 4\tpronunciation 4\tmeaning 4\tnotes are optional\t2\t2\t2",
                         ""
                     ].join("\r\n"),
                     true
@@ -2931,23 +3083,75 @@
                     {
                         "name": "test deck",
                         "meaning_language": "",
+                        "notes_language": "",
                         "cards": [
-                            ["kanji 1", "pronunciation 1", "meaning 1", "222"],
-                            ["kanji 2", "pronunciation 2", "meaning 2", "111"],
-                            ["katakana 1", "katakana 1", "katakana meaning 1", ""],
-                            ["kanji 3", "pronunciation \\x\t\r\n\\3", "meaning \\x\t\r\n\\3", ""],
-                            ["katakana 2", "katakana 2", "katakana meaning 2", ""]
+                            ["kanji 1", "pronunciation 1", "meaning 1", "notes 1", "222"],
+                            ["kanji 2", "pronunciation 2", "meaning 2", "notes 2", "111"],
+                            ["katakana 1", "katakana 1", "katakana meaning 1", "katakana notes 2", ""],
+                            ["kanji 3", "pronunciation \\x\t\r\n\\3", "meaning \\x\t\r\n\\3", "notes \\x\t\r\n\\3", ""],
+                            ["kanji 4", "pronunciation 4", "meaning 4", "", ""],
+                            ["katakana 2", "katakana 2", "katakana meaning 2", "katakana notes 2", ""],
+                            ["kanji 4", "pronunciation 4", "meaning 4", "notes are optional", ""]
                         ]
                     }
                 );
-                assert.equal(added_without_ignored_header, 2);
-                assert.equal(added_with_ignored_header, 1);
+                assert.equal(added_without_ignored_header, 3);
+                assert.equal(added_with_ignored_header, 2);
+
+                load_deck({"name": "test deck", "cards": []});
+                add_cards_from_tsv_string(
+                    "example.tsv",
+                    [
+                        "Word\tPronunciation\tMeaning (header row)\tNotes (header row)\tGrade\tGrade",
+                        "kanji 1\tpronunciation 1\tmeaning 1\tnotes 1\t2\t1",
+                        ""
+                    ].join("\r\n"),
+                    true
+                )
+                assert.deepEqual(
+                    JSON.parse(export_deck_as_json_string(false)),
+                    {
+                        "name": "test deck",
+                        "meaning_language": "",
+                        "notes_language": "",
+                        "cards": [
+                            ["kanji 1", "pronunciation 1", "meaning 1", "notes 1", ""],
+                        ]
+                    }
+                );
             });
 
             QUnit.test("export_load", function(assert) {
                 var deck = {
                         "name": "test deck",
                         "meaning_language": "",
+                        "notes_language": "",
+                        "cards": [
+                            [
+                                "kanji 1 (perfect)",
+                                "pronunciation 1",
+                                "meaning 1",
+                                "notes 1",
+                                "2222222222"
+                            ],
+                            [
+                                "kanji 2 (so-so)",
+                                "pronunciation 2",
+                                "meaning 2",
+                                "notes 2",
+                                "1111111111"
+                            ]
+                        ]
+                    };
+
+                load_deck(deck);
+                assert.deepEqual(JSON.parse(export_deck_as_json_string(false)), deck);
+
+                load_deck(
+                    {
+                        "name": "test deck",
+                        "meaning_language": "",
+                        "notes_language": "",
                         "cards": [
                             [
                                 "kanji 1 (perfect)",
@@ -2962,21 +3166,82 @@
                                 "1111111111"
                             ]
                         ]
-                    };
-
-                load_deck(deck);
-                assert.deepEqual(JSON.parse(export_deck_as_json_string(false)), deck);
+                    }
+                );
+                assert.deepEqual(
+                    JSON.parse(export_deck_as_json_string(false)),
+                    {
+                        "name": "test deck",
+                        "meaning_language": "",
+                        "notes_language": "",
+                        "cards": [
+                            [
+                                "kanji 1 (perfect)",
+                                "pronunciation 1",
+                                "meaning 1",
+                                "",
+                                "2222222222"
+                            ],
+                            [
+                                "kanji 2 (so-so)",
+                                "pronunciation 2",
+                                "meaning 2",
+                                "",
+                                "1111111111"
+                            ]
+                        ]
+                    }
+                );
 
                 load_deck({"name": "test deck", "cards": []});
                 assert.deepEqual(
                     JSON.parse(export_deck_as_json_string(false)),
-                    {"name": "test deck", "meaning_language": "", "cards": []}
+                    {
+                        "name": "test deck",
+                        "meaning_language": "",
+                        "notes_language": "",
+                        "cards": []
+                    }
                 );
 
                 load_deck({"name": "test deck", "meaning_language": "hu", "cards": []});
                 assert.deepEqual(
                     JSON.parse(export_deck_as_json_string(false)),
-                    {"name": "test deck", "meaning_language": "hu", "cards": []}
+                    {
+                        "name": "test deck",
+                        "meaning_language": "hu",
+                        "notes_language": "",
+                        "cards": []
+                    }
+                );
+
+                load_deck({"name": "test deck", "notes_language": "hu", "cards": []});
+                assert.deepEqual(
+                    JSON.parse(export_deck_as_json_string(false)),
+                    {
+                        "name": "test deck",
+                        "meaning_language": "",
+                        "notes_language": "hu",
+                        "cards": []
+                    }
+                );
+
+                load_deck(
+                    {
+                        "name": "test deck",
+                        "meaning_language": "en",
+                        "notes_language": "hu",
+                        "cards": []
+                    }
+                );
+                assert.deepEqual(
+                    JSON.parse(export_deck_as_json_string(false)),
+                    {
+                        "name": "test deck",
+                        "meaning_language": "en",
+                        "notes_language": "hu",
+                        "cards": []
+                    }
                 );
             });
 
@@ -2989,42 +3254,48 @@
                                 "kanji 1",
                                 "pronunciation 1",
                                 "meaning 1",
+                                "notes 1",
                                 ""
                             ],
                             [
                                 "kanji 2",
                                 "pronunciation 2",
                                 "meaning 2",
+                                "notes 2",
                                 ""
                             ]
                         ]
                     }
                 );
 
-                add_card("kanji 3", "pronunciation 3", "meaning 3");
+                add_card("kanji 3", "pronunciation 3", "meaning 3", "notes 3");
 
                 assert.deepEqual(
                     JSON.parse(export_deck_as_json_string(false)),
                     {
                         "name": "test deck",
                         "meaning_language": "",
+                        "notes_language": "",
                         "cards": [
                             [
                                 "kanji 1",
                                 "pronunciation 1",
                                 "meaning 1",
+                                "notes 1",
                                 ""
                             ],
                             [
                                 "kanji 2",
                                 "pronunciation 2",
                                 "meaning 2",
+                                "notes 2",
                                 ""
                             ],
                             [
                                 "kanji 3",
                                 "pronunciation 3",
                                 "meaning 3",
+                                "notes 3",
                                 ""
                             ]
                         ]
@@ -3041,6 +3312,7 @@
                                 "kanji",
                                 "pronunciation",
                                 "meaning",
+                                "notes",
                                 ""
                             ]
                         ]
@@ -3051,7 +3323,8 @@
                 replace_current_card(
                     "kanji modified",
                     "pronunciation modified",
-                    "meaning modified"
+                    "meaning modified",
+                    "notes modified"
                 );
 
                 assert.deepEqual(
@@ -3059,11 +3332,13 @@
                     {
                         "name": "test deck",
                         "meaning_language": "",
+                        "notes_language": "",
                         "cards": [
                             [
                                 "kanji modified",
                                 "pronunciation modified",
                                 "meaning modified",
+                                "notes modified",
                                 ""
                             ]
                         ]
@@ -3075,6 +3350,28 @@
         QUnit.module("formatting", function () {
             QUnit.test("quote_html", function(assert) {
                 assert.equal(quote_html("<>&\"'"), "&lt;&gt;&amp;&quot;&#039;");
+            });
+
+            QUnit.test("format_text", function(assert) {
+                var i, l,
+                    tests = [
+                        [
+                            "hello world",
+                            "hello world"
+                        ],
+                        [
+                            "_emphasis_ *strong* {small}\n<-- -->",
+                            "<em>emphasis</em> <strong>strong</strong> <small>(small)</small><br/>&larr; &rarr;"
+                        ],
+                        [
+                            "{お好み焼き|おこのみやき}",
+                            "<span class=\"furigana\"><ruby>お好み焼き<rt>おこのみやき</rt></ruby></span>"
+                        ]
+                    ];
+
+                for (i = 0, l = tests.length; i < l; ++i) {
+                    assert.equal(format_text(tests[i][0]), tests[i][1]);
+                }
             });
         });
 
@@ -3091,36 +3388,42 @@
                                 "kanji 1 (perfect)",
                                 "pronunciation 1",
                                 "meaning 1",
+                                "notes 1",
                                 "2222222222"
                             ],
                             [
                                 "kanji 2 (so-so)",
                                 "pronunciation 2",
                                 "meaning 2",
+                                "notes 2",
                                 "1111111111"
                             ],
                             [
                                 "kanji 3 (same score as kanji 2)",
                                 "pronunciation 3",
                                 "meaning 3",
+                                "notes 3",
                                 "1111111111"
                             ],
                             [
                                 "kanji 4 (recently learned)",
                                 "pronunciation 4",
                                 "meaning 2",
+                                "notes 2",
                                 "2222211111"
                             ],
                             [
                                 "kanji 5 (recently forgotten)",
                                 "pronunciation 5",
                                 "meaning 5",
+                                "notes 5",
                                 "1111122222"
                             ],
                             [
                                 "kanji 6 (never studied)",
                                 "pronunciation 6",
                                 "meaning 6",
+                                "notes 6",
                                 ""
                             ]
                         ]
@@ -3184,21 +3487,21 @@
                     {
                         "name": "test deck",
                         "cards": [
-                            ["kaji 1", "pronunciation 1", "meaning 1", "2"],
-                            ["kaji 2", "pronunciation 2", "meaning 2", "2"],
-                            ["kaji 3", "pronunciation 3", "meaning 3", "2"],
-                            ["kaji 4", "pronunciation 4", "meaning 4", "2"],
-                            ["kaji 5", "pronunciation 5", "meaning 5", "2"],
-                            ["kaji 6", "pronunciation 6", "meaning 6", "2"],
-                            ["kaji 7", "pronunciation 7", "meaning 7", "2"],
-                            ["kaji 8", "pronunciation 8", "meaning 8", "2"],
-                            ["kaji 9", "pronunciation 9", "meaning 9", "2"],
-                            ["kaji 10", "pronunciation 10", "meaning 10", ""],
-                            ["kaji 11", "pronunciation 11", "meaning 11", ""],
-                            ["kaji 12", "pronunciation 12", "meaning 12", ""],
-                            ["kaji 13", "pronunciation 13", "meaning 13", ""],
-                            ["kaji 14", "pronunciation 14", "meaning 14", ""],
-                            ["kaji 15", "pronunciation 15", "meaning 15", ""],
+                            ["kaji 1", "pronunciation 1", "meaning 1", "notes 1", "2"],
+                            ["kaji 2", "pronunciation 2", "meaning 2", "notes 2", "2"],
+                            ["kaji 3", "pronunciation 3", "meaning 3", "notes 3", "2"],
+                            ["kaji 4", "pronunciation 4", "meaning 4", "notes 4", "2"],
+                            ["kaji 5", "pronunciation 5", "meaning 5", "notes 5", "2"],
+                            ["kaji 6", "pronunciation 6", "meaning 6", "notes 6", "2"],
+                            ["kaji 7", "pronunciation 7", "meaning 7", "notes 7", "2"],
+                            ["kaji 8", "pronunciation 8", "meaning 8", "notes 8", "2"],
+                            ["kaji 9", "pronunciation 9", "meaning 9", "notes 9", "2"],
+                            ["kaji 10", "pronunciation 10", "meaning 10", "notes 10", ""],
+                            ["kaji 11", "pronunciation 11", "meaning 11", "notes 11", ""],
+                            ["kaji 12", "pronunciation 12", "meaning 12", "notes 12", ""],
+                            ["kaji 13", "pronunciation 13", "meaning 13", "notes 13", ""],
+                            ["kaji 14", "pronunciation 14", "meaning 14", "notes 14", ""],
+                            ["kaji 15", "pronunciation 15", "meaning 15", "notes 15", ""],
                         ]
                     }
                 );

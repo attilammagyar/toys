@@ -53,6 +53,10 @@
         <select id="meaning-language" name="meaning-language"></select><br/>
       </div>
       <div class="input">
+        <label for="notes-language">Notes language:</label>
+        <select id="notes-language" name="notes-language"></select><br/>
+      </div>
+      <div class="input">
         <button id="deck-save" type="submit">Save</button>
         <button id="deck-back">Back</button>
       </div>
@@ -73,6 +77,27 @@
       <div class="input">
         <label for="meaning">Meaning:</label>
         <input type="text" id="meaning" name="meaning" /><br/>
+      </div>
+      <div class="input">
+        <label for="notes">Notes:</label>
+        <textarea id="notes" name="notes" rows="3" cols="50"></textarea>
+        <div id="notes-preview"></div>
+      </div>
+      <div id="format">
+        <div>Markup:</div>
+        <div class="example">
+          <code>
+            {word|ruby} {small} _italic_ *strong* &lt;-- --&gt;
+          </code>
+        </div>
+        <div>Result:</div>
+        <div class="example">
+          <span class="furigana"><ruby>word<rt>ruby</rt></ruby></span>
+          <small>small</small>
+          <em>italic</em>
+          <strong>strong</strong>
+          &larr; &rarr;
+        </div>
       </div>
       <div class="input" id="editor-buttons-current">
         <button id="edit-save" type="submit">Save</button>
@@ -181,6 +206,8 @@
         <div id="practice-kanji-detials-buttons">
           <a id="practice-kanji-details-close" class="button" href="#" title="Close">X</a>
         </div>
+        <div id="practice-kanji-details-notes">
+        </div>
         <div id="practice-kanji-details-content">
         </div>
       </div>
@@ -198,7 +225,7 @@
       </div>
       <div class="input" id="tsv-info" class="hidden">
         <label>
-          Format: <code>KANJI &lt;tab&gt; PRONUNCIATION &lt;tab&gt; MEANING</code>
+          Format: <code>KANJI &lt;tab&gt; PRONUNCIATION &lt;tab&gt; MEANING &lt;tab&gt; NOTES</code>
         </label>
         <label for="load-tsv-header">
           Ignore the first row (TSV header):
