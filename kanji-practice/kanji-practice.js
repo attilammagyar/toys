@@ -202,32 +202,6 @@
         message_timeout = null;
 
         load_deck({"name": "flashcards", "cards": []});
-        // TODO
-        load_deck(
-            {
-              "name": "flashcards",
-              "cards": [
-                [
-                  "朝ご飯",
-                  "あさごはん",
-                  "breakfast",
-                  "1"
-                ],
-                [
-                  "学ぶ",
-                  "まなぶ",
-                  "to study; to learn",
-                  ""
-                ],
-                [
-                  "話す",
-                  "はなす",
-                  "to talk, to speak, to chat, to tell, to explain",
-                  ""
-                ]
-              ]
-            }
-        );
         menu = $("menu");
         load_dragndrop = $("load-dragndrop");
         load_input = $("load-input");
