@@ -127,7 +127,7 @@
 
     function initialize_gui()
     {
-        var i, si;
+        var i, si, file_name, e;
 
         message_timeout = null;
 
@@ -224,6 +224,17 @@
         window.addEventListener("dragover", stop_event);
         window.addEventListener("beforeunload", handle_beforeunload);
         window.addEventListener("popstate", handle_popstate);
+
+        try {
+            file_name = window.location.href.match(/([^/#]*)(#.*)?$/)[1];
+
+            if (!file_name) {
+                file_name = "index.html";
+            }
+
+            $("menu-download").setAttribute("href", file_name);
+        } catch (e) {
+        }
     }
 
     function $(obj)
@@ -1828,7 +1839,7 @@
                             "hello world"
                         ],
                         [
-                            "_emphasis_ *strong* {small}\n<-- -->",
+                            "_emphasis_ *strong* {small}\n<-- -" + "->",
                             "<em>emphasis</em> <strong>strong</strong> <small>(small)</small><br/>&larr; &rarr;"
                         ],
                         [

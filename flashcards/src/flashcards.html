@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Flashcards</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="description" content="A minimalistic flashcard (SRS, Spaced Repetition System) app for language learning and more, with a dark color scheme." />
+
+  <meta name="twitter:card" content="summary" />
+  <meta property="og:title" content="Flashcards" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://attilammagyar.github.io/toys/flashcards" />
+  <meta property="og:image" content="https://attilammagyar.github.io/toys/flashcards/flashcards.jpg" />
+  <meta property="og:image:alt" content="Screenshot of the app" />
+  <meta property="og:image:width" content="1280" />
+  <meta property="og:image:height" content="720" />
+  <meta property="og:description" content="A minimalistic flashcard (SRS, Spaced Repetition System) app for language learning and more, with a dark color scheme." />
+
+  <link rel="stylesheet" href="flashcards.css" />
+</head>
+<body>
+  <a id="top" name="top"></a>
+  <div id="message" class="hidden"></div>
+
+  <div id="alert" class="hidden">
+    <div id="alert-window">
+      <div id="alert-message"></div>
+      <div>
+        <a id="alert-ok" class="button" href="#">OK</a>
+      </div>
+    </div>
+  </div>
+
+  <div id="confirm" class="hidden">
+    <div id="confirm-window">
+      <div id="confirm-message"></div>
+      <div>
+        <a id="confirm-yes" class="button" href="#">Yes</a>
+        <a id="confirm-no" class="button" href="#">No</a>
+      </div>
+    </div>
+  </div>
+
+  <div id="editor-screen" class="hidden">
+    <form id="editor-form" action="#" method="get">
+      <h1>Edit card</h1>
+      <div id="format">
+        <div>Markup:</div>
+        <div class="example">
+          <code>
+            {word|ruby} {small} _italic_ *strong* &lt;-- --&gt;
+          </code>
+        </div>
+        <div>Result:</div>
+        <div class="example">
+          <span class="furigana"><ruby>word<rt>ruby</rt></ruby></span>
+          <small>small</small>
+          <em>italic</em>
+          <strong>strong</strong>
+          &larr; &rarr;
+        </div>
+      </div>
+      <div class="input">
+        <label for="side-1">Side 1:</label>
+        <textarea id="side-1" name="side-1" rows="3" cols="50"></textarea>
+        <div id="side-1-preview"></div>
+      </div>
+      <div class="input">
+        <label for="side-2">Side 2:</label>
+        <textarea id="side-2" name="side-2" rows="3" cols="50"></textarea>
+        <div id="side-2-preview"></div>
+      </div>
+      <div class="input">
+        <datalist id="notes-datalist"></datalist>
+        <label for="note-0">Notes:</label>
+        <div id="note-0-container">
+          <input type="text" id="note-0" name="note-0" list="notes-datalist" /><br/>
+        </div>
+        <div id="note-1-container" class="hidden">
+          <input type="text" id="note-1" name="note-1" list="notes-datalist" />
+        </div>
+        <div id="note-2-container" class="hidden">
+          <input type="text" id="note-2" name="note-2" list="notes-datalist" />
+        </div>
+        <div id="note-3-container" class="hidden">
+          <input type="text" id="note-3" name="note-3" list="notes-datalist" />
+        </div>
+        <div id="note-4-container" class="hidden">
+          <input type="text" id="note-4" name="note-4" list="notes-datalist" />
+        </div>
+        <div id="note-5-container" class="hidden">
+          <input type="text" id="note-5" name="note-5" list="notes-datalist" />
+        </div>
+        <div id="note-6-container" class="hidden">
+          <input type="text" id="note-6" name="note-6" list="notes-datalist" />
+        </div>
+        <div id="note-7-container" class="hidden">
+          <input type="text" id="note-7" name="note-7" list="notes-datalist" />
+        </div>
+        <div id="note-8-container" class="hidden">
+          <input type="text" id="note-8" name="note-8" list="notes-datalist" />
+        </div>
+        <div id="note-9-container" class="hidden">
+          <input type="text" id="note-9" name="note-9" list="notes-datalist" />
+        </div>
+        <div id="note-10-container" class="hidden">
+          <input type="text" id="note-10" name="note-10" list="notes-datalist" />
+        </div>
+        <div id="note-11-container" class="hidden">
+          <input type="text" id="note-11" name="note-11" list="notes-datalist" />
+        </div>
+        <div id="note-12-container" class="hidden">
+          <input type="text" id="note-12" name="note-12" list="notes-datalist" />
+        </div>
+        <div id="note-13-container" class="hidden">
+          <input type="text" id="note-13" name="note-13" list="notes-datalist" />
+        </div>
+        <div id="note-14-container" class="hidden">
+          <input type="text" id="note-14" name="note-14" list="notes-datalist" />
+        </div>
+        <div id="note-15-container" class="hidden">
+          <input type="text" id="note-15" name="note-15" list="notes-datalist" />
+        </div>
+        <div id="note-16-container" class="hidden">
+          <input type="text" id="note-16" name="note-16" list="notes-datalist" />
+        </div>
+        <div id="note-17-container" class="hidden">
+          <input type="text" id="note-17" name="note-17" list="notes-datalist" />
+        </div>
+        <div id="note-18-container" class="hidden">
+          <input type="text" id="note-18" name="note-18" list="notes-datalist" />
+        </div>
+        <div id="note-19-container" class="hidden">
+          <input type="text" id="note-19" name="note-19" list="notes-datalist" />
+        </div>
+        <div id="note-20-container" class="hidden">
+          <input type="text" id="note-20" name="note-20" list="notes-datalist" />
+        </div>
+      </div>
+      <div class="input" id="editor-buttons-current">
+        <button id="edit-save" type="submit">Save</button>
+        <button id="edit-cancel">Cancel</button>
+      </div>
+      <div class="input" id="editor-buttons-new">
+        <button id="edit-save-new" type="submit">Save &amp; New</button>
+        <button id="edit-back">Back</button>
+      </div>
+    </form>
+  </div>
+
+  <div id="practice-screen" class="hidden">
+    <form id="practice-form" action="#" method="get">
+      <a id="menu-button" class="button" href="#">Menu</a>
+      <a id="learn-button" class="button hidden" href="#">Learn</a>
+      <ul id="menu" class="hidden">
+        <li><a id="menu-hide" href="#">&larr; Hide menu</a></li>
+        <li><a id="menu-create" href="#">Create cards</a></li>
+        <li><a id="menu-edit" href="#">Edit card</a></li>
+        <li><a id="menu-load" href="#">Load deck from file</a></li>
+        <li><a id="menu-export" href="#">Save deck as file</a></li>
+        <li><a id="menu-show-all" href="#">Show all cards</a></li>
+        <li>
+          <a id="menu-download" href="index.html" download="flashcards.html">
+            Download this app
+          </a>
+        </li>
+        <li>
+          <a href="https://github.com/attilammagyar/toys"
+            target="_blank">Source code on GitHub</a>
+        </li>
+      </ul>
+      <div id="no-cards">
+        The deck of flashcards is empty.<br/>
+        <a id="no-cards-create" href="#">Create some cards</a> or
+        <a id="no-cards-load" href="#">load an existing deck</a>.
+      </div>
+      <div id="stats"></div>
+      <div id="grade" class="hidden">
+        <button id="grade-bad">Bad</button>
+        <button id="grade-soso">So-so</button>
+        <button id="grade-good">Good</button>
+      </div>
+      <div id="practice-card">
+        <p>
+          <span id="practice-card-index"></span>
+          <span id="practice-card-question"></span>
+        </p>
+        <p id="practice-card-answer" class="hidden"></p>
+        <div id="practice-card-notes" class="hidden"></div>
+      </div>
+    </form>
+  </div>
+
+  <div id="load-screen" class="hidden">
+    <form id="load-form" action="#" method="get">
+      <h1>Load deck</h1>
+      <div id="load-dragndrop">Drag and drop a file here</div>
+      <div class="input">
+        <label for="load-input">Or pick a file:</label>
+        <input id="load-input" name="load-input" type="file"
+          accept=".json,application/json" />
+      </div>
+      <div class="input">
+        <button id="load-cancel">Cancel</button>
+      </div>
+    </form>
+  </div>
+
+  <div id="all-cards" class="hidden">
+    <div id="all-cards-nav">
+      <a id="all-cards-back" class="button" href="#">Back</a>
+    </div>
+    <ol id="all-cards-list"></ol>
+  </div>
+
+  <script type="text/javascript" src="flashcards.js"></script>
+</body>
+</html>
