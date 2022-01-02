@@ -25,7 +25,7 @@ html, body {
   max-width: 57vh;
   top: 10vh;
   height: 20vh;
-  overflow: scroll;
+  overflow: auto;
   font-size: 4.5vmin;
   border: inset 0.5vmin #666;
   border-radius: 1vmin;
