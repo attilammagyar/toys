@@ -102,6 +102,10 @@
         teach_frame,
         teach_stroke,
         teach_stroke_length,
+        max_distance,
+        start_pos,
+        start_snapshot,
+        start_time,
         prev_pos,
         prev_time,
         prev_stroke_width,
@@ -652,7 +656,7 @@
             t = ct[i];
 
             if (t.identifier === ongoing_touch) {
-                stop_drawing();
+                stop_drawing([t.pageX, t.pageY]);
                 ongoing_touch = null;
                 break;
             }
@@ -677,14 +681,14 @@
 
     function handle_canvas_mouse_up(evt)
     {
-        stop_drawing();
+        stop_drawing([evt.pageX, evt.pageY]);
 
         return stop_event(evt);
     }
 
     function handle_canvas_mouse_leave(evt)
     {
-        stop_drawing();
+        stop_drawing([evt.pageX, evt.pageY]);
 
         return stop_event(evt);
     }
@@ -723,20 +727,46 @@
 
         is_drawing = true;
         stroke_segments = [];
+
         prev_pos = to_canvas_pos(doc_pos);
         prev_time = time();
+
+        start_time = prev_time;
+        start_pos = prev_pos;
+        start_snapshot = make_canvas_snapshot();
+        max_distance = 0;
+
         prev_stroke_width = max_stroke_width / 2.4;
         draw(doc_pos);
     }
 
-    function stop_drawing()
+    function stop_drawing(doc_pos)
     {
         if (is_done || !is_drawing) {
             return;
         }
 
+        draw(doc_pos);
+
         is_drawing = false;
-        drawn_strokes.push(stroke_segments);
+
+        if ((max_distance > 5) || (time() - start_time) > 0.20) {
+            drawn_strokes.push(stroke_segments);
+        } else {
+            restore_canvas_snapshot(start_snapshot);
+            stroke_segments = [];
+
+            if (is_teaching) {
+                if (is_teaching_paused) {
+                    continue_teaching();
+                }
+            } else {
+                show_hint();
+            }
+
+            return;
+        }
+
         stroke_segments = [];
 
         if (is_teaching && is_teaching_paused) {
@@ -944,6 +974,7 @@
     function draw(doc_pos)
     {
         var pos, new_pos, now, time_d, pos_d, speed,
+            start_d,
             new_stroke_width,
             i, l, w;
 
@@ -957,9 +988,16 @@
 
         new_pos = to_canvas_pos(doc_pos);
         now = time();
+
         time_d = Math.max(now - prev_time, 0.001);
         pos_d = pdistance(new_pos, prev_pos);
         speed =  Math.sqrt(pos_d / (CANVAS_SIZE * time_d));
+
+        start_d = Math.abs(new_pos[0] - start_pos[0]) + Math.abs(new_pos[1] - start_pos[1]);
+
+        if (start_d > max_distance) {
+            max_distance = start_d;
+        }
 
         l = ease(Math.min(1.0, Math.max(0.0, pos_d / STROKE_WIDTH_INERTIA)));
 
