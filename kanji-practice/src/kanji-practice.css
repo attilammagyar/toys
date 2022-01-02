@@ -1,0 +1,641 @@
+* {
+  font-family: Verdana, sans-serif;
+  color: #e0e0f0;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  background-color: #222;
+}
+
+#practice-screen.hidden,
+#practice-card.hidden {
+  display: none;
+}
+
+#practice-card {
+}
+
+#practice-info {
+  background-color: #000;
+  position: absolute;
+  left: 1vw;
+  width: 98vw;
+  max-width: 57vh;
+  top: 10vh;
+  height: 20vh;
+  overflow: scroll;
+  font-size: 4.5vmin;
+  border: inset 0.5vmin #666;
+  border-radius: 1vmin;
+  padding: 1vmin;
+  text-align: center;
+  z-index: 10;
+}
+
+#practice-canvas {
+  position: absolute;
+  left: 1vw;
+  top: 33vh;
+  width: 98vw;
+  height: 98vw;
+  max-width: 57vh;
+  max-height: 57vh;
+  border: inset 0.5vmin #666;
+  border-radius: 1vmin;
+  z-index: 11;
+}
+
+#practice-kanji {
+  font-size: 6.0vmin;
+  transition: background-color 0.3s, color 0.3s;
+  background-color: #000;
+  color: #c8c8d2;
+  margin: 0.5vmin;
+}
+
+#practice-kanji.hidden {
+  background-color: #555;
+  color: #555;
+  transition: background-color 0s, color 0s;
+}
+
+#practice-pronunciation {
+  font-size: 5.4vmin;
+  transition: background-color 0.3s, color 0.3s;
+  background-color: #000;
+  color: #c8c8d2;
+  margin: 0.5vmin;
+}
+
+#practice-pronunciation.hidden {
+  background-color: #555;
+  color: #555;
+  transition: background-color 0s, color 0s;
+}
+
+#grade {
+  position: absolute;
+  top: 22vh;
+  left: 9vw;
+  padding: 1vmin;
+  display: block;
+  width: 80vw;
+  height: 11vmin;
+  text-align: center;
+  opacity: 1.0;
+  transition: opacity 0.25s, height 0.25s;
+  z-index: 20;
+}
+
+#grade.hidden {
+  opacity: 0;
+  transition: opacity 0.1s, height 0.1s;
+  height: 0;
+  padding: 0;
+  border-style: none;
+  overflow: hidden;
+}
+
+button,
+a.button {
+  display: inline-block;
+  font-size: 5.0vmin;
+  line-height: 6.0vmin;
+  font-weight: bold;
+  padding: 1.2vmin 2.2vmin;
+  border-style: outset;
+  border-width: 0.7vmin;
+  border-radius: 3vmin;
+  margin: 0.2vmin;
+  text-decoration: none;
+}
+
+#hint-button {
+  color: #fff;
+  border-color: #763;
+  background-color: #a94;
+  padding-right: 3.2vmin;
+  padding-left: 3.2vmin;
+}
+
+#details-button {
+  color: #fff;
+  border-color: #174;
+  background-color: #286;
+}
+
+#teach-button {
+  color: #012;
+  border-color: #35c;
+  background-color: #46d;
+}
+
+svg.icon {
+  padding: 0;
+  margin: 0;
+  margin-top: 0.5vmin;
+  margin-bottom: -0.5vmin;
+  border-width: 0;
+  width: 5.0vmin;
+  height: 5.0vmin;
+}
+
+#clear-button {
+  color: #fee;
+  border-color: #721;
+  background-color: #b21;
+}
+
+#grade button {
+  min-width: 18vw;
+}
+
+button#grade-bad {
+  background-color: #900;
+  color: #eee;
+  border-color: #700;
+}
+
+button#grade-soso {
+  background-color: #983;
+  color: #ffffff;
+  border-color: #762;
+}
+
+button#grade-good {
+  background-color: #295;
+  color: #ffffff;
+  border-color: #174;
+}
+
+div#stats {
+  position: absolute;
+  z-index: 10;
+  top: 1vh;
+  right: 1vw;
+  font-size: 4vmin;
+}
+
+#practice-kanji-details-close,
+#menu-button {
+  background-color: #347;
+  border-color: #234;
+  color: #e0e0f0;
+  font-family: Verdana, sans-serif;
+  padding-right: 3.2vmin;
+  padding-left: 3.2vmin;
+}
+
+#menu-button {
+  margin-right: 1.2vmin;
+}
+
+#learn-button {
+  background-color: #173;
+  border-color: #151;
+  color: #efe;
+  transition: width 0.2s, height 0.2s, opacity 0.2s;
+  width: auto;
+  height: auto;
+  opacity: 1.0;
+  padding-right: 3.2vmin;
+  padding-left: 3.2vmin;
+}
+
+#learn-button.hidden {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+#menu {
+  z-index: 1000;
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  min-width: 86vmin;
+  min-height: 93vh;
+  max-width: 93vw;
+  transition: left 0.2s, opacity 0.2s;
+  opacity: 1;
+  box-shadow: 1vmin 1vmin 1vmin rgba(6, 6, 10, 0.7);
+}
+
+#menu.hidden {
+  left: -110vw;
+  opacity: 0;
+  transition: left 0.1s, opacity 0.1s;
+  min-height: 0;
+  height: 93vh;
+  overflow: hidden;
+}
+
+#menu li {
+  border-bottom: solid 1px #000;
+}
+
+#menu a {
+  display: inline-block;
+  font-weight: bold;
+  font-size: 5vmin;
+  line-height: 8vmin;
+  margin: 1.5vmin;
+  padding: 1.5vmin;
+  min-width: 72vmin;
+  text-decoration: none;
+  transition: background-color 0.2s, color 0.2s;
+  border-radius: 1vmin;
+}
+
+#menu,
+#menu a {
+  background-color: #181828;
+}
+
+#menu a:hover {
+  background-color: #235;
+  color: #dde;
+}
+
+#load-screen {
+  background-color: #111;
+  padding-bottom: 5vmin;
+}
+
+#load-screen.hidden,
+#tsv-info.hidden {
+  display: none;
+}
+
+#load-dragndrop {
+  padding: 1vmin;
+  margin: 1vmin 3vmin;
+  overflow: auto;
+  background-color: #000;
+  border: dotted 0.3vmin #445;
+  border-radius: 2vmin;
+  font-size: 5vmin;
+  height: 30vmin;
+  line-height: 30vmin;
+  text-align: center;
+}
+
+#load-dragndrop:hover {
+  border: dotted 0.6vmin #445;
+  margin: 0.7vmin 2.7vmin;
+  background-color: #112;
+}
+
+div.input {
+  margin: 0.3vmin 1vw;
+  text-align: center;
+  padding: 1vmin;
+}
+
+div.input textarea,
+div.input select,
+div.input input {
+  font-size: 4vmin;
+  height: 6vmin;
+  line-height: 6vmin;
+  border-radius: 1vmin;
+  border: inset 0.3vmin #445;
+  background-color: #000;
+  color: #cce;
+  width: 90vw;
+  padding: 0.2vmin 1vmin;
+  margin: 0.5vmin;
+  margin-bottom: 1vmin;
+}
+
+div.input input[type=checkbox] {
+  width: 6vmin;
+  height: 6vmin;
+}
+
+#editor-form div.input textarea {
+  position: relative;
+  z-index: 100;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+#editor-form div.input textarea:focus {
+  opacity: 1;
+  transition: opacity 0.2s;
+}
+
+div.input textarea {
+  height: 36vmin;
+}
+
+div.input label {
+  display: block;
+  font-size: 4vmin;
+  min-height: 6vmin;
+  line-height: 6vmin;
+}
+
+div.input button {
+  border-color: #125;
+  min-width: 20vw;
+  background-color: #237;
+  color: #eee;
+}
+
+#no-cards {
+  font-size: 5vmin;
+  line-height: 8vmin;
+  padding-top: 20vh;
+  padding-bottom: 10vh;
+  width: 70vw;
+  margin: auto;
+  height: 30vh;
+  text-align: center;
+  background-color: #000;
+  border-radius: 2vmin;
+}
+
+#no-cards a {
+  color: #77f;
+  font-weight: bold;
+}
+
+#no-cards.hidden {
+  display: none;
+}
+
+#message {
+  position: absolute;
+  font-size: 5vmin;
+  top: 1vmin;
+  left: 10vw;
+  right: 10vw;
+  text-align: center;
+  padding: 1.2vmin;
+  background-color: rgba(70, 70, 35, 0.9);
+  border-radius: 1vmin;
+  transition: top 0.3s;
+}
+
+#message.hidden {
+  top: -60vh;
+  transition: top 1.5s;
+}
+
+h1 {
+  font-size: 6vmin;
+  text-align: center;
+  padding: 2vmin;
+}
+
+#alert,
+#confirm {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2000;
+  background: rgba(0, 0, 0, 0.8);
+  text-align: center;
+  font-size: 5vmin;
+}
+
+#alert.hidden,
+#confirm.hidden {
+  display: none;
+}
+
+#alert-window,
+#confirm-window {
+  margin: 15vh 10vmin 2vmin 10vmin;
+  padding: 3vmin;
+}
+
+#alert-window,
+#confirm-window,
+#grade {
+  border: outset #984;
+  border-radius: 3vmin;
+  background-color: rgba(192, 176, 96, 0.8);
+  box-shadow: 1vmin 1vmin 1vmin rgba(6, 6, 10, 0.7);
+}
+
+#alert-message,
+#confirm-message {
+  color: #000;
+  margin-bottom: 5vmin;
+}
+
+#alert-ok,
+#confirm-yes,
+#confirm-no {
+  background-color: #641;
+  border-color: #641;
+  margin-left: 5vmin;
+  margin-right: 5vmin;
+  color: #eee;
+  padding: 1.5vmin 4.5vmin;
+}
+
+#confirm-no {
+  background-color: #641;
+  border-color: #641;
+}
+
+#editor-screen {
+  background-color: #111;
+  padding-bottom: 5vmin;
+}
+
+#editor-screen.hidden {
+  display: none;
+}
+
+#editor-screen div.hidden {
+  opacity: 0;
+  height: 0;
+  margin: 0;
+  overflow: hidden;
+  transition: opacity 0.5s height 0.5s;
+}
+
+#editor-screen button {
+  margin: 0.3vmin 2vmin;
+}
+
+#deck-properties-screen.hidden {
+  display: none;
+}
+
+@media all and (orientation:landscape) {
+  #grade {
+    top: 11vh;
+  }
+
+  #practice-info {
+    position: absolute;
+    left: 49vw;
+    top: 15vh;
+    width: 48vw;
+    max-width: 48vw;
+    height: 80vh;
+    max-height: 40vw;
+  }
+
+  #practice-canvas {
+    position: absolute;
+    left: 1vw;
+    top: 15vh;
+    width: 80vh;
+    height: 80vh;
+    max-width: 40vw;
+    max-height: 40vw;
+  }
+}
+
+#practice-kanji-details {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 900;
+  width: 95vw;
+  max-width: 96vw;
+  min-height: 96vh;
+  overflow-x: auto;
+  background-color: #080b18;
+  border: outset 0.5vmin #246;
+  border-radius: 1vmin;
+  transition: left 0.15s;
+  box-shadow: 1vmin 1vmin 1vmin rgba(6, 6, 10, 0.7);
+}
+
+#practice-kanji-details.hidden {
+  left: -100vw;
+  transition: left 0.15s;
+  height: 96vh;
+  max-height: 96vh;
+  min-height: 0;
+  overflow: hidden;
+}
+
+#practice-kanji-detials-buttons {
+  text-align: right;
+}
+
+#practice-kanji-details-notes {
+  margin-top: -8vmin;
+}
+
+#practice-kanji-details-notes div {
+  border: inset 0.2vmin #445;
+  border-radius: 1vmin;
+  background-color: #000;
+  margin: 3vmin;
+  padding: 3vmin;
+  font-size: 4.2vmin;
+  line-height: 7vmin;
+}
+
+#practice-kanji-details-content {
+  padding: 2vmin;
+}
+
+#practice-kanji-details-content h1,
+#practice-kanji-details-content h2,
+#practice-kanji-details-content h3 {
+  text-align: left;
+  margin: 3vmin 0 1.5vmin 0;
+}
+
+#practice-kanji-details-content h1 {
+  font-size: 6.0vmin;
+}
+
+#practice-kanji-details-content h2 {
+  font-size: 5.0vmin;
+  margin-left: 2vmin;
+}
+
+#practice-kanji-details-content h3 {
+  font-size: 4.5vmin;
+  margin-left: 4vmin;
+}
+
+#practice-kanji-details-content table {
+  border-collapse: collapse;
+}
+
+#practice-kanji-details-content table,
+#practice-kanji-details-content div {
+  font-size: 3.5vmin;
+  margin-left: 6vmin;
+  border-style: none;
+  text-align: left;
+}
+
+#practice-kanji-details-content table tr:nth-child(2n+1) {
+  background-color: #182030;
+}
+
+#practice-kanji-details-content table th,
+#practice-kanji-details-content table td {
+  text-align: left;
+  padding: 0.5vmin 2vmin;
+  border-style: none;
+  vertical-align: top;
+}
+
+#notes-preview {
+  vertical-align: top;
+  position: relative;
+  display: inline-block;
+  font-size: 4vmin;
+  line-height: 6vmin;
+  border-radius: 1vmin;
+  border: inset 0.3vmin #445;
+  background-color: #000;
+  color: #cce;
+  width: 90vw;
+  padding: 0.2vmin 1vmin;
+  margin: 0.5vmin;
+  z-index: 99;
+  text-align: left;
+  overflow: auto;
+  top: -38vmin;
+  height: 36vmin;
+  margin-bottom: -36vmin;
+}
+
+#format {
+  font-size: 2.8vmin;
+  margin: 0.1vmin 10vmin;
+}
+
+#format span.furigana ruby rt {
+  font-size: 2.0vmin;
+}
+
+#format code {
+  font-family: monospace;
+}
+
+span.furigana {
+  border: solid 0.5vmin;
+  border-radius: 2vmin;
+  background-color: #112;
+  border-color: #224;
+}
+
+div.example {
+  background-color: #000;
+  margin: 1vmin;
+  padding: 1vmin;
+  word-wrap: break-word;
+  margin-bottom: 2vmin;
+}
