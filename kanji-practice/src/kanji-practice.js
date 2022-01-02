@@ -70,7 +70,6 @@
         confirm_message,
         confirm_callback,
         deck_properties_screen,
-        deck_button_save,
         editor_screen,
         editor_kanji,
         editor_kanji_orig,
@@ -1438,7 +1437,11 @@
 
     function is_deck_properties_editor_dirty()
     {
-        if (deck_name_orig === null && meaning_language_orig === null && notes_language_orig === null) {
+        if (
+            deck_name_orig === null
+            && meaning_language_orig === null
+            && notes_language_orig === null
+        ) {
             return false;
         }
 
@@ -1461,6 +1464,7 @@
     {
         deck_name_orig = null;
         meaning_language_orig = null;
+        notes_language_orig = null;
 
         if (current_card) {
             show_current_card();
