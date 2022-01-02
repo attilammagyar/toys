@@ -2935,7 +2935,7 @@
                     {
                         "name": "example.tsv",
                         "meaning_language": "",
-                        "notes_language": "",
+                        "notes_language": "ja",
                         "cards": [
                             ["kanji 1", "pronunciation \\x\t\r\n\\1", "meaning \\x\t\r\n\\1", "notes \\x\t\r\n\\1", ""],
                             ["katakana 2", "katakana 2", "meaning 2", "notes 2", "210"]
@@ -2959,7 +2959,7 @@
                     {
                         "name": "example.tsv",
                         "meaning_language": "",
-                        "notes_language": "",
+                        "notes_language": "ja",
                         "cards": [
                             ["kanji 1", "pronunciation \\x\t\r\n\\1", "meaning \\x\t\r\n\\1", "notes \\x\t\r\n\\1", ""],
                             ["katakana 2", "katakana 2", "meaning 2", "notes 2", "210"]
@@ -2993,7 +2993,7 @@
                     {
                         "name": "example.tsv",
                         "meaning_language": "",
-                        "notes_language": "",
+                        "notes_language": "ja",
                         "cards": [
                             ["kanji 1", "pronunciation 1", "meaning 1", "", ""],
                             ["kanji 2", "pronunciation 2", "meaning 2", "notes 2", ""],
