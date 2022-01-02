@@ -2074,6 +2074,7 @@
         load_deck(
             {
                 "name": name,
+                "notes_language": "ja",
                 "cards": tsv_to_raw_cards(tsv_str, ignore_tsv_header, false)
             }
         );
