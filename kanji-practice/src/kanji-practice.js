@@ -668,7 +668,7 @@
             t = ct[i];
 
             if (t.identifier === ongoing_touch) {
-                stop_drawing([t.pageX, t.pageY]);
+                stop_drawing([t.pageX, t.pageY], true);
                 ongoing_touch = null;
                 break;
             }
@@ -693,39 +693,34 @@
 
     function handle_canvas_mouse_up(evt)
     {
-        stop_drawing([evt.pageX, evt.pageY]);
+        stop_drawing([evt.pageX, evt.pageY], true);
 
         return stop_event(evt);
     }
 
     function handle_canvas_mouse_leave(evt)
     {
-        stop_drawing([evt.pageX, evt.pageY]);
+        stop_drawing([evt.pageX, evt.pageY], false);
 
         return stop_event(evt);
     }
 
     function start_drawing(doc_pos)
     {
-        if (is_nan(doc_pos) || is_done) {
+        if (is_nan(doc_pos)) {
+            return;
+        }
+
+        start_pos = to_canvas_pos(doc_pos);
+        abs_max_distance_x = 0;
+        abs_max_distance_y = 0;
+        max_distance_y = 0;
+
+        if (is_done) {
             return;
         }
 
         if (is_waiting_for_click) {
-            if (time() < freeze_until) {
-                return;
-            }
-
-            is_waiting_for_click = false;
-            ++current_character_ref;
-
-            if (current_character_ref < characters.length) {
-                show_next_character_prompt();
-            } else {
-                show_grade_form();
-                is_done = true;
-            }
-
             return;
         }
 
@@ -740,25 +735,38 @@
         is_drawing = true;
         stroke_segments = [];
 
-        prev_pos = to_canvas_pos(doc_pos);
+        prev_pos = start_pos;
         prev_time = time();
-
         start_time = prev_time;
-        start_pos = prev_pos;
         start_snapshot = make_canvas_snapshot();
-        abs_max_distance_x = 0;
-        abs_max_distance_y = 0;
-        max_distance_y = 0;
 
         prev_stroke_width = max_stroke_width / 2.4;
         draw(doc_pos);
     }
 
-    function stop_drawing(doc_pos)
+    function stop_drawing(doc_pos, is_click_end)
     {
-        if (is_clear_gesture()) {
+        if ((is_drawing || is_waiting_for_click || is_done) && is_clear_gesture()) {
             is_drawing = false;
             clear_drawn_character();
+
+            return;
+        }
+
+        if (is_waiting_for_click && is_click_end) {
+            if (time() < freeze_until) {
+                return;
+            }
+
+            is_waiting_for_click = false;
+            ++current_character_ref;
+
+            if (current_character_ref < characters.length) {
+                show_next_character_prompt();
+            } else {
+                show_grade_form();
+                is_done = true;
+            }
 
             return;
         }
@@ -1008,20 +1016,11 @@
             new_stroke_width,
             i, l, w;
 
-        if (is_done || is_showing_hint || !is_drawing) {
-            return;
-        }
-
-        if (is_nan(doc_pos)) {
+        if (!(is_drawing || is_waiting_for_click || is_done)) {
             return;
         }
 
         new_pos = to_canvas_pos(doc_pos);
-        now = time();
-
-        time_d = Math.max(now - prev_time, 0.001);
-        pos_d = pdistance(new_pos, prev_pos);
-        speed =  Math.sqrt(pos_d / (CANVAS_SIZE * time_d));
 
         abs_start_d_x = Math.abs(new_pos[0] - start_pos[0]);
         start_d_y = new_pos[1] - start_pos[1];
@@ -1035,6 +1034,20 @@
             abs_max_distance_y = abs_start_d_y;
             max_distance_y = start_d_y;
         }
+
+        if (is_done || is_showing_hint || !is_drawing) {
+            return;
+        }
+
+        if (is_nan(doc_pos)) {
+            return;
+        }
+
+        now = time();
+
+        time_d = Math.max(now - prev_time, 0.001);
+        pos_d = pdistance(new_pos, prev_pos);
+        speed =  Math.sqrt(pos_d / (CANVAS_SIZE * time_d));
 
         l = ease(Math.min(1.0, Math.max(0.0, pos_d / STROKE_WIDTH_INERTIA)));
 
