@@ -138,13 +138,13 @@ svg.icon {
   margin-top: 0.5vmin;
   margin-bottom: -0.5vmin;
   border-width: 0;
-  width: 5.0vmin;
-  height: 5.0vmin;
+  width: 4.4vmin;
+  height: 4.4vmin;
 }
 
 #clear-button {
   color: #fee;
-  border-color: #721;
+  border-color: #921;
   background-color: #b21;
 }
 
@@ -181,11 +181,14 @@ div#stats {
 #practice-kanji-details-close,
 #menu-button {
   background-color: #347;
-  border-color: #234;
+  border-color: #246;
   color: #e0e0f0;
   font-family: Verdana, sans-serif;
-  padding-right: 3.2vmin;
+}
+
+#practice-kanji-details-close {
   padding-left: 3.2vmin;
+  padding-right: 3.2vmin;
 }
 
 #menu-button {
@@ -194,14 +197,14 @@ div#stats {
 
 #learn-button {
   background-color: #173;
-  border-color: #151;
+  border-color: #161;
   color: #efe;
   transition: width 0.2s, height 0.2s, opacity 0.2s;
   width: auto;
   height: auto;
   opacity: 1.0;
-  padding-right: 3.2vmin;
-  padding-left: 3.2vmin;
+  padding-right: 3vmin;
+  padding-left: 3vmin;
 }
 
 #learn-button.hidden {
@@ -536,8 +539,8 @@ h1 {
   border: inset 0.2vmin #445;
   border-radius: 1vmin;
   background-color: #000;
-  margin: 3vmin;
-  padding: 3vmin;
+  margin: 1vmin 3vmin;
+  padding: 2vmin;
   font-size: 4.2vmin;
   line-height: 7vmin;
 }
@@ -550,11 +553,12 @@ h1 {
 #practice-kanji-details-content h2,
 #practice-kanji-details-content h3 {
   text-align: left;
-  margin: 3vmin 0 1.5vmin 0;
+  margin: 3vmin 0 1vmin 0;
 }
 
 #practice-kanji-details-content h1 {
   font-size: 6.0vmin;
+  padding: 1vmin;
 }
 
 #practice-kanji-details-content h2 {
@@ -569,6 +573,7 @@ h1 {
 
 #practice-kanji-details-content table {
   border-collapse: collapse;
+  margin-bottom: 4vmin;
 }
 
 #practice-kanji-details-content table,
@@ -621,7 +626,7 @@ h1 {
   font-size: 2.0vmin;
 }
 
-#format code {
+code {
   font-family: monospace;
 }
 

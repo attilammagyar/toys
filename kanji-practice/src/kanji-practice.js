@@ -101,7 +101,9 @@
         teach_frame,
         teach_stroke,
         teach_stroke_length,
-        max_distance,
+        abs_max_distance_x,
+        abs_max_distance_y,
+        max_distance_y,
         start_pos,
         start_snapshot,
         start_time,
@@ -744,7 +746,9 @@
         start_time = prev_time;
         start_pos = prev_pos;
         start_snapshot = make_canvas_snapshot();
-        max_distance = 0;
+        abs_max_distance_x = 0;
+        abs_max_distance_y = 0;
+        max_distance_y = 0;
 
         prev_stroke_width = max_stroke_width / 2.4;
         draw(doc_pos);
@@ -752,17 +756,20 @@
 
     function stop_drawing(doc_pos)
     {
+        if (is_clear_gesture()) {
+            is_drawing = false;
+            clear_drawn_character();
+
+            return;
+        }
+
         if (is_done || !is_drawing) {
             return;
         }
 
-        draw(doc_pos);
-
         is_drawing = false;
 
-        if ((max_distance > 5) || (time() - start_time) > 0.20) {
-            drawn_strokes.push(stroke_segments);
-        } else {
+        if (is_hint_gesture()) {
             restore_canvas_snapshot(start_snapshot);
             stroke_segments = [];
 
@@ -776,6 +783,9 @@
 
             return;
         }
+
+        draw(doc_pos);
+        drawn_strokes.push(stroke_segments);
 
         stroke_segments = [];
 
@@ -796,6 +806,16 @@
                 show(practice_pronunciation);
             }
         }
+    }
+
+    function is_clear_gesture()
+    {
+        return (abs_max_distance_x < 100) && (max_distance_y < -400);
+    }
+
+    function is_hint_gesture()
+    {
+        return ((abs_max_distance_x + abs_max_distance_y) <= 5) && (time() - start_time) <= 0.20;
     }
 
     function reset_current_character()
@@ -909,13 +929,13 @@
         return [
             "<" + kanji_node + " lang=\"ja\">" + quote_html(kanji) + "</" + kanji_node + ">",
             "<table>",
-            make_kanji_detail_row("Grade", grade),
-            make_kanji_detail_row("JLPT (1-4)", jlpt),
-            make_kanji_detail_row("Radical names", rad_names.join("、 "), "ja"),
             make_kanji_detail_row("On readings", on_readings.join("、 "), "ja"),
             make_kanji_detail_row("Kun readings", kun_readings.join("、 "), "ja"),
             make_kanji_detail_row("Nanori", nanoris.join("、 "), "ja"),
             make_kanji_detail_row("Meanings", meanings.join("; ")),
+            make_kanji_detail_row("Radical names", rad_names.join("、 "), "ja"),
+            make_kanji_detail_row("Grade", grade),
+            make_kanji_detail_row("JLPT (1-4)", jlpt),
             "</table>"
         ].join("");
     }
@@ -984,7 +1004,7 @@
     function draw(doc_pos)
     {
         var pos, new_pos, now, time_d, pos_d, speed,
-            start_d,
+            abs_start_d_x, start_d_y, abs_start_d_y,
             new_stroke_width,
             i, l, w;
 
@@ -1003,10 +1023,17 @@
         pos_d = pdistance(new_pos, prev_pos);
         speed =  Math.sqrt(pos_d / (CANVAS_SIZE * time_d));
 
-        start_d = Math.abs(new_pos[0] - start_pos[0]) + Math.abs(new_pos[1] - start_pos[1]);
+        abs_start_d_x = Math.abs(new_pos[0] - start_pos[0]);
+        start_d_y = new_pos[1] - start_pos[1];
+        abs_start_d_y = Math.abs(start_d_y);
 
-        if (start_d > max_distance) {
-            max_distance = start_d;
+        if (abs_start_d_x > abs_max_distance_x) {
+            abs_max_distance_x = abs_start_d_x;
+        }
+
+        if (abs_start_d_y > abs_max_distance_y) {
+            abs_max_distance_y = abs_start_d_y;
+            max_distance_y = start_d_y;
         }
 
         l = ease(Math.min(1.0, Math.max(0.0, pos_d / STROKE_WIDTH_INERTIA)));
@@ -1596,6 +1623,13 @@
 
     function handle_clear_click(evt)
     {
+        clear_drawn_character();
+
+        return stop_event(evt);
+    }
+
+    function clear_drawn_character()
+    {
         if (is_done) {
             hide(grade_form);
         }
@@ -1605,8 +1639,6 @@
         }
 
         reset_current_character();
-
-        return stop_event(evt);
     }
 
     function handle_hint_click(evt)
