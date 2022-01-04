@@ -51,8 +51,24 @@ html, body {
   font-size: 6.0vmin;
   transition: background-color 0.3s, color 0.3s;
   background-color: #000;
-  color: #c8c8d2;
   margin: 0.5vmin;
+  min-height: 9.2vmin;
+}
+
+#practice-kanji span {
+  color: #9898a2;
+}
+
+#practice-kanji.hidden span {
+  opacity: 0;
+}
+
+#practice-kanji span.current {
+  color: #e0e0f0;
+}
+
+#practice-kanji span.prompt {
+  color: #e0e0f0;
 }
 
 #practice-kanji.hidden {

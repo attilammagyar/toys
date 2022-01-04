@@ -50,6 +50,7 @@
         current_card_ref = null,
         characters,
         current_character_ref,
+        revealed_chars,
         answered,
         score,
         next_card_ref_ref,
@@ -333,7 +334,7 @@
     function route()
     {
         var url = String(window.location.href),
-            match, num;
+            match, num, is_card_changed, rc;
 
         is_routing = true;
         stop_teaching();
@@ -343,8 +344,9 @@
 
             if (num >= 0 && num < deck["cards"].length) {
                 hide(grade_form);
-                hide(practice_kanji);
                 hide(practice_pronunciation);
+                is_card_changed = current_card_ref !== num;
+                rc = revealed_chars;
                 store_pick(num);
                 reset_current_character();
                 show_next_character_prompt();
@@ -358,6 +360,13 @@
 
                     if (num >= 0 && num < characters.length && num <= drawn_characters.length) {
                         current_character_ref = num;
+
+                        if (is_card_changed) {
+                            set_revealed_chars(num);
+                        } else {
+                            set_revealed_chars(Math.max(rc, num));
+                        }
+
                         show_next_character_prompt();
                     }
                 }
@@ -385,7 +394,6 @@
         } else if (url.match(/#top$/)) {
             if (current_card_ref !== null) {
                 hide(grade_form);
-                hide(practice_kanji);
                 hide(practice_pronunciation);
                 store_pick(current_card_ref);
                 reset_current_character();
@@ -760,6 +768,7 @@
 
             is_waiting_for_click = false;
             ++current_character_ref;
+            set_revealed_chars(Math.max(revealed_chars, current_character_ref));
 
             if (current_character_ref < characters.length) {
                 show_next_character_prompt();
@@ -807,10 +816,10 @@
             drawn_characters[current_character_ref] = make_canvas_snapshot();
             drawn_strokes = [];
             is_waiting_for_click = true;
+            set_revealed_chars(Math.max(revealed_chars, current_character_ref + 1));
             freeze_until = time() + 0.3;
 
             if ((current_character_ref + 1) >= characters.length) {
-                show(practice_kanji);
                 show(practice_pronunciation);
             }
         }
@@ -1135,9 +1144,51 @@
 
     function handle_kanji_click(evt)
     {
-        show(practice_kanji);
+        set_revealed_chars(characters.length);
 
         return stop_event(evt);
+    }
+
+    function set_revealed_chars(rc)
+    {
+        revealed_chars = Math.min(rc, characters.length);
+
+        update_kanji();
+    }
+
+    function update_kanji()
+    {
+        var i, l, s, k;
+
+        practice_kanji.innerHTML = "";
+        k = current_card["kanji"];
+        l = Math.min(k.length, revealed_chars);
+
+        if (revealed_chars > 0) {
+            show(practice_kanji);
+        } else {
+            hide(practice_kanji);
+        }
+
+        for (i = 0; i < l; ++i) {
+            s = document.createElement("span");
+            s.setAttribute("lang", "ja");
+            s.innerHTML = quote_html(k.substring(i, i + 1));
+
+            if (i === current_character_ref) {
+                s.setAttribute("class", "current");
+            }
+
+            practice_kanji.appendChild(s);
+        }
+
+        if (l < k.length) {
+            s = document.createElement("span");
+            s.setAttribute("lang", "ja");
+            s.setAttribute("class", "prompt");
+            s.innerHTML = "__";
+            practice_kanji.appendChild(s);
+        }
     }
 
     function handle_pronunciation_click(evt)
@@ -1649,6 +1700,7 @@
 
         if (is_done && current_character_ref > 0) {
             --current_character_ref;
+            set_revealed_chars(Math.max(revealed_chars, current_character_ref));
         }
 
         reset_current_character();
@@ -2414,6 +2466,7 @@
         current_card_ref = null;
         characters = null;
         current_character_ref = null;
+        revealed_chars = null;
 
         cards = [];
         card_refs = [];
@@ -2671,7 +2724,6 @@
     function pick_card()
     {
         drawn_characters = [];
-        hide(practice_kanji);
         hide(practice_pronunciation);
 
         if (Math.random() > 0.25) {
@@ -2707,6 +2759,7 @@
         kanji = current_card["kanji"];
         characters = [];
         current_character_ref = 0;
+        set_revealed_chars(0);
 
         for (i = 0, l = kanji.length; i < l; ++i) {
             c = kanji_to_key(kanji.substring(i, i + 1));
@@ -2758,7 +2811,7 @@
         stats.innerHTML = String(score) + " / " + String(answered);
 
         current_card["kanji"],
-        practice_kanji.innerHTML = quote_html(current_card["kanji"]);
+        update_kanji();
         practice_pronunciation.innerHTML = quote_html(current_card["pronunciation"]);
         practice_meaning.setAttribute("lang", deck["meaning_language"]);
         practice_meaning.innerHTML = quote_html(current_card["meaning"]);
