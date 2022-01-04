@@ -708,7 +708,7 @@
 
     function handle_canvas_mouse_leave(evt)
     {
-        stop_drawing([evt.pageX, evt.pageY], false);
+        stop_drawing([evt.pageX, evt.pageY], false, true);
 
         return stop_event(evt);
     }
@@ -752,7 +752,7 @@
         draw(doc_pos);
     }
 
-    function stop_drawing(doc_pos, is_click_end)
+    function stop_drawing(doc_pos, is_click_end, needs_drawing)
     {
         if ((is_drawing || is_waiting_for_click || is_done) && is_clear_gesture()) {
             is_drawing = false;
@@ -801,7 +801,10 @@
             return;
         }
 
-        draw(doc_pos);
+        if (needs_drawing) {
+            draw(doc_pos);
+        }
+
         drawn_strokes.push(stroke_segments);
 
         stroke_segments = [];
@@ -1029,6 +1032,10 @@
             return;
         }
 
+        if (is_nan(doc_pos)) {
+            return;
+        }
+
         new_pos = to_canvas_pos(doc_pos);
 
         abs_start_d_x = Math.abs(new_pos[0] - start_pos[0]);
@@ -1045,10 +1052,6 @@
         }
 
         if (is_done || is_showing_hint || !is_drawing) {
-            return;
-        }
-
-        if (is_nan(doc_pos)) {
             return;
         }
 
@@ -1082,6 +1085,15 @@
         prev_stroke_width = new_stroke_width;
         prev_pos = new_pos;
         prev_time = now;
+
+        if (
+            (new_pos[0] < 0)
+            || (new_pos[1] < 0)
+            || (new_pos[0] > CANVAS_SIZE)
+            || (new_pos[1] > CANVAS_SIZE)
+        ) {
+            stop_drawing(doc_pos, false, false);
+        }
     }
 
     function draw_segment(pos1, pos2, stroke_width)
