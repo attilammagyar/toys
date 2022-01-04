@@ -67,10 +67,6 @@ html, body {
   color: #e0e0f0;
 }
 
-#practice-kanji span.prompt {
-  color: #e0e0f0;
-}
-
 #practice-kanji.hidden {
   background-color: #555;
   color: #555;

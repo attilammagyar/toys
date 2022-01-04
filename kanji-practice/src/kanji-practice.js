@@ -1182,11 +1182,11 @@
             practice_kanji.appendChild(s);
         }
 
-        if (l < k.length) {
+        if ((revealed_chars < k.length) && (current_character_ref >= revealed_chars)) {
             s = document.createElement("span");
             s.setAttribute("lang", "ja");
-            s.setAttribute("class", "prompt");
-            s.innerHTML = "__";
+            s.setAttribute("class", "current");
+            s.innerHTML = "_";
             practice_kanji.appendChild(s);
         }
     }
@@ -1843,7 +1843,7 @@
 
         canvas_ctx.fillStyle = "#f0f0c0";
         canvas_ctx.beginPath();
-        canvas_ctx.arc(pos.x, pos.y, 10, 0, FULL_CIRCLE);
+        canvas_ctx.arc(pos.x, pos.y, 16, 0, FULL_CIRCLE);
         canvas_ctx.fill();
 
         ++teach_frame;
