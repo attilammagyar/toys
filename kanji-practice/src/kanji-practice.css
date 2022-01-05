@@ -21,7 +21,7 @@ html, body {
   background-color: #000;
   position: absolute;
   left: 1vw;
-  width: 98vw;
+  width: 96vw;
   max-width: 57vh;
   top: 10vh;
   height: 20vh;
@@ -38,8 +38,8 @@ html, body {
   position: absolute;
   left: 1vw;
   top: 33vh;
-  width: 98vw;
-  height: 98vw;
+  width: 96vw;
+  height: 96vw;
   max-width: 57vh;
   max-height: 57vh;
   border: inset 0.5vmin #666;
@@ -120,7 +120,6 @@ a.button {
   border-style: outset;
   border-width: 0.7vmin;
   border-radius: 3vmin;
-  margin: 0.2vmin;
   text-decoration: none;
 }
 
@@ -142,6 +141,11 @@ a.button {
   color: #012;
   border-color: #35c;
   background-color: #46d;
+}
+
+#save-json-button {
+  border-color: #716;
+  background-color: #827;
 }
 
 svg.icon {
@@ -204,7 +208,7 @@ div#stats {
 }
 
 #menu-button {
-  margin-right: 1.2vmin;
+  margin-right: 0.5vmin;
 }
 
 #learn-button {

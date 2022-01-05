@@ -35,6 +35,7 @@
         deck,
         menu,
         menu_export_json,
+        save_json_button,
         menu_export_tsv,
         load_dragndrop,
         load_input,
@@ -447,6 +448,7 @@
         learn_button = $("learn-button");
         message = $("message");
         menu_export_json = $("menu-export-json");
+        save_json_button = $("save-json-button")
         menu_export_tsv = $("menu-export-tsv");
         alert_modal = $("alert");
         alert_message = $("alert-message");
@@ -520,6 +522,7 @@
         editor_button_save_new.onclick = handle_edit_save_new_click;
 
         menu_export_json.onclick = handle_menu_export_json_click;
+        save_json_button.onclick = handle_save_json_click;
         menu_export_tsv.onclick = handle_menu_export_tsv_click;
 
         learn_button.onclick = handle_learn_button_click;
@@ -2036,6 +2039,17 @@
             evt,
             export_deck_as_indented_json_string,
             menu_export_json,
+            ".json",
+            "application/json"
+        );
+    }
+
+    function handle_save_json_click(evt)
+    {
+        return handle_menu_export_click(
+            evt,
+            export_deck_as_indented_json_string,
+            save_json_button,
             ".json",
             "application/json"
         );
