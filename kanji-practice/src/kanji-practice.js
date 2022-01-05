@@ -865,7 +865,7 @@
     function reveal_character()
     {
         var stroke, segment,
-            i, l, j, ll;
+            i, l, j, ll, redrawn;
 
         restore_canvas_snapshot(revealed_canvas);
 
@@ -877,6 +877,18 @@
                 draw_segment(segment[0], segment[1], segment[2]);
             }
         }
+
+        redrawn = canvas_ctx.createPattern(dom_canvas, "no-repeat");
+
+        restore_canvas_snapshot(revealed_canvas);
+
+        canvas_ctx.globalAlpha = 0.75;
+        canvas_ctx.fillStyle = redrawn;
+        canvas_ctx.beginPath();
+        canvas_ctx.rect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+        canvas_ctx.fill();
+        canvas_ctx.closePath();
+        canvas_ctx.globalAlpha = 1.0;
     }
 
     function show_next_character_prompt()
