@@ -11,10 +11,10 @@
             "You have unsaved changes in the deck properties editor."
             + " Are you sure you want to navigate away and lose those changes?"
         ),
-        CANVAS_SIZE = 720,
+        CANVAS_SIZE = 480,
+        CLEAR_GESTURE_VERTICAL = - Math.round(CANVAS_SIZE * 0.55),
         KANJIVG_SIZE = 109,
         SCALE = CANVAS_SIZE / KANJIVG_SIZE,
-        STROKE_WIDTH_INERTIA = CANVAS_SIZE / 15,
         FULL_CIRCLE = 2 * Math.PI,
         GRADES = [
             "",
@@ -110,6 +110,7 @@
         start_snapshot,
         start_time,
         prev_pos,
+        prev_mid,
         prev_time,
         prev_stroke_width,
         stroke_segments,
@@ -569,6 +570,7 @@
     {
         is_drawing = false;
         prev_pos = [0, 0];
+        prev_mid = null;
         prev_time = 0;
         prev_stroke_width = 0;
         drawn_strokes = [];
@@ -601,7 +603,7 @@
 
     function clear_canvas()
     {
-        var guides = new Path2D("M 1,1 L 718,718 M 718,1 L 1,718 M 1,359 L 718,359 M 359,1 L 359,718");
+        var guides = new Path2D("M 1,1 L 478,478 M 478,1 L 1,478 M 1,239 L 478,239 M 239,1 L 239,478");
 
         canvas_ctx.fillStyle = "#000000";
         canvas_ctx.fillRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
@@ -747,6 +749,7 @@
         stroke_segments = [];
 
         prev_pos = start_pos;
+        prev_mid = null;
         prev_time = time();
         start_time = prev_time;
         start_snapshot = make_canvas_snapshot();
@@ -833,7 +836,7 @@
 
     function is_clear_gesture()
     {
-        return (abs_max_distance_x < 100) && (max_distance_y < -400);
+        return (abs_max_distance_x < 100) && (max_distance_y < CLEAR_GESTURE_VERTICAL);
     }
 
     function is_hint_gesture()
@@ -877,7 +880,7 @@
 
             for (j = 0, ll = stroke.length; j < ll; ++j) {
                 segment = stroke[j];
-                draw_segment(segment[0], segment[1], segment[2]);
+                draw_segment(segment[0], segment[1], segment[2], segment[3]);
             }
         }
 
@@ -1038,7 +1041,7 @@
 
     function draw(doc_pos)
     {
-        var pos, new_pos, now, time_d, pos_d, speed,
+        var mid, new_pos, now, time_d, pos_d, speed, decrease,
             abs_start_d_x, start_d_y, abs_start_d_y,
             new_stroke_width,
             i, l, w;
@@ -1073,31 +1076,31 @@
         now = time();
 
         time_d = Math.max(now - prev_time, 0.001);
-        pos_d = pdistance(new_pos, prev_pos);
-        speed =  Math.sqrt(pos_d / (CANVAS_SIZE * time_d));
+        pos_d = pdistance(new_pos, prev_pos) / CANVAS_SIZE;
+        speed =  pos_d / time_d;
+        l = Math.min(1.0, pos_d * 5);
+        decrease = 0.001 + Math.sqrt(speed);
+        new_stroke_width = l * (prev_stroke_width / decrease) + (1.0 - l) * prev_stroke_width;
+        prev_stroke_width = new_stroke_width;
+        new_stroke_width = Math.round(new_stroke_width);
 
-        l = ease(Math.min(1.0, Math.max(0.0, pos_d / STROKE_WIDTH_INERTIA)));
-
-        new_stroke_width = Math.max(
-            min_stroke_width,
-            Math.min(
-                max_stroke_width,
-                l * (prev_stroke_width / (speed + 0.001)) + (1.0 - l) * prev_stroke_width
-            )
-        );
-
-        pos = prev_pos;
-
-        for (i = 0; i < 10; ++i) {
-            l = i / 10;
-            prev_pos = pos;
-            pos = vsum(vscale(1.0 - l, prev_pos), vscale(l, new_pos));
-            w = Math.round((1.0 - l) * prev_stroke_width + l * new_stroke_width);
-            draw_segment(prev_pos, pos, w);
-            stroke_segments.push([prev_pos, pos, w]);
+        if (new_stroke_width < min_stroke_width) {
+            new_stroke_width = min_stroke_width;
+        } else if (new_stroke_width > max_stroke_width) {
+            new_stroke_width = max_stroke_width;
         }
 
-        prev_stroke_width = new_stroke_width;
+        mid = vscale(0.5, vsum(prev_pos, new_pos));
+
+        if (prev_mid !== null) {
+            draw_segment(prev_mid, mid, prev_pos, new_stroke_width);
+            stroke_segments.push([prev_mid, mid, prev_pos, new_stroke_width]);
+        } else {
+            draw_segment(prev_pos, mid, null, new_stroke_width);
+            stroke_segments.push([prev_pos, mid, null, new_stroke_width]);
+        }
+
+        prev_mid = mid;
         prev_pos = new_pos;
         prev_time = now;
 
@@ -1111,7 +1114,7 @@
         }
     }
 
-    function draw_segment(pos1, pos2, stroke_width)
+    function draw_segment(pos1, pos2, control, stroke_width)
     {
         canvas_ctx.strokeStyle = "#f6f6f6";
         canvas_ctx.lineCap = "round";
@@ -1119,7 +1122,12 @@
 
         canvas_ctx.beginPath();
         canvas_ctx.moveTo(pos1[0], pos1[1]);
-        canvas_ctx.lineTo(pos2[0], pos2[1]);
+
+        if (control) {
+            canvas_ctx.quadraticCurveTo(control[0], control[1], pos2[0], pos2[1]);
+        } else {
+            canvas_ctx.lineTo(pos2[0], pos2[1]);
+        }
         canvas_ctx.stroke();
     }
 
