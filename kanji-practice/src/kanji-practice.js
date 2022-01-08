@@ -377,9 +377,6 @@
 
                 return;
             }
-        } else if (match = url.match(/#q-([0-9]+)-([0-9]+)$/)) {
-            num = Number(match[1]) - 1;
-
         } else if (match = url.match(/#load$/)) {
             start_practising();
             handle_load_confirmation();
@@ -2964,6 +2961,8 @@
         }
 
         initialize_languages();
+
+        update_kanji = function () {};
 
         QUnit.module("state_handling", function () {
             QUnit.test("load_deck", function(assert) {
