@@ -129,6 +129,7 @@
         practice_kanji_details,
         practice_kanji_details_content,
         practice_kanji_details_notes,
+        about_screen,
         deck_name_orig,
         meaning_language_orig,
         deck_name,
@@ -411,6 +412,12 @@
             is_routing = false;
 
             return;
+        } else if (url.match(/#about/)) {
+            start_practising();
+            show_about_screen();
+            is_routing = false;
+
+            return;
         }
 
         is_routing = false;
@@ -478,6 +485,7 @@
         deck_name = $("deck-name");
         meaning_language = $("meaning-language");
         notes_language = $("notes-language");
+        about_screen = $("about-screen");
         deck_name_orig = null;
         meaning_language_orig = null;
         notes_language_orig = null;
@@ -493,6 +501,8 @@
         $("menu-import-tsv").onclick = handle_menu_import_tsv_click;
         $("no-cards-import").onclick = handle_menu_import_tsv_click;
         $("menu-add-tsv").onclick = handle_menu_add_tsv_click;
+        $("menu-about").onclick = handle_menu_about_click;
+        $("about-back").onclick = handle_about_back_click;
         $("alert-ok").onclick = handle_alert_ok_click;
         $("confirm-yes").onclick = handle_confirm_yes_click;
         $("confirm-no").onclick = handle_confirm_no_click;
@@ -547,7 +557,7 @@
                 file_name = "index.html";
             }
 
-            $("menu-download").setAttribute("href", file_name);
+            $("download-button").setAttribute("href", file_name);
         } catch (e) {
         }
     }
@@ -1398,12 +1408,36 @@
         return stop_event(evt);
     }
 
+    function handle_menu_about_click(evt)
+    {
+        push_history("about");
+        show_about_screen();
+
+        return stop_event(evt);
+    }
+
+    function show_about_screen()
+    {
+        hide(menu);
+        hide(practice_screen);
+        show(about_screen);
+    }
+
+    function handle_about_back_click(evt)
+    {
+        hide(about_screen);
+        show_practice_screen();
+
+        return stop_event(evt);
+    }
+
     function show_practice_screen()
     {
         hide(menu);
         hide(load_screen);
         hide(editor_screen);
         hide(deck_properties_screen);
+        hide(about_screen);
         show(practice_screen);
 
         if (deck["cards"].length > 0) {

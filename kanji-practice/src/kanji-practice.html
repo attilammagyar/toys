@@ -121,7 +121,6 @@
         <svg class="icon" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
          <g>
           <title>Menu</title>
-          <path id="svg-1" opacity="1" fill-opacity="0" stroke-width="44" stroke="#ffffff" fill="none"/>
           <rect id="svg-2" height="30" width="300" y="100" x="100" stroke-width="44" stroke="#ffffff" fill="#ffffff"/>
           <rect id="svg-3" height="30" width="300" y="235" x="100" stroke-width="44" stroke="#ffffff" fill="#ffffff"/>
           <rect id="svg-4" height="30" width="300" y="370" x="100" stroke-width="44" stroke="#ffffff" fill="#ffffff"/>
@@ -185,23 +184,7 @@
         <li><a id="menu-add-tsv" href="#">Add new cards from TSV</a></li>
         <li><a id="menu-import-tsv" href="#">Import deck from TSV</a></li>
         <li><a id="menu-export-tsv" href="#">Export deck as TSV</a></li>
-        <li>
-          <a id="menu-download" href="index.html" download="kanji-practice.html">
-            Download this app
-          </a>
-        </li>
-        <li>
-          <a href="https://github.com/attilammagyar/toys"
-            target="_blank">Source code on GitHub</a>
-        </li>
-        <li>
-          <a href="https://kanjivg.tagaini.net/"
-            target="_blank">KanjiVG</a>
-        </li>
-        <li>
-          <a href="https://www.edrdg.org/wiki/index.php/KANJIDIC_Project"
-            target="_blank">KANJIDIC</a>
-        </li>
+        <li><a id="menu-about" href="#">About</a></li>
       </ul>
       <div id="no-cards">
         The deck of flashcards is empty.<br/>
@@ -238,6 +221,86 @@
     </form>
   </div>
 
+  <div id="about-screen" class="hidden">
+    <h1>About Kanji Practice</h1>
+    <p>
+      A writing based, minimalistic
+      <a href="https://en.wikipedia.org/wiki/Spaced_repetition"
+        target="_blank">flashcard (SRS, Spaced Repetition System)</a>
+      app for learning
+      <a href="https://en.wikipedia.org/wiki/Kanji">Japanese kanji</a>.
+    </p>
+    <p>
+      A quick tap on the drawing area will show a hint for the next stroke, a
+      vertical swipe upwards will clear the canvas and restart the current
+      character.
+    </p>
+    <p>
+      Key differences from other similar apps:
+    </p>
+    <ul>
+      <li>
+        It has a <strong>dark design</strong>.
+      </li>
+      <li>
+        <strong>No stroke recognition</strong>, so you won't experience the
+        frustration of the app repeatedly failing to accept a correct stroke.
+      </li>
+      <li>
+        <strong>No subscription fees, not data privacy concerns.</strong> All
+        your flashcard data is located on your device, so the control is 100%
+        yours. This also means that for example if you want to make a backup
+        copy of your learning data from time to time, you will have to use the
+        appropriate items from the app's menu to manually export them from the
+        app.
+      </li>
+      <li>
+        It's <strong>a single HTML file that you can
+        <a id="download-button" href="index.html" download="kanji-practice.html">
+          download to your phone, tablet, or computer
+        </a></strong>
+        and use it from your local file system in a browser, even without an
+        internet connection. This also means that you don't have to worry about
+        an update introducing unwanted changes. You can even change the source
+        code if you want to. (Note: the app's data storage in the browser is
+        associated with its location and file name, so before changing these,
+        make sure to save your deck of flashcards using the menu in order to
+        avoid losing them.)
+      </li>
+      <li>
+        It's <strong>completely offline</strong>, there's no background
+        communication with any servers or clouds, so it won't start lagging and
+        glitching while you are practising. This also means that you will have
+        to manually save or export your flashcards using the app's menu if you
+        want to transfer and access them from a different device.
+      </li>
+    </ul>
+    <p>
+      The
+      <a href="https://github.com/attilammagyar/toys"
+        target="_blank">source code is available on GitHub</a>.
+    </p>
+    <p>
+      This software uses stroke data from Ulrich Apel's
+      <a href="https://kanjivg.tagaini.net/" target="_blank">KanjiVG</a>
+      project.
+    </p>
+    <p>
+      This projects uses kanji data from the
+      <a href="https://www.edrdg.org/wiki/index.php/KANJIDIC_Project"
+        target="_blank">KANJIDIC</a>
+      dictionary files. These files are the property of the
+      <a href="http://www.edrdg.org/" target="_blank">
+        Electronic Dictionary Research and Development Group
+      </a>
+      and are used in conformance with the Group's
+      <a href="http://www.edrdg.org/edrdg/licence.html" target="_blank">license</a>.
+    </p>
+    <div class="input">
+      <a class="button" id="about-back" href="#">Back</a>
+    </div>
+  </div>
+
   <div id="load-screen" class="hidden">
     <form id="load-form" action="#" method="get">
       <h1 id="load-screen-title">Load deck</h1>
@@ -247,7 +310,7 @@
         <input id="load-input" name="load-input" type="file"
           accept=".json,application/json" />
       </div>
-      <div class="input" id="tsv-info" class="hidden">
+      <div class="input" id="tsv-info">
         <label>
           File format:<br/>
           <code>KANJI &lt;tab&gt; PRONUNCIATION &lt;tab&gt; MEANING &lt;tab&gt; NOTES</code>
