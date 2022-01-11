@@ -8,6 +8,10 @@
             "You have unsaved changes in the card editor."
             + " Are you sure you want to navigate away and lose those changes?"
         ),
+        DECK_PROPERTIES_EDITOR_EXIT_CONFIRM = (
+            "You have unsaved changes in the deck properties editor."
+            + " Are you sure you want to navigate away and lose those changes?"
+        ),
         is_routing,
         deck,
         menu,
@@ -61,13 +65,221 @@
         editor_buttons_new,
         editor_buttons_current,
         editor_button_save,
-        editor_button_save_new;
+        editor_button_save_new,
+        deck_properties_screen,
+        deck_name,
+        deck_name_orig,
+        side_1_language_orig,
+        side_1_language,
+        side_2_language_orig,
+        side_2_language,
+        notes_language,
+        notes_language_orig,
+        language_codes = [
+            {"code": "", "name": "Unknown"},
+            {"code": "ab", "name": "Abkhazian"},
+            {"code": "aa", "name": "Afar"},
+            {"code": "af", "name": "Afrikaans"},
+            {"code": "ak", "name": "Akan"},
+            {"code": "sq", "name": "Albanian"},
+            {"code": "am", "name": "Amharic"},
+            {"code": "ar", "name": "Arabic"},
+            {"code": "an", "name": "Aragonese"},
+            {"code": "hy", "name": "Armenian"},
+            {"code": "as", "name": "Assamese"},
+            {"code": "av", "name": "Avaric"},
+            {"code": "ae", "name": "Avestan"},
+            {"code": "ay", "name": "Aymara"},
+            {"code": "az", "name": "Azerbaijani"},
+            {"code": "bm", "name": "Bambara"},
+            {"code": "ba", "name": "Bashkir"},
+            {"code": "eu", "name": "Basque"},
+            {"code": "be", "name": "Belarusian"},
+            {"code": "bn", "name": "Bengali"},
+            {"code": "bi", "name": "Bislama"},
+            {"code": "bs", "name": "Bosnian"},
+            {"code": "br", "name": "Breton"},
+            {"code": "bg", "name": "Bulgarian"},
+            {"code": "my", "name": "Burmese"},
+            {"code": "ca", "name": "Catalan, Valencian"},
+            {"code": "ch", "name": "Chamorro"},
+            {"code": "ce", "name": "Chechen"},
+            {"code": "ny", "name": "Chichewa, Chewa, Nyanja"},
+            {"code": "zh", "name": "Chinese"},
+            {"code": "cv", "name": "Chuvash"},
+            {"code": "kw", "name": "Cornish"},
+            {"code": "co", "name": "Corsican"},
+            {"code": "cr", "name": "Cree"},
+            {"code": "hr", "name": "Croatian"},
+            {"code": "cs", "name": "Czech"},
+            {"code": "da", "name": "Danish"},
+            {"code": "dv", "name": "Divehi, Dhivehi, Maldivian"},
+            {"code": "nl", "name": "Dutch, Flemish"},
+            {"code": "dz", "name": "Dzongkha"},
+            {"code": "en", "name": "English"},
+            {"code": "eo", "name": "Esperanto"},
+            {"code": "et", "name": "Estonian"},
+            {"code": "ee", "name": "Ewe"},
+            {"code": "fo", "name": "Faroese"},
+            {"code": "fj", "name": "Fijian"},
+            {"code": "fi", "name": "Finnish"},
+            {"code": "fr", "name": "French"},
+            {"code": "ff", "name": "Fulah"},
+            {"code": "gl", "name": "Galician"},
+            {"code": "ka", "name": "Georgian"},
+            {"code": "de", "name": "German"},
+            {"code": "el", "name": "Greek, Modern (1453-)"},
+            {"code": "gn", "name": "Guarani"},
+            {"code": "gu", "name": "Gujarati"},
+            {"code": "ht", "name": "Haitian, Haitian Creole"},
+            {"code": "ha", "name": "Hausa"},
+            {"code": "he", "name": "Hebrew"},
+            {"code": "hz", "name": "Herero"},
+            {"code": "hi", "name": "Hindi"},
+            {"code": "ho", "name": "Hiri Motu"},
+            {"code": "hu", "name": "Hungarian"},
+            {"code": "ia", "name": "Interlingua (International Auxiliary Language Association)"},
+            {"code": "id", "name": "Indonesian"},
+            {"code": "ie", "name": "Interlingue, Occidental"},
+            {"code": "ga", "name": "Irish"},
+            {"code": "ig", "name": "Igbo"},
+            {"code": "ik", "name": "Inupiaq"},
+            {"code": "io", "name": "Ido"},
+            {"code": "is", "name": "Icelandic"},
+            {"code": "it", "name": "Italian"},
+            {"code": "iu", "name": "Inuktitut"},
+            {"code": "ja", "name": "Japanese"},
+            {"code": "jv", "name": "Javanese"},
+            {"code": "kl", "name": "Kalaallisut, Greenlandic"},
+            {"code": "kn", "name": "Kannada"},
+            {"code": "kr", "name": "Kanuri"},
+            {"code": "ks", "name": "Kashmiri"},
+            {"code": "kk", "name": "Kazakh"},
+            {"code": "km", "name": "Central Khmer"},
+            {"code": "ki", "name": "Kikuyu, Gikuyu"},
+            {"code": "rw", "name": "Kinyarwanda"},
+            {"code": "ky", "name": "Kirghiz, Kyrgyz"},
+            {"code": "kv", "name": "Komi"},
+            {"code": "kg", "name": "Kongo"},
+            {"code": "ko", "name": "Korean"},
+            {"code": "ku", "name": "Kurdish"},
+            {"code": "kj", "name": "Kuanyama, Kwanyama"},
+            {"code": "la", "name": "Latin"},
+            {"code": "lb", "name": "Luxembourgish, Letzeburgesch"},
+            {"code": "lg", "name": "Ganda"},
+            {"code": "li", "name": "Limburgan, Limburger, Limburgish"},
+            {"code": "ln", "name": "Lingala"},
+            {"code": "lo", "name": "Lao"},
+            {"code": "lt", "name": "Lithuanian"},
+            {"code": "lu", "name": "Luba-Katanga"},
+            {"code": "lv", "name": "Latvian"},
+            {"code": "gv", "name": "Manx"},
+            {"code": "mk", "name": "Macedonian"},
+            {"code": "mg", "name": "Malagasy"},
+            {"code": "ms", "name": "Malay"},
+            {"code": "ml", "name": "Malayalam"},
+            {"code": "mt", "name": "Maltese"},
+            {"code": "mi", "name": "Maori"},
+            {"code": "mr", "name": "Marathi"},
+            {"code": "mh", "name": "Marshallese"},
+            {"code": "mn", "name": "Mongolian"},
+            {"code": "na", "name": "Nauru"},
+            {"code": "nv", "name": "Navajo, Navaho"},
+            {"code": "nd", "name": "North Ndebele"},
+            {"code": "ne", "name": "Nepali"},
+            {"code": "ng", "name": "Ndonga"},
+            {"code": "nb", "name": "Norwegian Bokmål"},
+            {"code": "nn", "name": "Norwegian Nynorsk"},
+            {"code": "no", "name": "Norwegian"},
+            {"code": "ii", "name": "Sichuan Yi, Nuosu"},
+            {"code": "nr", "name": "South Ndebele"},
+            {"code": "oc", "name": "Occitan"},
+            {"code": "oj", "name": "Ojibwa"},
+            {"code": "cu", "name": "Church Slavic, Old Slavonic, Church Slavonic, Old Bulgarian, Old Church Slavonic"},
+            {"code": "om", "name": "Oromo"},
+            {"code": "or", "name": "Oriya"},
+            {"code": "os", "name": "Ossetian, Ossetic"},
+            {"code": "pa", "name": "Punjabi, Panjabi"},
+            {"code": "pi", "name": "Pali"},
+            {"code": "fa", "name": "Persian"},
+            {"code": "pl", "name": "Polish"},
+            {"code": "ps", "name": "Pashto, Pushto"},
+            {"code": "pt", "name": "Portuguese"},
+            {"code": "qu", "name": "Quechua"},
+            {"code": "rm", "name": "Romansh"},
+            {"code": "rn", "name": "Rundi"},
+            {"code": "ro", "name": "Romanian, Moldavian, Moldovan"},
+            {"code": "ru", "name": "Russian"},
+            {"code": "sa", "name": "Sanskrit"},
+            {"code": "sc", "name": "Sardinian"},
+            {"code": "sd", "name": "Sindhi"},
+            {"code": "se", "name": "Northern Sami"},
+            {"code": "sm", "name": "Samoan"},
+            {"code": "sg", "name": "Sango"},
+            {"code": "sr", "name": "Serbian"},
+            {"code": "gd", "name": "Gaelic, Scottish Gaelic"},
+            {"code": "sn", "name": "Shona"},
+            {"code": "si", "name": "Sinhala, Sinhalese"},
+            {"code": "sk", "name": "Slovak"},
+            {"code": "sl", "name": "Slovenian"},
+            {"code": "so", "name": "Somali"},
+            {"code": "st", "name": "Southern Sotho"},
+            {"code": "es", "name": "Spanish, Castilian"},
+            {"code": "su", "name": "Sundanese"},
+            {"code": "sw", "name": "Swahili"},
+            {"code": "ss", "name": "Swati"},
+            {"code": "sv", "name": "Swedish"},
+            {"code": "ta", "name": "Tamil"},
+            {"code": "te", "name": "Telugu"},
+            {"code": "tg", "name": "Tajik"},
+            {"code": "th", "name": "Thai"},
+            {"code": "ti", "name": "Tigrinya"},
+            {"code": "bo", "name": "Tibetan"},
+            {"code": "tk", "name": "Turkmen"},
+            {"code": "tl", "name": "Tagalog"},
+            {"code": "tn", "name": "Tswana"},
+            {"code": "to", "name": "Tonga (Tonga Islands)"},
+            {"code": "tr", "name": "Turkish"},
+            {"code": "ts", "name": "Tsonga"},
+            {"code": "tt", "name": "Tatar"},
+            {"code": "tw", "name": "Twi"},
+            {"code": "ty", "name": "Tahitian"},
+            {"code": "ug", "name": "Uighur, Uyghur"},
+            {"code": "uk", "name": "Ukrainian"},
+            {"code": "ur", "name": "Urdu"},
+            {"code": "uz", "name": "Uzbek"},
+            {"code": "ve", "name": "Venda"},
+            {"code": "vi", "name": "Vietnamese"},
+            {"code": "vo", "name": "Volapük"},
+            {"code": "wa", "name": "Walloon"},
+            {"code": "cy", "name": "Welsh"},
+            {"code": "wo", "name": "Wolof"},
+            {"code": "fy", "name": "Western Frisian"},
+            {"code": "xh", "name": "Xhosa"},
+            {"code": "yi", "name": "Yiddish"},
+            {"code": "yo", "name": "Yoruba"},
+            {"code": "za", "name": "Zhuang, Chuang"},
+            {"code": "zu", "name": "Zulu"}
+        ],
+        known_languages = {};
 
     function main()
     {
+        initialize_languages();
         initialize_gui();
         restore_state();
         route();
+    }
+
+    function initialize_languages()
+    {
+        var kl = known_languages,
+            i, l, lng;
+
+        for (i = 0, l = language_codes.length; i < l; ++i) {
+            lng = language_codes[i];
+            kl["l" + lng["code"]] = lng["name"];
+        }
     }
 
     function route()
@@ -101,14 +313,12 @@
             return;
         } else if (match = url.match(/#new$/)) {
             start_practising();
-            hide(practice_screen);
             show_editor("new-card", "", "", []);
             is_routing = false;
 
             return;
         } else if (match = url.match(/#all$/)) {
             start_practising();
-            hide(practice_screen);
             show_all_cards();
             is_routing = false;
 
@@ -119,6 +329,12 @@
 
                 return;
             }
+        } else if (url.match(/#deck-properties/)) {
+            start_practising();
+            show_deck_properties_editor();
+            is_routing = false;
+
+            return;
         }
 
         is_routing = false;
@@ -131,7 +347,16 @@
 
         message_timeout = null;
 
-        load_deck({"name": "flashcards", "notes": [], "cards": []});
+        load_deck(
+            {
+                "name": "flashcards",
+                "side_1_language": "",
+                "side_2_language": "",
+                "notes_language": "",
+                "notes": [],
+                "cards": []
+            }
+        );
         menu = $("menu");
         load_dragndrop = $("load-dragndrop");
         load_input = $("load-input");
@@ -164,9 +389,19 @@
         editor_buttons_new = $("editor-buttons-new");
         editor_button_save = $("edit-save");
         editor_button_save_new = $("edit-save-new");
+        deck_properties_screen = $("deck-properties-screen");
+        deck_name = $("deck-name");
+        side_1_language = $("side-1-language");
+        side_2_language = $("side-2-language");
+        notes_language = $("notes-language");
+        deck_name_orig = null;
+        side_1_language_orig = null;
+        side_2_language_orig = null;
+        notes_language_orig = null;
 
         $("practice-form").onsubmit = stop_event;
         $("editor-form").onsubmit = stop_event;
+        $("deck-properties-form").onsubmit = stop_event;
         $("load-form").onsubmit = stop_event;
         $("menu-button").onclick = handle_menu_button_click;
         $("menu-hide").onclick = handle_hide_menu_click;
@@ -184,6 +419,9 @@
         $("menu-edit").onclick = handle_menu_edit_click;
         $("edit-cancel").onclick = handle_edit_cancel_click;
         $("menu-create").onclick = handle_menu_create_click;
+        $("menu-deck").onclick = handle_menu_deck_click;
+        $("deck-save").onclick = handle_deck_properties_save_click;
+        $("deck-back").onclick = handle_deck_properties_cancel_click;
         $("no-cards-create").onclick = handle_menu_create_click;
         $("edit-back").onclick = handle_edit_cancel_click;
 
@@ -292,6 +530,17 @@
         obj.setAttribute("class", cls.replace(/(^| )hidden($| )/g, "$2") + " hidden");
     }
 
+    function hide_all_screens()
+    {
+        hide(all_cards);
+        hide(deck_properties_screen);
+        hide(editor_screen);
+        hide(load_screen);
+        hide(menu);
+        hide(no_cards);
+        hide(practice_screen);
+    }
+
     function handle_menu_load_click(evt)
     {
         hide(menu);
@@ -353,7 +602,7 @@
     function handle_load_confirmation()
     {
         push_history("load");
-        hide(practice_screen);
+        hide_all_screens();
         show(load_screen);
     }
 
@@ -367,10 +616,7 @@
 
     function show_practice_screen()
     {
-        hide(menu);
-        hide(all_cards);
-        hide(load_screen);
-        hide(editor_screen);
+        hide_all_screens();
         show(practice_screen);
 
         if (deck["cards"].length > 0) {
@@ -429,8 +675,7 @@
             i, l;
 
         push_history("all");
-        hide(menu);
-        hide(practice_screen);
+        hide_all_screens();
 
         all_cards_list.innerHTML = "";
 
@@ -451,14 +696,14 @@
         return [
             "<li value=\"" + index + "\">",
                 "<dt>",
-                    card_side_to_list_item_html(card["side_2"]),
+                    card_side_to_list_item_html(card["side_2"], deck["side_2_language"]),
                 "</dt>",
                 "<dd>",
                     "<div>",
-                        card_side_to_list_item_html(card["side_1"]),
+                        card_side_to_list_item_html(card["side_1"], deck["side_1_language"]),
                         "<a class=\"edit\" href=\"#e-" + index + "\">Edit and learn this card</a>",
                     "</div>",
-                    "<div class=\"notes\">",
+                    "<div class=\"notes\" lang=\"" + deck["notes_language"] + "\">",
                         format_notes(notes, card["note_refs"]),
                     "</div>",
                     "<div class=\"score\">",
@@ -486,23 +731,23 @@
         return Math.round(sum * 100.0 / max);
     }
 
-    function card_side_to_list_item_html(side)
+    function card_side_to_list_item_html(side, lang)
     {
         var with_furigana = side,
             without_furigana = remove_furigana(side);
 
         if (without_furigana == with_furigana) {
             return (
-                "<div class=\"without_furigana\">"
+                "<div class=\"without_furigana\" lang=\"" + lang + "\">"
                 + format_text(without_furigana)
                 + "</div>"
             );
         }
 
         return (
-            "<div class=\"without_furigana\">"
+            "<div class=\"without_furigana\" lang=\"" + lang + "\">"
             + format_text(without_furigana)
-            + "</div><div class=\"with_furigana\">"
+            + "</div><div class=\"with_furigana\" lang=\"" + lang + "\">"
             + format_text(with_furigana)
             + "</div>"
         );
@@ -541,7 +786,7 @@
 
     function handle_all_cards_back_click(evt)
     {
-        hide(all_cards);
+        hide_all_screens();
         show_practice_screen();
         show_current_card();
         all_cards_list.innerHTML = "";
@@ -564,8 +809,6 @@
 
     function edit_current_card()
     {
-        hide(menu);
-        hide(practice_screen);
         show_editor(
             "current-card",
             current_card["side_1"],
@@ -592,7 +835,7 @@
 
     function show_editor(mode, side_1, side_2, note_refs)
     {
-        hide(all_cards);
+        hide_all_screens();
         populate_editor(mode, side_1, side_2, note_refs);
         show(editor_screen);
         editor_side_1.focus();
@@ -606,6 +849,8 @@
         editor_mode = mode;
         editor_side_1.value = side_1;
         editor_side_2.value = side_2;
+        editor_side_1.setAttribute("lang", deck["side_1_language"]);
+        editor_side_2.setAttribute("lang", deck["side_2_language"]);
 
         editor_side_1_orig = side_1;
         editor_side_2_orig = side_2;
@@ -626,6 +871,7 @@
                 }
             }
 
+            editor_note_inputs[i].setAttribute("lang", deck["notes_language"]);
             editor_note_inputs[i].value = v;
             editor_note_origs[i] = v;
         }
@@ -637,6 +883,8 @@
         update_editor_note_suggestions();
         editor_side_1_preview.innerHTML = format_text(editor_side_1.value);
         editor_side_2_preview.innerHTML = format_text(editor_side_2.value);
+        editor_side_1_preview.setAttribute("lang", deck["side_1_language"]);
+        editor_side_2_preview.setAttribute("lang", deck["side_2_language"]);
 
         if (mode === "current-card") {
             show(editor_buttons_current);
@@ -668,6 +916,7 @@
         html.sort();
 
         editor_note_suggestions.innerHTML = html.join("");
+        editor_note_suggestions.setAttribute("lang", deck["notes_language"]);
     }
 
     function handle_edit_cancel_click(evt)
@@ -709,7 +958,6 @@
         }
 
         show_editor("new-card", "", "", []);
-        hide(editor_screen);
         show_practice_screen();
     }
 
@@ -748,7 +996,6 @@
     function handle_menu_create_click(evt)
     {
         hide(menu);
-        hide(practice_screen);
 
         show_editor("new-card", "", "", []);
         push_history("new");
@@ -957,6 +1204,9 @@
         return JSON.stringify(
             {
                 "name": deck["name"],
+                "side_1_language": deck["side_1_language"],
+                "side_2_language": deck["side_2_language"],
+                "notes_language": deck["notes_language"],
                 "notes": exported_notes,
                 "cards": exported_cards
             },
@@ -1092,6 +1342,15 @@
 
         deck = {
             "name": raw_deck.hasOwnProperty("name") ? raw_deck["name"] : "",
+            "side_1_language": raw_deck.hasOwnProperty("side_1_language")
+                ? raw_deck["side_1_language"]
+                : "",
+            "side_2_language": raw_deck.hasOwnProperty("side_2_language")
+                ? raw_deck["side_2_language"]
+                : "",
+            "notes_language": raw_deck.hasOwnProperty("notes_language")
+                ? raw_deck["notes_language"]
+                : "",
             "notes": [],
             "cards": []
         };
@@ -1254,6 +1513,29 @@
                 }
             }
         }
+
+        validate_language_code(raw_deck, "side_1_language");
+        validate_language_code(raw_deck, "side_2_language");
+        validate_language_code(raw_deck, "notes_language");
+    }
+
+    function validate_language_code(raw_deck, lang_field)
+    {
+        var lang;
+
+        if (!raw_deck.hasOwnProperty(lang_field)) {
+            return;
+        }
+
+        lang = raw_deck[lang_field];
+
+        if (typeof(lang) !== "string") {
+            throw "'" + lang_field + "' must be a string"
+        }
+
+        if (lang !== "" && !known_languages.hasOwnProperty("l" + lang)) {
+            throw "unknown language code for '" + lang_field + "': '" + lang + "'";
+        }
     }
 
     function calculate_score(grades)
@@ -1394,14 +1676,14 @@
     {
         if (Math.random() < 0.5) {
             show_question(
-                current_card["side_1"],
-                current_card["side_2"],
+                current_card["side_1"], deck["side_1_language"],
+                current_card["side_2"], deck["side_2_language"],
                 current_card["note_refs"]
             );
         } else {
             show_question(
-                current_card["side_2"],
-                current_card["side_1"],
+                current_card["side_2"], deck["side_2_language"],
+                current_card["side_1"], deck["side_1_language"],
                 current_card["note_refs"]
             );
         }
@@ -1409,7 +1691,7 @@
         push_history("q-" + String(current_card_ref + 1));
     }
 
-    function show_question(question, answer, note_refs)
+    function show_question(question, question_lang, answer, answer_lang, note_refs)
     {
         hide(grade_form);
         hide(practice_answer);
@@ -1418,9 +1700,15 @@
 
         stats.innerHTML = String(score) + " / " + String(answered);
         practice_index.innerHTML = String(current_card_ref + 1) + ".";
+
         practice_question.innerHTML = format_text(question);
+        practice_question.setAttribute("lang", question_lang);
+
         practice_answer.innerHTML = format_text(answer);
+        practice_answer.setAttribute("lang", answer_lang);
+
         practice_notes.innerHTML = format_notes(deck["notes"], note_refs);
+        practice_notes.setAttribute("lang", deck["notes_language"]);
 
         if (question.match(/\{[^|}]*\|[^|}]*\}/)) {
             next_action = reveal_furigana;
@@ -1545,6 +1833,145 @@
 
             return EDITOR_EXIT_CONFIRM;
         }
+
+        if (is_deck_properties_editor_dirty()) {
+            show_message(DECK_PROPERTIES_EDITOR_EXIT_CONFIRM, 6000);
+            evt.preventDefault();
+            evt.returnValue = DECK_PROPERTIES_EDITOR_EXIT_CONFIRM;
+
+            return DECK_PROPERTIES_EDITOR_EXIT_CONFIRM;
+        }
+    }
+
+    function handle_menu_deck_click(evt)
+    {
+        push_history("deck-properties");
+        show_deck_properties_editor();
+
+        return stop_event(evt);
+    }
+
+    function show_deck_properties_editor()
+    {
+        hide_all_screens();
+
+        deck_name_orig = deck["name"];
+        deck_name.value = deck["name"];
+
+        side_1_language_orig = populate_language_selector(
+            side_1_language, deck["side_1_language"]
+        );
+        side_2_language_orig = populate_language_selector(
+            side_2_language, deck["side_2_language"]
+        );
+        notes_language_orig = populate_language_selector(
+            notes_language, deck["notes_language"]
+        );
+
+        show(deck_properties_screen);
+    }
+
+    function populate_language_selector(select_node, selected_lang_code)
+    {
+        var i, l, o, lc, c;
+
+        select_node.innerHTML = "";
+
+        for (i = 0, l = language_codes.length; i < l; ++i) {
+            lc = language_codes[i];
+            c = lc["code"];
+
+            o = document.createElement("option");
+            o.innerText = lc["name"];
+            o.setAttribute("value", c);
+
+            if (selected_lang_code == c) {
+                o.setAttribute("selected", "selected");
+            }
+
+            select_node.appendChild(o);
+        }
+
+        return selected_lang_code;
+    }
+
+    function handle_deck_properties_save_click(evt)
+    {
+        close_deck_properties_editor();
+
+        deck["name"] = deck_name.value;
+        deck["side_1_language"] = side_1_language.value;
+        deck["side_2_language"] = side_2_language.value;
+        deck["notes_language"] = notes_language.value;
+
+        show_message("Deck properties saved.", 2400);
+
+        if (current_card) {
+            show_current_card();
+        }
+
+        show_practice_screen();
+
+        return stop_event(evt);
+    }
+
+    function handle_deck_properties_cancel_click(evt)
+    {
+        if (is_deck_properties_editor_dirty()) {
+            ask_for_confirmation(
+                DECK_PROPERTIES_EDITOR_EXIT_CONFIRM,
+                close_deck_properties_editor
+            );
+        } else {
+            close_deck_properties_editor();
+        }
+
+        return stop_event(evt);
+    }
+
+    function close_deck_properties_editor()
+    {
+        deck_name_orig = null;
+        side_1_language_orig = null;
+        side_2_language_orig = null;
+        notes_language_orig = null;
+
+        if (current_card) {
+            show_current_card();
+        }
+
+        hide(deck_properties_screen);
+        show_practice_screen();
+    }
+
+    function is_deck_properties_editor_dirty()
+    {
+        if (
+            deck_name_orig === null
+            && side_1_language_orig === null
+            && side_2_language_orig === null
+            && notes_language_orig === null
+        ) {
+            return false;
+        }
+
+        if (deck_name_orig !== deck_name.value) {
+            return true;
+        }
+
+        if (side_1_language_orig !== side_1_language.value) {
+            return true;
+        }
+
+        if (side_2_language_orig !== side_2_language.value) {
+            return true;
+        }
+
+        if (notes_language_orig !== notes_language.value) {
+            return true;
+        }
+
+        return false;
     }
 
     function handle_popstate(evt)
@@ -1554,6 +1981,8 @@
 
     function run_tests()
     {
+        initialize_languages();
+
         QUnit.module("state_handling", function () {
             QUnit.test("load_deck", function(assert) {
                 var key,
@@ -1569,6 +1998,42 @@
                         },
                         "name is not a string": {
                             "name": [],
+                            "notes": [],
+                            "cards": []
+                        },
+                        "side_1_language is not a string": {
+                            "name": "test deck",
+                            "side_1_language": [],
+                            "notes": [],
+                            "cards": []
+                        },
+                        "side_2_language is not a string": {
+                            "name": "test deck",
+                            "side_2_language": [],
+                            "notes": [],
+                            "cards": []
+                        },
+                        "notes_language is not a string": {
+                            "name": "test deck",
+                            "notes_language": [],
+                            "notes": [],
+                            "cards": []
+                        },
+                        "side_1_language is not a known language": {
+                            "name": "test deck",
+                            "side_1_language": "unknownlanguage",
+                            "notes": [],
+                            "cards": []
+                        },
+                        "side_2_language is not a known language": {
+                            "name": "test deck",
+                            "side_2_language": "unknownlanguage",
+                            "notes": [],
+                            "cards": []
+                        },
+                        "notes_language is not a known language": {
+                            "name": "test deck",
+                            "notes_language": "unknownlanguage",
                             "notes": [],
                             "cards": []
                         },
@@ -1671,6 +2136,8 @@
                         }
                     };
 
+                load_deck({"name": "empty deck", "notes": [], "cards": []});
+
                 for (key in invalid_decks) {
                     if (invalid_decks.hasOwnProperty(key)) {
                         assert.throws(
@@ -1685,6 +2152,9 @@
             QUnit.test("export_import", function(assert) {
                 var deck = {
                         "name": "test deck",
+                        "side_1_language": "en",
+                        "side_2_language": "ja",
+                        "notes_language": "de",
                         "notes": ["Note-1", "Note-2", "Note-3"],
                         "cards": [
                             [
@@ -1702,12 +2172,28 @@
                         ]
                     };
 
+                load_deck({"name": "empty deck", "notes": [], "cards": []});
+                assert.deepEqual(
+                    JSON.parse(export_deck(false)),
+                    {
+                        "name": "empty deck",
+                        "side_1_language": "",
+                        "side_2_language": "",
+                        "notes_language": "",
+                        "notes": [],
+                        "cards": []
+                    }
+                );
+
                 load_deck(deck);
                 assert.deepEqual(JSON.parse(export_deck(false)), deck);
 
                 load_deck(
                     {
                         "name": "test deck",
+                        "side_1_language": "en",
+                        "side_2_language": "ja",
+                        "notes_language": "de",
                         "notes": ["   note-1   ", " duplicate ", "unreferenced", "duplicate", "note-2"],
                         "cards": [
                             ["card 1 side 1", "card 1 side 2", "0,1", ""],
@@ -1719,6 +2205,9 @@
                     JSON.parse(export_deck(false)),
                     {
                         "name": "test deck",
+                        "side_1_language": "en",
+                        "side_2_language": "ja",
+                        "notes_language": "de",
                         "notes": ["note-1", "duplicate", "note-2"],
                         "cards": [
                             ["card 1 side 1", "card 1 side 2", "0,1", ""],
@@ -1734,6 +2223,9 @@
                 load_deck(
                     {
                         "name": "test deck",
+                        "side_1_language": "en",
+                        "side_2_language": "ja",
+                        "notes_language": "de",
                         "notes": ["Note-1", "Note-2"],
                         "cards": [
                             [
@@ -1761,6 +2253,9 @@
                     JSON.parse(export_deck(false)),
                     {
                         "name": "test deck",
+                        "side_1_language": "en",
+                        "side_2_language": "ja",
+                        "notes_language": "de",
                         "notes": ["Note-1", "Note-2", "Note-3"],
                         "cards": [
                             [
@@ -1792,6 +2287,9 @@
                 load_deck(
                     {
                         "name": "test deck",
+                        "side_1_language": "en",
+                        "side_2_language": "ja",
+                        "notes_language": "de",
                         "notes": ["Note-1", "Note-2"],
                         "cards": [
                             [
@@ -1816,6 +2314,9 @@
                     JSON.parse(export_deck(false)),
                     {
                         "name": "test deck",
+                        "side_1_language": "en",
+                        "side_2_language": "ja",
+                        "notes_language": "de",
                         "notes": ["Note-2", "Note-3"],
                         "cards": [
                             [
@@ -1888,6 +2389,9 @@
                 load_deck(
                     {
                         "name": "test deck",
+                        "side_1_language": "en",
+                        "side_2_language": "ja",
+                        "notes_language": "de",
                         "notes": [
                             "Note-1",
                             "Note-2",
@@ -1998,6 +2502,9 @@
                 load_deck(
                     {
                         "name": "test deck",
+                        "side_1_language": "en",
+                        "side_2_language": "ja",
+                        "notes_language": "de",
                         "notes": [],
                         "cards": [
                             ["Card-1 Side-1", "Card-1 Side-2", "", "2"],

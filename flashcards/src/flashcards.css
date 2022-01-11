@@ -290,6 +290,7 @@ div.input {
 }
 
 div.input textarea,
+div.input select,
 div.input input {
   font-size: 4vmin;
   height: 6vmin;
@@ -478,6 +479,10 @@ h1 {
   font-family: serif;
 }
 
+#all-cards {
+  line-height: 1.6em;
+}
+
 #all-cards span.furigana {
   border-radius: 0.2em;
   border: solid 1px #333;
@@ -557,6 +562,10 @@ h1 {
 
 #editor-screen button {
   margin: 0.3vmin 2vmin;
+}
+
+#deck-properties-screen.hidden {
+  display: none;
 }
 
 @media print {
