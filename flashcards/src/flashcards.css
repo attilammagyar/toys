@@ -120,9 +120,9 @@ div.example {
 #grade {
   display: block;
   margin-top: 1vmin;
-  margin-left: 5vw;
-  margin-right: 5vw;
-  width: 80vw;
+  margin-left: 2.5vw;
+  margin-right: 2.5vw;
+  width: 86vw;
   height: 11vmin;
   text-align: center;
   opacity: 1.0;
@@ -153,7 +153,9 @@ a.button {
 }
 
 #grade button {
-  min-width: 18vw;
+  min-width: 16vw;
+  font-size: 4.8vmin;
+  padding: 1.2vmin 2.0vmin;
 }
 
 button#grade-bad {
@@ -172,6 +174,12 @@ button#grade-good {
   background-color: #295;
   color: #ffffff;
   border-color: #174;
+}
+
+button#grade-easy {
+  background-color: #35a;
+  color: #ffffff;
+  border-color: #238;
 }
 
 div#stats {

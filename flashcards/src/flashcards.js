@@ -4,6 +4,10 @@
 
     var MAX_NOTES = 21,
         MAX_GRADES = 15,
+        GRADE_BAD = 0,
+        GRADE_SOSO = 3,
+        GRADE_GOOD = 5,
+        GRADE_EASY = 9,
         EDITOR_EXIT_CONFIRM = (
             "You have unsaved changes in the card editor."
             + " Are you sure you want to navigate away and lose those changes?"
@@ -414,6 +418,7 @@
         $("grade-bad").onclick = handle_grade_bad_click;
         $("grade-soso").onclick = handle_grade_soso_click;
         $("grade-good").onclick = handle_grade_good_click;
+        $("grade-easy").onclick = handle_grade_easy_click;
         $("menu-show-all").onclick = handle_menu_show_all_click;
         $("all-cards-back").onclick = handle_all_cards_back_click;
         $("menu-edit").onclick = handle_menu_edit_click;
@@ -633,7 +638,7 @@
 
     function handle_grade_bad_click(evt)
     {
-        return handle_grade_click(evt, 0);
+        return handle_grade_click(evt, GRADE_BAD);
     }
 
     function handle_grade_click(evt, score)
@@ -651,12 +656,17 @@
 
     function handle_grade_soso_click(evt)
     {
-        return handle_grade_click(evt, 1);
+        return handle_grade_click(evt, GRADE_SOSO);
     }
 
     function handle_grade_good_click(evt)
     {
-        return handle_grade_click(evt, 2);
+        return handle_grade_click(evt, GRADE_GOOD);
+    }
+
+    function handle_grade_easy_click(evt)
+    {
+        return handle_grade_click(evt, GRADE_EASY);
     }
 
     function handle_menu_show_all_click(evt)
@@ -1495,8 +1505,8 @@
                 throw "note references must be a comma separated list of integers: " + dump;
             }
 
-            if (!card[3].match(/^[012]*$/)) {
-                throw "grades must be a string of integers between 0 and 2: " + dump;
+            if (!card[3].match(/^[0-9]*$/)) {
+                throw "grades must be a string of single digit integers (0-9): " + dump;
             }
 
             card_note_refs = card[2].split(",");
@@ -1540,7 +1550,7 @@
 
     function calculate_score(grades)
     {
-        var q = 0.64,
+        var q = 0.55,
             weight = 1.0,
             sum_grades = 0,
             sum_weights = 0,
@@ -1693,12 +1703,21 @@
 
     function show_question(question, question_lang, answer, answer_lang, note_refs)
     {
+        var max_score = answered * GRADE_GOOD,
+            percentage;
+
+        if (0 < max_score) {
+            percentage = Math.round(score * 100.0 / max_score);
+            stats.innerHTML = String(percentage) + "% (" + String(answered) + ")";
+        } else {
+            stats.innerHTML = "";
+        }
+
         hide(grade_form);
         hide(practice_answer);
         hide(practice_notes);
         hide_furigana();
 
-        stats.innerHTML = String(score) + " / " + String(answered);
         practice_index.innerHTML = String(current_card_ref + 1) + ".";
 
         practice_question.innerHTML = format_text(question);
@@ -1819,7 +1838,7 @@
         current_card["score"] = calculate_score(grades);
 
         ++answered;
-        score += grade;
+        score += Math.min(GRADE_GOOD, grade);
     }
 
     function handle_beforeunload(evt)
@@ -2113,25 +2132,11 @@
                                 ["side 1", "side 2", "", "a"]
                             ]
                         },
-                        "a card has an invalid score": {
-                            "name": "test deck",
-                            "notes": [],
-                            "cards": [
-                                ["side 1", "side 2", "", "3"]
-                            ]
-                        },
                         "a card's notes are not a comma separated list of numbers": {
                             "name": "test deck",
                             "notes": [],
                             "cards": [
                                 ["side 1", "side 2", "1,", ""]
-                            ]
-                        },
-                        "a card's scores are not a string of 0 1 or 2": {
-                            "name": "test deck",
-                            "notes": [],
-                            "cards": [
-                                ["side 1", "side 2", "", "0123"]
                             ]
                         }
                     };
@@ -2410,31 +2415,31 @@
                                 "Card-1 Side-1 (perfect)",
                                 "Card-1 Side-2",
                                 "0,1",
-                                "2222222222"
+                                "9999999999"
                             ],
                             [
                                 "Card-2 Side-1 (so-so)",
                                 "Card-2 Side-2",
                                 "2,3,4,5",
-                                "1111111111"
+                                "3333333333"
                             ],
                             [
-                                "Card-3 Side-1 (same score as Card-2)",
+                                "Card-3 Side-1 (similar score to Card-2)",
                                 "Card-3 Side-2",
                                 "6,7,8,9,10",
-                                "1111111111"
+                                "3333333335"
                             ],
                             [
                                 "Card-4 Side-1 (recently learned)",
                                 "Card-4 Side-2",
                                 "0,1",
-                                "2222211111"
+                                "5533300000"
                             ],
                             [
                                 "Card-5 Side-1 (recently forgotten)",
                                 "Card-5 Side-2",
                                 "0,1",
-                                "1111122222"
+                                "3333355555"
                             ],
                             [
                                 "Card-6 Side-1 (never studied card)",
@@ -2448,51 +2453,60 @@
 
                 pick_card_by_score();
                 picked_card_refs.push(current_card_ref);
-                grade(2);
+                grade(GRADE_SOSO);
 
                 pick_card_by_score();
                 picked_card_refs.push(current_card_ref);
-                grade(2);
+                grade(GRADE_GOOD);
 
                 learn();
                 learn();
 
                 pick_card_by_score();
                 picked_card_refs.push(current_card_ref);
-                grade(2);
+                grade(GRADE_GOOD);
 
                 pick_card_by_score();
                 picked_card_refs.push(current_card_ref);
-                grade(1);
+                grade(GRADE_SOSO);
 
                 pick_card_by_score();
                 picked_card_refs.push(current_card_ref);
-                grade(2);
+                grade(GRADE_EASY);
 
                 pick_card_by_score();
                 picked_card_refs.push(current_card_ref);
-                grade(0);
+                grade(GRADE_BAD);
 
                 reset_card_ref_order();
 
                 pick_card_by_score();
                 picked_card_refs.push(current_card_ref);
-                grade(2);
+                grade(GRADE_GOOD);
 
                 pick_card_by_score();
                 picked_card_refs.push(current_card_ref);
-                grade(1);
+                grade(GRADE_SOSO);
 
                 pick_card_by_score();
                 picked_card_refs.push(current_card_ref);
-                grade(2);
+                grade(GRADE_GOOD);
+
+                pick_card_by_score();
+                picked_card_refs.push(current_card_ref);
+                grade(GRADE_GOOD);
+
+                pick_card_by_score();
+                picked_card_refs.push(current_card_ref);
+                grade(GRADE_GOOD);
+
+                pick_card_by_score();
+                picked_card_refs.push(current_card_ref);
+                grade(GRADE_GOOD);
 
                 order = picked_card_refs.join("");
-                assert.ok(
-                    order === "125430540" || order === "215430540",
-                    "Unexpected order: " + order + ", expected: 125430540 or 215430540"
-                );
-                assert.equal(answered, 9);
+                assert.equal(order, "125430514203");
+                assert.equal(answered, 12);
             });
 
             QUnit.test("pick_card_randomly", function(assert) {
