@@ -70,6 +70,7 @@
         editor_buttons_current,
         editor_button_save,
         editor_button_save_new,
+        about_screen,
         deck_properties_screen,
         deck_name,
         deck_name_orig,
@@ -339,6 +340,12 @@
             is_routing = false;
 
             return;
+        } else if (url.match(/#about/)) {
+            start_practising();
+            show_about_screen();
+            is_routing = false;
+
+            return;
         }
 
         is_routing = false;
@@ -398,6 +405,7 @@
         side_1_language = $("side-1-language");
         side_2_language = $("side-2-language");
         notes_language = $("notes-language");
+        about_screen = $("about-screen");
         deck_name_orig = null;
         side_1_language_orig = null;
         side_2_language_orig = null;
@@ -411,6 +419,8 @@
         $("menu-hide").onclick = handle_hide_menu_click;
         $("menu-load").onclick = handle_menu_load_click;
         $("no-cards-load").onclick = handle_menu_load_click;
+        $("menu-about").onclick = handle_menu_about_click;
+        $("about-back").onclick = handle_about_back_click;
         $("alert-ok").onclick = handle_alert_ok_click;
         $("confirm-yes").onclick = handle_confirm_yes_click;
         $("confirm-no").onclick = handle_confirm_no_click;
@@ -475,7 +485,7 @@
                 file_name = "index.html";
             }
 
-            $("menu-download").setAttribute("href", file_name);
+            $("download-button").setAttribute("href", file_name);
         } catch (e) {
         }
     }
@@ -537,11 +547,13 @@
 
     function hide_all_screens()
     {
+        hide(menu);
+
         hide(all_cards);
+        hide(about_screen);
         hide(deck_properties_screen);
         hide(editor_screen);
         hide(load_screen);
-        hide(menu);
         hide(no_cards);
         hide(practice_screen);
     }
@@ -614,6 +626,28 @@
     function handle_load_cancel_click(evt)
     {
         hide(menu);
+        show_practice_screen();
+
+        return stop_event(evt);
+    }
+
+    function handle_menu_about_click(evt)
+    {
+        push_history("about");
+        show_about_screen();
+
+        return stop_event(evt);
+    }
+
+    function show_about_screen()
+    {
+        hide_all_screens();
+        show(about_screen);
+    }
+
+    function handle_about_back_click(evt)
+    {
+        hide(about_screen);
         show_practice_screen();
 
         return stop_event(evt);

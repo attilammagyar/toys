@@ -9,7 +9,38 @@ html, body {
   background-color: #000;
 }
 
+#about-screen {
+  padding: 3vmin;
+  background-color: #111;
+  font-size: 4.2vmin;
+  line-height: 6vmin;
+}
+
+#about-screen a {
+  color: #90a0ff;
+}
+
+#about-screen a.button {
+  color: #e0e0f0;
+}
+
+#about-screen p {
+  padding: 2vmin;
+}
+
+#about-screen ul {
+  margin: 1vmin 6vmin;
+}
+
+#about-screen.hidden,
+#all-cards.hidden,
+#alert.hidden,
+#no-cards.hidden,
+#confirm.hidden,
+#editor-screen.hidden,
+#deck-properties-screen.hidden,
 #practice-screen.hidden,
+#load-screen.hidden,
 #practice-card.hidden {
   display: none;
 }
@@ -191,6 +222,7 @@ div#stats {
 }
 
 #all-cards-back,
+#about-back,
 #menu-button {
   background-color: #347;
   border-color: #234;
@@ -266,10 +298,6 @@ div#stats {
 #load-screen {
   background-color: #111;
   padding-bottom: 5vmin;
-}
-
-#load-screen.hidden {
-  display: none;
 }
 
 #load-dragndrop {
@@ -384,10 +412,6 @@ div.input button {
   font-weight: bold;
 }
 
-#no-cards.hidden {
-  display: none;
-}
-
 #message {
   position: absolute;
   font-size: 5vmin;
@@ -425,11 +449,6 @@ h1 {
   font-size: 5vmin;
 }
 
-#alert.hidden,
-#confirm.hidden {
-  display: none;
-}
-
 #alert-window,
 #confirm-window {
   margin: 15vh 10vmin 2vmin 10vmin;
@@ -463,10 +482,6 @@ h1 {
 
 #editor-screen {
   background: #111;
-}
-
-#editor-screen.hidden {
-  display: none;
 }
 
 #editor-screen div.hidden {
@@ -559,10 +574,6 @@ h1 {
   top: 1vmin;
 }
 
-#all-cards.hidden {
-  display: none;
-}
-
 #all-cards a.edit {
   color: #88e;
   font-weight: bold;
@@ -570,10 +581,6 @@ h1 {
 
 #editor-screen button {
   margin: 0.3vmin 2vmin;
-}
-
-#deck-properties-screen.hidden {
-  display: none;
 }
 
 @media print {

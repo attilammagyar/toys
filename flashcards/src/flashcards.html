@@ -185,15 +185,7 @@
         <li><a id="menu-load" href="#">Load deck from file</a></li>
         <li><a id="menu-export" href="#">Save deck as file</a></li>
         <li><a id="menu-show-all" href="#">Show all cards</a></li>
-        <li>
-          <a id="menu-download" href="index.html" download="flashcards.html">
-            Download this app
-          </a>
-        </li>
-        <li>
-          <a href="https://github.com/attilammagyar/toys"
-            target="_blank">Source code on GitHub</a>
-        </li>
+        <li><a id="menu-about" href="#">About</a></li>
       </ul>
       <div id="no-cards">
         The deck of flashcards is empty.<br/>
@@ -216,6 +208,60 @@
         <div id="practice-card-notes" class="hidden"></div>
       </div>
     </form>
+  </div>
+
+  <div id="about-screen" class="hidden">
+    <h1>About Flashcards</h1>
+    <p>
+      A minimalistic
+      <a href="https://en.wikipedia.org/wiki/Spaced_repetition"
+        target="_blank">flashcard (SRS, Spaced Repetition System)</a>
+      app for language learning and more, with a dark color scheme.
+    </p>
+    <p>
+      Key differences from other similar apps:
+    </p>
+    <ul>
+      <li>
+        It has a <strong>dark design</strong>.
+      </li>
+      <li>
+        <strong>No subscription fees, not data privacy concerns.</strong> All
+        your flashcard data is located on your device, so the control is 100%
+        yours. This also means that for example if you want to make a backup
+        copy of your learning data from time to time, you will have to use the
+        appropriate item from the app's menu to manually export them from the
+        app.
+      </li>
+      <li>
+        It's <strong>a single HTML file that you can
+        <a id="download-button" href="index.html" download="flashcards.html">
+          download to your phone, tablet, or computer
+        </a></strong>
+        and use it from your local file system in a browser, even without an
+        internet connection. This also means that you don't have to worry about
+        an update introducing unwanted changes. You can even change the source
+        code if you want to. (Note: the app's data storage in the browser is
+        associated with its location and file name, so before changing these,
+        make sure to save your deck of flashcards using the menu in order to
+        avoid losing them.)
+      </li>
+      <li>
+        It's <strong>completely offline</strong>, there's no background
+        communication with any servers or clouds, so it won't use up your
+        mobile data limit. This also means that you will have to manually save
+        or export your flashcards using the app's menu if you want to transfer
+        and access them from a different device.
+      </li>
+    </ul>
+    <p>
+      The
+      <a href="https://github.com/attilammagyar/toys"
+        target="_blank">source code is available on GitHub</a>.
+    </p>
+    <div class="input">
+      <a class="button" id="about-back" href="#">Back</a>
+    </div>
   </div>
 
   <div id="load-screen" class="hidden">
