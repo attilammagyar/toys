@@ -121,11 +121,11 @@ html, body {
 #grade {
   position: absolute;
   top: 22vh;
-  left: 9vw;
-  padding: 1vmin;
+  left: 7vw;
+  padding: 1.2vmin 0.3vmin;
   display: block;
-  width: 80vw;
-  height: 11vmin;
+  width: 84vw;
+  min-height: 10vmin;
   text-align: center;
   opacity: 1.0;
   transition: opacity 0.25s, height 0.25s;
@@ -197,7 +197,9 @@ svg.icon {
 }
 
 #grade button {
-  min-width: 18vw;
+  min-width: 16vw;
+  font-size: 4.6vmin;
+  padding: 1.2vmin 2.0vmin;
 }
 
 button#grade-bad {
@@ -218,12 +220,20 @@ button#grade-good {
   border-color: #174;
 }
 
+button#grade-easy {
+  background-color: #35a;
+  color: #ffffff;
+  border-color: #238;
+}
+
 div#stats {
   position: absolute;
-  z-index: 10;
-  top: 1vh;
-  right: 1vw;
-  font-size: 4vmin;
+  z-index: 12;
+  top: 0.4vh;
+  right: 0.4vw;
+  font-size: 3.6vmin;
+  max-width: 19vw;
+  text-align: right;
 }
 
 #practice-kanji-details-close,

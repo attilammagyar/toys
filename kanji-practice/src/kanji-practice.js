@@ -3,6 +3,10 @@
     "use strict";
 
     var MAX_GRADES = 15,
+        GRADE_BAD = 0,
+        GRADE_SOSO = 3,
+        GRADE_GOOD = 5,
+        GRADE_EASY = 9,
         EDITOR_EXIT_CONFIRM = (
             "You have unsaved changes in the card editor."
             + " Are you sure you want to navigate away and lose those changes?"
@@ -510,6 +514,7 @@
         $("grade-bad").onclick = handle_grade_bad_click;
         $("grade-soso").onclick = handle_grade_soso_click;
         $("grade-good").onclick = handle_grade_good_click;
+        $("grade-easy").onclick = handle_grade_easy_click;
         $("menu-edit").onclick = handle_menu_edit_click;
         $("edit-cancel").onclick = handle_edit_cancel_click;
         $("menu-create").onclick = handle_menu_create_click;
@@ -1454,7 +1459,7 @@
 
     function handle_grade_bad_click(evt)
     {
-        return handle_grade_click(evt, 0);
+        return handle_grade_click(evt, GRADE_BAD);
     }
 
     function handle_grade_click(evt, score)
@@ -1475,12 +1480,17 @@
 
     function handle_grade_soso_click(evt)
     {
-        return handle_grade_click(evt, 1);
+        return handle_grade_click(evt, GRADE_SOSO);
     }
 
     function handle_grade_good_click(evt)
     {
-        return handle_grade_click(evt, 2);
+        return handle_grade_click(evt, GRADE_GOOD);
+    }
+
+    function handle_grade_easy_click(evt)
+    {
+        return handle_grade_click(evt, GRADE_EASY);
     }
 
     function format_text(text)
@@ -2343,7 +2353,7 @@
             pronunciation = unquote_tsv(line[1]);
             meaning = unquote_tsv(line[2]);
 
-            if (ll > 3 && !line[3].match(/^[0-2]?$/)) {
+            if (ll > 3 && !line[3].match(/^[0-9]?$/)) {
                 notes = unquote_tsv(line[3]);
                 grades_idx = 4;
             } else {
@@ -2357,10 +2367,10 @@
                 for (j = 0, lll = grades.length; j < lll; ++j) {
                     grade = grades[j].trim();
 
-                    if (!grade.match(/^[0-2]?$/)) {
+                    if (!grade.match(/^[0-9]?$/)) {
                         throw (
                             "Invalid deck: TSV line " + String(i + 1)
-                            + " contains an invalid grade: " + grade + " - a grade can be either 0, 1, or 2: "
+                            + " contains an invalid grade: " + grade + " - a grade can be a single digit integer between 0-9: "
                             + String(line)
                         );
                     }
@@ -2659,8 +2669,8 @@
 
             grades = (card.length > 4) ? card[4] : card[3];
 
-            if (!grades.match(/^[012]*$/)) {
-                throw "grades must be a string of integers between 0 and 2: " + dump;
+            if (!grades.match(/^[0-9]*$/)) {
+                throw "grades must be a string of integers between 0 and 9: " + dump;
             }
         }
 
@@ -2716,7 +2726,7 @@
 
     function calculate_score(grades)
     {
-        var q = 0.64,
+        var q = 0.55,
             weight = 1.0,
             sum_grades = 0,
             sum_weights = 0,
@@ -2885,7 +2895,15 @@
 
     function show_current_card()
     {
-        stats.innerHTML = String(score) + " / " + String(answered);
+        var max_score = answered * GRADE_GOOD,
+            percentage;
+
+        if (0 < max_score) {
+            percentage = Math.round(score * 100.0 / max_score);
+            stats.innerHTML = String(percentage) + "% (" + String(answered) + ")";
+        } else {
+            stats.innerHTML = "";
+        }
 
         current_card["kanji"],
         update_kanji();
@@ -2952,7 +2970,7 @@
         current_card["score"] = calculate_score(grades);
 
         ++answered;
-        score += grade;
+        score += Math.min(GRADE_GOOD, grade);
     }
 
     function handle_beforeunload(evt)
@@ -3066,30 +3084,18 @@
                                 ["kanji", "pronunciation", "meaning", "notes", "a"]
                             ]
                         },
-                        "a card has an invalid score": {
-                            "name": "test deck",
-                            "cards": [
-                                ["kanji", "pronunciation", "meaning", "notes", "3"]
-                            ]
-                        },
-                        "a card's scores are not a string of 0 1 or 2": {
-                            "name": "test deck",
-                            "cards": [
-                                ["kanji", "pronunciation", "meaning", "notes", "0123"]
-                            ]
-                        },
                         "invalid meaning language type": {
                             "name": "test deck",
                             "meaning_language": 42,
                             "cards": [
-                                ["kanji", "pronunciation", "meaning", "notes", "012"]
+                                ["kanji", "pronunciation", "meaning", "notes", "9530"]
                             ]
                         },
                         "unknown meaning language": {
                             "name": "test deck",
                             "meaning_language": "unknownlanguage",
                             "cards": [
-                                ["kanji", "pronunciation", "meaning", "notes", "012"]
+                                ["kanji", "pronunciation", "meaning", "notes", "9530"]
                             ]
                         },
                         "invalid notes language type": {
@@ -3097,7 +3103,7 @@
                             "meaning_language": "hu",
                             "notes_language": 42,
                             "cards": [
-                                ["kanji", "pronunciation", "meaning", "notes", "012"]
+                                ["kanji", "pronunciation", "meaning", "notes", "9530"]
                             ]
                         },
                         "unknown notes language": {
@@ -3105,7 +3111,7 @@
                             "meaning_language": "hu",
                             "notes_language": "unknownlanguage",
                             "cards": [
-                                ["kanji", "pronunciation", "meaning", "notes", "012"]
+                                ["kanji", "pronunciation", "meaning", "notes", "9530"]
                             ]
                         }
                     };
@@ -3127,7 +3133,7 @@
                         "missing pronunciation": "kanji",
                         "missing meaning": "kanji\tpronunciation",
                         "kanji contains unknown characters": "☃\tpronunciation\tmeaning\tnotes",
-                        "a grade is invalid": "kanji\tpronunciation\tmeaning\tnotes\t2\t3\t0"
+                        "a grade is invalid": "kanji\tpronunciation\tmeaning\tnotes\t3\ta\t0"
                     };
 
                 for (key in invalid_decks) {
@@ -3155,7 +3161,7 @@
                     [
                         "kanji 1\tpronunciation \\x\\t\\r\\n\\\\1\tmeaning \\x\\t\\r\\n\\\\1\tnotes \\x\\t\\r\\n\\\\1\t\t",
                         "",
-                        "katakana 2\t\tmeaning 2\tnotes 2\t2\t1\t0\t\t\t",
+                        "katakana 2\t\tmeaning 2\tnotes 2\t9\t3\t0\t\t\t",
                         ""
                     ].join("\r\n"),
                     false
@@ -3168,7 +3174,7 @@
                         "notes_language": "ja",
                         "cards": [
                             ["kanji 1", "pronunciation \\x\t\r\n\\1", "meaning \\x\t\r\n\\1", "notes \\x\t\r\n\\1", ""],
-                            ["katakana 2", "katakana 2", "meaning 2", "notes 2", "210"]
+                            ["katakana 2", "katakana 2", "meaning 2", "notes 2", "930"]
                         ]
                     }
                 );
@@ -3179,7 +3185,7 @@
                         "Word (kanji)\tPronunciation\tMeaning\tNotes",
                         "kanji 1\tpronunciation \\x\\t\\r\\n\\\\1\tmeaning \\x\\t\\r\\n\\\\1\tnotes \\x\\t\\r\\n\\\\1\t\t",
                         "",
-                        "katakana 2\t\tmeaning 2\tnotes 2\t2\t1\t0\t\t",
+                        "katakana 2\t\tmeaning 2\tnotes 2\t9\t5\t0\t\t",
                         ""
                     ].join("\r\n"),
                     true
@@ -3192,7 +3198,7 @@
                         "notes_language": "ja",
                         "cards": [
                             ["kanji 1", "pronunciation \\x\t\r\n\\1", "meaning \\x\t\r\n\\1", "notes \\x\t\r\n\\1", ""],
-                            ["katakana 2", "katakana 2", "meaning 2", "notes 2", "210"]
+                            ["katakana 2", "katakana 2", "meaning 2", "notes 2", "950"]
                         ]
                     }
                 );
@@ -3202,7 +3208,7 @@
                     [
                         "Word (kanji)\tPronunciation\tMeaning\tNotes\tGrade\tGrade\tGrade",
                         "kanji 1\tpronunciation \\\\x\\t\\r\\n\\\\1\tmeaning \\\\x\\t\\r\\n\\\\1\tnotes \\\\x\\t\\r\\n\\\\1\t\t\t",
-                        "katakana 2\tkatakana 2\tmeaning 2\tnotes 2\t2\t1\t0",
+                        "katakana 2\tkatakana 2\tmeaning 2\tnotes 2\t9\t5\t0",
                     ].join("\r\n")
                 );
 
@@ -3211,8 +3217,8 @@
                     [
                         "kanji 1\tpronunciation 1\tmeaning 1",
                         "kanji 2\tpronunciation 2\tmeaning 2\tnotes 2",
-                        "kanji 3\tpronunciation 3\tmeaning 3\t2\t1",
-                        "kanji 4\tpronunciation 4\tmeaning 4\tnotes 4\t2\t2",
+                        "kanji 3\tpronunciation 3\tmeaning 3\t5\t3",
+                        "kanji 4\tpronunciation 4\tmeaning 4\tnotes 4\t5\t5",
                         "kanji 5\tpronunciation 5\tmeaning 5",
                         ""
                     ].join("\r\n"),
@@ -3227,8 +3233,8 @@
                         "cards": [
                             ["kanji 1", "pronunciation 1", "meaning 1", "", ""],
                             ["kanji 2", "pronunciation 2", "meaning 2", "notes 2", ""],
-                            ["kanji 3", "pronunciation 3", "meaning 3", "", "21"],
-                            ["kanji 4", "pronunciation 4", "meaning 4", "notes 4", "22"],
+                            ["kanji 3", "pronunciation 3", "meaning 3", "", "53"],
+                            ["kanji 4", "pronunciation 4", "meaning 4", "notes 4", "55"],
                             ["kanji 5", "pronunciation 5", "meaning 5", "", ""],
                         ]
                     }
@@ -3254,14 +3260,14 @@
                                 "pronunciation 1",
                                 "meaning 1",
                                 "notes 1",
-                                "222"
+                                "555"
                             ],
                             [
                                 "kanji 2",
                                 "pronunciation 2",
                                 "meaning 2",
                                 "notes 2",
-                                "111"
+                                "333"
                             ]
                         ]
                     }
@@ -3290,9 +3296,9 @@
                         "kanji 2\tpronunciation 2\tmeaning 2\tnotes 2",
                         "",
                         "katakana 1\t\tkatakana meaning 1\tkatakana notes 2",
-                        "kanji 3\tpronunciation \\x\\t\\r\\n\\\\3\tmeaning \\x\\t\\r\\n\\\\3\tnotes \\x\\t\\r\\n\\\\3\t2\t1\t0",
+                        "kanji 3\tpronunciation \\x\\t\\r\\n\\\\3\tmeaning \\x\\t\\r\\n\\\\3\tnotes \\x\\t\\r\\n\\\\3\t5\t3\t0",
                         "kanji 1\tpronunciation 1\tmeaning 1\tnotes 1\t0\t0\t0",
-                        "kanji 4\tpronunciation 4\tmeaning 4\t1\t1\t1",
+                        "kanji 4\tpronunciation 4\tmeaning 4\t3\t3\t3",
                         ""
                     ].join("\r\n"),
                     false
@@ -3302,9 +3308,9 @@
                     [
                         "Word\tPronunciation\tMeaning (header row)\tNotes (header row)",
                         "kanji 1\tpronunciation 1\tmeaning 1\tnotes 1",
-                        "katakana 2\t\tkatakana meaning 2\tkatakana notes 2\t0\t1\t2",
+                        "katakana 2\t\tkatakana meaning 2\tkatakana notes 2\t0\t3\t5",
                         "kanji 2\tpronunciation 2\tmeaning 2\tnotes 2",
-                        "kanji 4\tpronunciation 4\tmeaning 4\tnotes are optional\t2\t2\t2",
+                        "kanji 4\tpronunciation 4\tmeaning 4\tnotes are optional\t5\t5\t5",
                         ""
                     ].join("\r\n"),
                     true
@@ -3316,8 +3322,8 @@
                         "meaning_language": "",
                         "notes_language": "",
                         "cards": [
-                            ["kanji 1", "pronunciation 1", "meaning 1", "notes 1", "222"],
-                            ["kanji 2", "pronunciation 2", "meaning 2", "notes 2", "111"],
+                            ["kanji 1", "pronunciation 1", "meaning 1", "notes 1", "555"],
+                            ["kanji 2", "pronunciation 2", "meaning 2", "notes 2", "333"],
                             ["katakana 1", "katakana 1", "katakana meaning 1", "katakana notes 2", ""],
                             ["kanji 3", "pronunciation \\x\t\r\n\\3", "meaning \\x\t\r\n\\3", "notes \\x\t\r\n\\3", ""],
                             ["kanji 4", "pronunciation 4", "meaning 4", "", ""],
@@ -3334,7 +3340,7 @@
                     "example.tsv",
                     [
                         "Word\tPronunciation\tMeaning (header row)\tNotes (header row)\tGrade\tGrade",
-                        "kanji 1\tpronunciation 1\tmeaning 1\tnotes 1\t2\t1",
+                        "kanji 1\tpronunciation 1\tmeaning 1\tnotes 1\t5\t3",
                         ""
                     ].join("\r\n"),
                     true
@@ -3363,14 +3369,14 @@
                                 "pronunciation 1",
                                 "meaning 1",
                                 "notes 1",
-                                "2222222222"
+                                "5555555555"
                             ],
                             [
                                 "kanji 2 (so-so)",
                                 "pronunciation 2",
                                 "meaning 2",
                                 "notes 2",
-                                "1111111111"
+                                "3333333333"
                             ]
                         ]
                     };
@@ -3388,13 +3394,13 @@
                                 "kanji 1 (perfect)",
                                 "pronunciation 1",
                                 "meaning 1",
-                                "2222222222"
+                                "5555555555"
                             ],
                             [
                                 "kanji 2 (so-so)",
                                 "pronunciation 2",
                                 "meaning 2",
-                                "1111111111"
+                                "3333333333"
                             ]
                         ]
                     }
@@ -3411,14 +3417,14 @@
                                 "pronunciation 1",
                                 "meaning 1",
                                 "",
-                                "2222222222"
+                                "5555555555"
                             ],
                             [
                                 "kanji 2 (so-so)",
                                 "pronunciation 2",
                                 "meaning 2",
                                 "",
-                                "1111111111"
+                                "3333333333"
                             ]
                         ]
                     }
@@ -3616,39 +3622,39 @@
                         "name": "test deck",
                         "cards": [
                             [
-                                "kanji 1 (perfect)",
+                                "kanji 1 (perfect, easy)",
                                 "pronunciation 1",
                                 "meaning 1",
                                 "notes 1",
-                                "2222222222"
+                                "9999999999"
                             ],
                             [
                                 "kanji 2 (so-so)",
                                 "pronunciation 2",
                                 "meaning 2",
                                 "notes 2",
-                                "1111111111"
+                                "3333333333"
                             ],
                             [
-                                "kanji 3 (same score as kanji 2)",
+                                "kanji 3 (similar score to kanji 2)",
                                 "pronunciation 3",
                                 "meaning 3",
                                 "notes 3",
-                                "1111111111"
+                                "3333333335"
                             ],
                             [
                                 "kanji 4 (recently learned)",
                                 "pronunciation 4",
                                 "meaning 2",
                                 "notes 2",
-                                "2222211111"
+                                "5533300000"
                             ],
                             [
                                 "kanji 5 (recently forgotten)",
                                 "pronunciation 5",
                                 "meaning 5",
                                 "notes 5",
-                                "1111122222"
+                                "3333355555"
                             ],
                             [
                                 "kanji 6 (never studied)",
@@ -3663,51 +3669,60 @@
 
                 pick_card_by_score();
                 picked_card_refs.push(current_card_ref);
-                grade(2);
+                grade(GRADE_SOSO);
 
                 pick_card_by_score();
                 picked_card_refs.push(current_card_ref);
-                grade(2);
+                grade(GRADE_GOOD);
 
                 learn();
                 learn();
 
                 pick_card_by_score();
                 picked_card_refs.push(current_card_ref);
-                grade(2);
+                grade(GRADE_GOOD);
 
                 pick_card_by_score();
                 picked_card_refs.push(current_card_ref);
-                grade(1);
+                grade(GRADE_SOSO);
 
                 pick_card_by_score();
                 picked_card_refs.push(current_card_ref);
-                grade(2);
+                grade(GRADE_EASY);
 
                 pick_card_by_score();
                 picked_card_refs.push(current_card_ref);
-                grade(0);
+                grade(GRADE_BAD);
 
                 reset_card_ref_order();
 
                 pick_card_by_score();
                 picked_card_refs.push(current_card_ref);
-                grade(2);
+                grade(GRADE_GOOD);
 
                 pick_card_by_score();
                 picked_card_refs.push(current_card_ref);
-                grade(1);
+                grade(GRADE_SOSO);
 
                 pick_card_by_score();
                 picked_card_refs.push(current_card_ref);
-                grade(2);
+                grade(GRADE_GOOD);
+
+                pick_card_by_score();
+                picked_card_refs.push(current_card_ref);
+                grade(GRADE_GOOD);
+
+                pick_card_by_score();
+                picked_card_refs.push(current_card_ref);
+                grade(GRADE_GOOD);
+
+                pick_card_by_score();
+                picked_card_refs.push(current_card_ref);
+                grade(GRADE_GOOD);
 
                 order = picked_card_refs.join("");
-                assert.ok(
-                    order === "125430540" || order === "215430540",
-                    "Unexpected order: " + order + ", expected: 125430540 or 215430540"
-                );
-                assert.equal(answered, 9);
+                assert.equal(order, "125430514203");
+                assert.equal(answered, 12);
             });
 
             QUnit.test("pick_card_randomly", function(assert) {
@@ -3718,15 +3733,15 @@
                     {
                         "name": "test deck",
                         "cards": [
-                            ["kaji 1", "pronunciation 1", "meaning 1", "notes 1", "2"],
-                            ["kaji 2", "pronunciation 2", "meaning 2", "notes 2", "2"],
-                            ["kaji 3", "pronunciation 3", "meaning 3", "notes 3", "2"],
-                            ["kaji 4", "pronunciation 4", "meaning 4", "notes 4", "2"],
-                            ["kaji 5", "pronunciation 5", "meaning 5", "notes 5", "2"],
-                            ["kaji 6", "pronunciation 6", "meaning 6", "notes 6", "2"],
-                            ["kaji 7", "pronunciation 7", "meaning 7", "notes 7", "2"],
-                            ["kaji 8", "pronunciation 8", "meaning 8", "notes 8", "2"],
-                            ["kaji 9", "pronunciation 9", "meaning 9", "notes 9", "2"],
+                            ["kaji 1", "pronunciation 1", "meaning 1", "notes 1", "5"],
+                            ["kaji 2", "pronunciation 2", "meaning 2", "notes 2", "5"],
+                            ["kaji 3", "pronunciation 3", "meaning 3", "notes 3", "5"],
+                            ["kaji 4", "pronunciation 4", "meaning 4", "notes 4", "5"],
+                            ["kaji 5", "pronunciation 5", "meaning 5", "notes 5", "5"],
+                            ["kaji 6", "pronunciation 6", "meaning 6", "notes 6", "5"],
+                            ["kaji 7", "pronunciation 7", "meaning 7", "notes 7", "5"],
+                            ["kaji 8", "pronunciation 8", "meaning 8", "notes 8", "5"],
+                            ["kaji 9", "pronunciation 9", "meaning 9", "notes 9", "5"],
                             ["kaji 10", "pronunciation 10", "meaning 10", "notes 10", ""],
                             ["kaji 11", "pronunciation 11", "meaning 11", "notes 11", ""],
                             ["kaji 12", "pronunciation 12", "meaning 12", "notes 12", ""],
