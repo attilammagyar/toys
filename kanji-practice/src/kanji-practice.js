@@ -390,7 +390,6 @@
             return;
         } else if (match = url.match(/#new$/)) {
             start_practising();
-            hide(practice_screen);
             show_card_editor("new-card", "", "", "", "");
             is_routing = false;
 
@@ -1374,9 +1373,21 @@
         load_action = load_deck_from_json_file;
         load_screen_title.innerHTML = "Load deck";
         load_input.setAttribute("accept", ".json,application/json");
-        hide(practice_screen);
+        hide_all_screens();
         show(load_screen);
         hide(tsv_info);
+    }
+
+    function hide_all_screens()
+    {
+        hide(menu);
+
+        hide(about_screen);
+        hide(deck_properties_screen);
+        hide(editor_screen);
+        hide(load_screen);
+        hide(practice_screen);
+        hide(practice_kanji_details);
     }
 
     function handle_import_tsv_confirmation()
@@ -1384,7 +1395,7 @@
         load_action = import_deck_from_tsv_file;
         load_screen_title.innerHTML = "Import deck from TSV";
         load_input.setAttribute("accept", ".tsv,.tab,text/tab-separated-values");
-        hide(practice_screen);
+        hide_all_screens();
         show(load_screen);
         show(tsv_info);
     }
@@ -1398,7 +1409,7 @@
         load_action = add_cards_from_tsv_file;
         load_screen_title.innerHTML = "Add new cards from TSV";
         load_input.setAttribute("accept", ".tsv,.tab,text/tab-separated-values");
-        hide(practice_screen);
+        hide_all_screens();
         show(load_screen);
         show(tsv_info);
 
@@ -1407,7 +1418,6 @@
 
     function handle_load_cancel_click(evt)
     {
-        hide(menu);
         show_practice_screen();
 
         return stop_event(evt);
@@ -1423,14 +1433,12 @@
 
     function show_about_screen()
     {
-        hide(menu);
-        hide(practice_screen);
+        hide_all_screens();
         show(about_screen);
     }
 
     function handle_about_back_click(evt)
     {
-        hide(about_screen);
         show_practice_screen();
 
         return stop_event(evt);
@@ -1438,11 +1446,7 @@
 
     function show_practice_screen()
     {
-        hide(menu);
-        hide(load_screen);
-        hide(editor_screen);
-        hide(deck_properties_screen);
-        hide(about_screen);
+        hide_all_screens();
         show(practice_screen);
 
         if (deck["cards"].length > 0) {
@@ -1529,8 +1533,7 @@
 
     function show_deck_properties_editor()
     {
-        hide(menu);
-        hide(practice_screen);
+        hide_all_screens();
 
         deck_name_orig = deck["name"];
         deck_name.value = deck["name"];
@@ -1637,7 +1640,6 @@
             show_current_card();
         }
 
-        hide(deck_properties_screen);
         show_practice_screen();
     }
 
@@ -1656,8 +1658,6 @@
 
     function edit_current_card()
     {
-        hide(menu);
-        hide(practice_screen);
         show_card_editor(
             "current-card",
             current_card["kanji"],
@@ -1685,6 +1685,7 @@
 
     function show_card_editor(mode, kanji, pronunciation, meaning, notes)
     {
+        hide_all_screens();
         populate_card_editor(mode, kanji, pronunciation, meaning, notes);
         show(editor_screen);
         editor_kanji.focus();
@@ -1757,7 +1758,6 @@
         }
 
         show_card_editor("new-card", "", "", "", "");
-        hide(editor_screen);
         show_practice_screen();
     }
 
@@ -2012,9 +2012,6 @@
 
     function handle_menu_create_click(evt)
     {
-        hide(menu);
-        hide(practice_screen);
-
         show_card_editor("new-card", "", "", "", "");
         push_history("new");
 
@@ -2051,7 +2048,7 @@
         if (deck["cards"].length === 1) {
             learn();
             pick_card();
-            hide(no_cards);
+            hide_all_screens();
             show_current_card();
         }
 

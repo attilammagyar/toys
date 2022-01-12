@@ -549,8 +549,8 @@
     {
         hide(menu);
 
-        hide(all_cards);
         hide(about_screen);
+        hide(all_cards);
         hide(deck_properties_screen);
         hide(editor_screen);
         hide(load_screen);
