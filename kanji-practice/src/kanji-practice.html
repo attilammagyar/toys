@@ -130,7 +130,7 @@
       <a id="save-json-button" class="button" href="#" title="Save deck as JSON">
         <svg class="icon" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
          <g>
-          <title>Download</title>
+          <title>Save deck as JSON</title>
           <path
             id="svg-5"
             d="M250,30 L250,350 M100,200 L250,350 M400,200 L250,350 M30,350 L30,470 L470,470 L470,350"
@@ -156,7 +156,7 @@
       <a id="details-button" class="button" href="#" title="Kanji details">
         <svg class="icon" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
          <g>
-          <title>Info</title>
+          <title>Kanji details</title>
           <ellipse id="svg-11" fill-opacity="0" ry="210" rx="210" cy="250" cx="250" stroke-width="44" stroke="#ffffff" fill="#ffffff"/>
           <rect id="svg-12" height="120" width="53" y="250" x="220" stroke-width="30" stroke="#ffffff" fill="#ffffff"/>
           <ellipse id="svg-13" ry="30" rx="30" cy="160" cx="250" stroke-width="30" stroke="#ffffff" fill="#ffffff"/>
@@ -173,7 +173,7 @@
          </g>
         </svg>
       </a>
-      <a id="learn-button" class="button hidden" href="#" title="Learn">+</a>
+      <a id="learn-button" class="button hidden" href="#" title="Learn new card">+</a>
       <ul id="menu" class="hidden">
         <li><a id="menu-hide" href="#">&larr; Hide menu</a></li>
         <li><a id="menu-deck" href="#">Deck properties</a></li>
@@ -305,14 +305,8 @@
   <div id="load-screen" class="hidden">
     <form id="load-form" action="#" method="get">
       <h1 id="load-screen-title">Load deck</h1>
-      <div id="load-dragndrop">Drag and drop a file here</div>
-      <div class="input">
-        <label for="load-input">Or pick a file:</label>
-        <input id="load-input" name="load-input" type="file"
-          accept=".json,application/json" />
-      </div>
       <div class="input" id="tsv-info">
-        <label>
+        <label id="tsv-format">
           File format:<br/>
           <code>KANJI &lt;tab&gt; PRONUNCIATION &lt;tab&gt; MEANING &lt;tab&gt; NOTES</code>
         </label>
@@ -320,6 +314,12 @@
           Ignore the first row (TSV header):
           <input id="load-tsv-header" name="load-tsv-header" type="checkbox" checked="checked" />
         </label>
+      </div>
+      <div id="load-dragndrop">Drag and drop a file here</div>
+      <div class="input">
+        <label for="load-input">Or pick a file:</label>
+        <input id="load-input" name="load-input" type="file"
+          accept=".json,application/json" />
       </div>
       <div class="input">
         <button id="load-cancel">Cancel</button>

@@ -398,6 +398,10 @@ div.input label {
   line-height: 6vmin;
 }
 
+#tsv-format {
+  margin-bottom: 5vmin;
+}
+
 div.input button {
   border-color: #125;
   min-width: 20vw;
@@ -665,6 +669,8 @@ h1 {
 }
 
 code {
+  padding: 1vmin;
+  background-color: #000;
   font-family: monospace;
 }
 
