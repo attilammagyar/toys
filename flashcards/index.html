@@ -169,13 +169,16 @@ div.example {
 #grade {
   display: block;
   margin-top: 1vmin;
-  margin-left: 7vw;
-  margin-right: 7vw;
+  margin-left: 3.6vw;
   width: 86vw;
   height: 11vmin;
   text-align: center;
   opacity: 1.0;
   transition: opacity 0.25s, height 0.25s;
+  padding: 2vmin;
+  border-radius: 3vmin;
+  border: outset #984;
+  background-color: rgba(192, 176, 96, 0.8);
 }
 
 #grade.hidden {
@@ -183,6 +186,7 @@ div.example {
   transition: opacity 0.1s, height 0.1s;
   height: 0;
   padding: 0;
+  margin: 0;
   border-style: none;
   overflow: hidden;
 }
@@ -241,12 +245,19 @@ div#stats {
 
 #all-cards-back,
 #about-back,
+#export-button,
+#learn-button,
 #menu-button {
   background-color: #347;
   border-color: #234;
   margin: 1vmin;
   padding: 1.2vmin 3vmin;
   font-family: Verdana, sans-serif;
+}
+
+#export-button {
+  border-color: #716;
+  background-color: #827;
 }
 
 #learn-button {
@@ -264,6 +275,16 @@ div#stats {
   width: 0;
   height: 0;
   overflow: hidden;
+}
+
+svg.icon {
+  padding: 0;
+  margin: 0;
+  margin-top: 0.5vmin;
+  margin-bottom: -0.5vmin;
+  border-width: 0;
+  width: 4.4vmin;
+  height: 4.4vmin;
 }
 
 #menu {
@@ -793,8 +814,31 @@ h1 {
 
   <div id="practice-screen" class="hidden">
     <form id="practice-form" action="#" method="get">
-      <a id="menu-button" class="button" href="#">Menu</a>
-      <a id="learn-button" class="button hidden" href="#">Learn</a>
+      <a id="menu-button" class="button" href="#" title="Menu">
+        <svg class="icon" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+         <g>
+          <title>Menu</title>
+          <rect id="svg-2" height="30" width="300" y="100" x="100" stroke-width="44" stroke="#ffffff" fill="#ffffff"/>
+          <rect id="svg-3" height="30" width="300" y="235" x="100" stroke-width="44" stroke="#ffffff" fill="#ffffff"/>
+          <rect id="svg-4" height="30" width="300" y="370" x="100" stroke-width="44" stroke="#ffffff" fill="#ffffff"/>
+         </g>
+        </svg>
+      </a>
+      <a id="export-button" class="button" href="#" title="Save deck as JSON">
+        <svg class="icon" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+         <g>
+          <title>Save deck as JSON</title>
+          <path
+            id="svg-5"
+            d="M250,30 L250,350 M100,200 L250,350 M400,200 L250,350 M30,350 L30,470 L470,470 L470,350"
+            opacity="1"
+            stroke-width="50"
+            stroke-linecap="round" stroke-linejoin="round"
+            stroke="#ffffff" fill="none"/>
+         </g>
+        </svg>
+      </a>
+      <a id="learn-button" class="button hidden" href="#" title="Learn new card">+</a>
       <ul id="menu" class="hidden">
         <li><a id="menu-hide" href="#">&larr; Hide menu</a></li>
         <li><a id="menu-deck" href="#">Deck properties</a></li>
@@ -928,6 +972,7 @@ h1 {
         deck,
         menu,
         menu_export,
+        export_button,
         load_dragndrop,
         load_input,
         load_cancel,
@@ -1292,6 +1337,7 @@ h1 {
         learn_button = $("learn-button");
         message = $("message");
         menu_export = $("menu-export");
+        export_button = $("export-button")
         alert_modal = $("alert");
         alert_message = $("alert-message");
         confirm_modal = $("confirm");
@@ -1369,7 +1415,8 @@ h1 {
         editor_side_2.onblur = handle_editor_side_2_blur;
         editor_side_2.onchange = handle_editor_side_2_blur;
 
-        menu_export.onclick = handle_menu_export_click;
+        menu_export.onclick = handle_menu_export_json_click;
+        export_button.onclick = handle_save_json_click;
 
         learn_button.onclick = handle_learn_button_click;
 
@@ -2085,7 +2132,17 @@ h1 {
         return true;
     }
 
-    function handle_menu_export_click(evt)
+    function handle_save_json_click(evt)
+    {
+        return handle_menu_export_click(evt, export_button);
+    }
+
+    function handle_menu_export_json_click(evt)
+    {
+        return handle_menu_export_click(evt, menu_export);
+    }
+
+    function handle_menu_export_click(evt, anchor_node)
     {
         var name = deck["name"];
 
@@ -2097,10 +2154,10 @@ h1 {
             name = name + ".json";
         }
 
-        menu_export.href = URL.createObjectURL(
+        anchor_node.href = URL.createObjectURL(
             new Blob([export_deck(true)], {"type": "application/json"})
         );
-        menu_export.download = name;
+        anchor_node.download = name;
 
         return true;
     }

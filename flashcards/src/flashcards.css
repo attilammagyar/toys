@@ -151,13 +151,16 @@ div.example {
 #grade {
   display: block;
   margin-top: 1vmin;
-  margin-left: 7vw;
-  margin-right: 7vw;
+  margin-left: 3.6vw;
   width: 86vw;
   height: 11vmin;
   text-align: center;
   opacity: 1.0;
   transition: opacity 0.25s, height 0.25s;
+  padding: 2vmin;
+  border-radius: 3vmin;
+  border: outset #984;
+  background-color: rgba(192, 176, 96, 0.8);
 }
 
 #grade.hidden {
@@ -165,6 +168,7 @@ div.example {
   transition: opacity 0.1s, height 0.1s;
   height: 0;
   padding: 0;
+  margin: 0;
   border-style: none;
   overflow: hidden;
 }
@@ -223,12 +227,19 @@ div#stats {
 
 #all-cards-back,
 #about-back,
+#export-button,
+#learn-button,
 #menu-button {
   background-color: #347;
   border-color: #234;
   margin: 1vmin;
   padding: 1.2vmin 3vmin;
   font-family: Verdana, sans-serif;
+}
+
+#export-button {
+  border-color: #716;
+  background-color: #827;
 }
 
 #learn-button {
@@ -246,6 +257,16 @@ div#stats {
   width: 0;
   height: 0;
   overflow: hidden;
+}
+
+svg.icon {
+  padding: 0;
+  margin: 0;
+  margin-top: 0.5vmin;
+  margin-bottom: -0.5vmin;
+  border-width: 0;
+  width: 4.4vmin;
+  height: 4.4vmin;
 }
 
 #menu {

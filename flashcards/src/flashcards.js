@@ -20,6 +20,7 @@
         deck,
         menu,
         menu_export,
+        export_button,
         load_dragndrop,
         load_input,
         load_cancel,
@@ -384,6 +385,7 @@
         learn_button = $("learn-button");
         message = $("message");
         menu_export = $("menu-export");
+        export_button = $("export-button")
         alert_modal = $("alert");
         alert_message = $("alert-message");
         confirm_modal = $("confirm");
@@ -461,7 +463,8 @@
         editor_side_2.onblur = handle_editor_side_2_blur;
         editor_side_2.onchange = handle_editor_side_2_blur;
 
-        menu_export.onclick = handle_menu_export_click;
+        menu_export.onclick = handle_menu_export_json_click;
+        export_button.onclick = handle_save_json_click;
 
         learn_button.onclick = handle_learn_button_click;
 
@@ -1177,7 +1180,17 @@
         return true;
     }
 
-    function handle_menu_export_click(evt)
+    function handle_save_json_click(evt)
+    {
+        return handle_menu_export_click(evt, export_button);
+    }
+
+    function handle_menu_export_json_click(evt)
+    {
+        return handle_menu_export_click(evt, menu_export);
+    }
+
+    function handle_menu_export_click(evt, anchor_node)
     {
         var name = deck["name"];
 
@@ -1189,10 +1202,10 @@
             name = name + ".json";
         }
 
-        menu_export.href = URL.createObjectURL(
+        anchor_node.href = URL.createObjectURL(
             new Blob([export_deck(true)], {"type": "application/json"})
         );
-        menu_export.download = name;
+        anchor_node.download = name;
 
         return true;
     }
