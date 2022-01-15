@@ -11,7 +11,7 @@ Key differences from other similar apps:
  * **No stroke recognition**, so you won't experience the frustration of the
    app repeatedly failing to accept a correct stroke.
 
- * **No subscription fees, not data privacy concerns.** All your flashcard data
+ * **No subscription fees, no data privacy concerns.** All your flashcard data
    is located on your device, so the control is 100% yours. This also means
    that for example if you want to make a backup copy of your learning data
    from time to time, you will have to use the appropriate items from the app's
