@@ -403,7 +403,6 @@
                 show_next_character_prompt();
                 show_practice_screen();
                 show_current_card();
-                show_next_character_prompt();
 
                 is_routing = false;
 
@@ -924,6 +923,10 @@
             freeze_until = 0;
         } else {
             reset_current_character();
+
+            if (current_card["grades"].length < 1) {
+                teach();
+            }
         }
     }
 
