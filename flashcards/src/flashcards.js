@@ -1460,13 +1460,13 @@
         deck["notes"] = notes;
         last_order_reset = 0;
 
-        reset_card_ref_order();
-
         if (card_refs.length < 1) {
-            learn();
-            learn();
-            learn();
+            for (i = 0, l = Math.min(3, cards.length); i < l; ++i) {
+                card_refs.push(to_learn.shift());
+            }
         }
+
+        reset_card_ref_order();
 
         return deck;
     }
@@ -1629,7 +1629,9 @@
 
         card_refs.sort(
             function (a, b) {
-                return cards[a]["priority"] - cards[b]["priority"];
+                var d = cards[a]["priority"] - cards[b]["priority"];
+
+                return (0 === d) ? a - b : d;
             }
         );
 
@@ -1681,7 +1683,7 @@
 
     function pick_card()
     {
-        if (Math.random() > 0.25) {
+        if ((0 >= score) || (10 >= answered) || (0.25 <= Math.random())) {
             pick_card_by_score();
         } else {
             pick_card_randomly();
@@ -2554,6 +2556,89 @@
                 order = picked_card_refs.join("");
                 assert.equal(order, "125430514203");
                 assert.equal(answered, 12);
+            });
+
+            QUnit.test("newly_learned_cards", function(assert) {
+                var picked_card_refs = [],
+                    order = "";
+
+                load_deck(
+                    {
+                        "name": "test deck",
+                        "side_1_language": "en",
+                        "side_2_language": "ja",
+                        "notes_language": "de",
+                        "notes": [
+                            "Note-1",
+                            "Note-2",
+                            "Note-3",
+                            "Note-4",
+                            "Note-5",
+                            "Note-6",
+                            "Note-7",
+                            "Note-8",
+                            "Note-9",
+                            "Note-10",
+                            "Note-11"
+                        ],
+                        "cards": [
+                            ["Card-1 Side-1", "Card-1 Side-2", "0,1", ""],
+                            ["Card-2 Side-1", "Card-2 Side-2", "2,3,4,5", ""],
+                            ["Card-3 Side-1", "Card-3 Side-2", "6,7,8,9,10", ""],
+                            ["Card-4 Side-1", "Card-4 Side-2", "0,1", ""],
+                            ["Card-5 Side-1", "Card-5 Side-2", "0,1", ""],
+                            ["Card-6 Side-1", "Card-6 Side-2", "2", ""]
+                        ]
+                    }
+                );
+
+                pick_card_by_score();
+                picked_card_refs.push(current_card_ref);
+                grade(GRADE_BAD);
+
+                pick_card_by_score();
+                picked_card_refs.push(current_card_ref);
+                grade(GRADE_GOOD);
+
+                pick_card_by_score();
+                picked_card_refs.push(current_card_ref);
+                grade(GRADE_SOSO);
+
+                reset_card_ref_order();
+
+                pick_card_by_score();
+                picked_card_refs.push(current_card_ref);
+                grade(GRADE_GOOD);
+
+                pick_card_by_score();
+                picked_card_refs.push(current_card_ref);
+                grade(GRADE_GOOD);
+
+                pick_card_by_score();
+                picked_card_refs.push(current_card_ref);
+                grade(GRADE_GOOD);
+
+                learn();
+
+                pick_card_by_score();
+                picked_card_refs.push(current_card_ref);
+                grade(GRADE_BAD);
+
+                learn();
+
+                pick_card_by_score();
+                picked_card_refs.push(current_card_ref);
+                grade(GRADE_SOSO);
+
+                learn();
+
+                pick_card_by_score();
+                picked_card_refs.push(current_card_ref);
+                grade(GRADE_SOSO);
+
+                order = picked_card_refs.join("");
+                assert.equal(order, "012021345");
+                assert.equal(answered, 9);
             });
 
             QUnit.test("pick_card_randomly", function(assert) {
