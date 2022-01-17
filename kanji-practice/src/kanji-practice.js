@@ -2813,7 +2813,7 @@
         drawn_characters = [];
         hide(practice_pronunciation);
 
-        if (Math.random() > 0.25) {
+        if ((0 < score) && (10 < answered) && (0.25 < Math.random())) {
             pick_card_by_score();
         } else {
             pick_card_randomly();
