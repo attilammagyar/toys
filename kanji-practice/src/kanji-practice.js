@@ -2595,9 +2595,9 @@
         last_order_reset = 0;
 
         if (card_refs.length < 1) {
-            learn();
-            learn();
-            learn();
+            for (i = 0, l = Math.min(3, cards.length); i < l; ++i) {
+                card_refs.push(to_learn.shift());
+            }
         }
 
         reset_card_ref_order();
@@ -2815,7 +2815,7 @@
         drawn_characters = [];
         hide(practice_pronunciation);
 
-        if ((0 < score) && (10 < answered) && (0.25 < Math.random())) {
+        if ((0 >= score) || (10 >= answered) || (0.25 <= Math.random())) {
             pick_card_by_score();
         } else {
             pick_card_randomly();
