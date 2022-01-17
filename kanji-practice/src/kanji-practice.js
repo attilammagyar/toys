@@ -2594,13 +2594,13 @@
         deck["cards"] = cards;
         last_order_reset = 0;
 
-        reset_card_ref_order();
-
         if (card_refs.length < 1) {
             learn();
             learn();
             learn();
         }
+
+        reset_card_ref_order();
 
         return deck;
     }
@@ -2758,7 +2758,9 @@
 
         card_refs.sort(
             function (a, b) {
-                return cards[a]["priority"] - cards[b]["priority"];
+                var d = cards[a]["priority"] - cards[b]["priority"];
+
+                return (0 === d) ? a - b : d;
             }
         );
 
@@ -3723,6 +3725,73 @@
                 order = picked_card_refs.join("");
                 assert.equal(order, "125430514203");
                 assert.equal(answered, 12);
+            });
+
+            QUnit.test("newly_learned_cards", function(assert) {
+                var picked_card_refs = [],
+                    order = "";
+
+                load_deck(
+                    {
+                        "name": "test deck",
+                        "cards": [
+                            ["kanji 1", "pronunciation 1", "meaning 1", "notes 1", ""],
+                            ["kanji 2", "pronunciation 2", "meaning 2", "notes 2", ""],
+                            ["kanji 3", "pronunciation 3", "meaning 3", "notes 3", ""],
+                            ["kanji 4", "pronunciation 4", "meaning 2", "notes 2", ""],
+                            ["kanji 5", "pronunciation 5", "meaning 5", "notes 5", ""],
+                            ["kanji 6", "pronunciation 6", "meaning 6", "notes 6", ""]
+                        ]
+                    }
+                );
+
+                pick_card_by_score();
+                picked_card_refs.push(current_card_ref);
+                grade(GRADE_BAD);
+
+                pick_card_by_score();
+                picked_card_refs.push(current_card_ref);
+                grade(GRADE_GOOD);
+
+                pick_card_by_score();
+                picked_card_refs.push(current_card_ref);
+                grade(GRADE_SOSO);
+
+                reset_card_ref_order();
+
+                pick_card_by_score();
+                picked_card_refs.push(current_card_ref);
+                grade(GRADE_GOOD);
+
+                pick_card_by_score();
+                picked_card_refs.push(current_card_ref);
+                grade(GRADE_GOOD);
+
+                pick_card_by_score();
+                picked_card_refs.push(current_card_ref);
+                grade(GRADE_GOOD);
+
+                learn();
+
+                pick_card_by_score();
+                picked_card_refs.push(current_card_ref);
+                grade(GRADE_BAD);
+
+                learn();
+
+                pick_card_by_score();
+                picked_card_refs.push(current_card_ref);
+                grade(GRADE_SOSO);
+
+                learn();
+
+                pick_card_by_score();
+                picked_card_refs.push(current_card_ref);
+                grade(GRADE_SOSO);
+
+                order = picked_card_refs.join("");
+                assert.equal(order, "012021345");
+                assert.equal(answered, 9);
             });
 
             QUnit.test("pick_card_randomly", function(assert) {
