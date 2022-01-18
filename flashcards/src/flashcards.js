@@ -1146,7 +1146,7 @@
         }
 
         message_timeout = setTimeout(hide_message, hide_after);
-        window.location = "#top";
+        window.scrollTo(0, 0);
     }
 
     function handle_editor_note_input_blur(evt)

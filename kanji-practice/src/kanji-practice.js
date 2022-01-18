@@ -2079,7 +2079,7 @@
         }
 
         message_timeout = setTimeout(hide_message, hide_after);
-        window.location = "#top";
+        window.scrollTo(0, 0);
     }
 
     function handle_menu_export_json_click(evt)
