@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>TSV kanji list editor</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="description" content="TSV kanji list editor" />
+
+<!--
+Review and edit the output of find_tatoeba.py.
+Requires https://github.com/takuyaa/kuromoji.js
+-->
+
+<style>
+* {
+  font-family: Verdana, sans-serif;
+  color: #e0e0f0;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  background-color: #000;
+}
+
+body {
+  padding: 10px;
+}
+
+span.furigana {
+  border: solid 0.5vmin;
+  border-radius: 2vmin;
+  background-color: #112;
+  border-color: #224;
+}
+
+span.furigana ruby rt {
+  font-size: 14px;
+}
+
+table, td, tr {
+  border-collapse: collapse;
+  border: solid 1px #888;
+}
+
+td, th {
+  padding: 5px;
+  font-size: 18px;
+}
+
+td.verified, td.verified * {
+  color: #80ff80;
+}
+
+td.edited, td.edited * {
+  color: #8080ff;
+}
+
+a.button,
+button {
+  display: inline-block;
+  font-weight: bold;
+  padding: 6px 30px;
+  border: outset 2px #234;
+  border-radius: 5px;
+  background-color: #347;
+  font-family: Verdana, sans-serif;
+  text-decoration: none;
+}
+
+div.input {
+  margin: 10px;
+}
+
+#message {
+  margin: 10px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.hidden {
+    display: none;
+}
+
+</style>
+</head>
+<body>
+
+  <div id="loading">Loading Kuromoji...</div>
+
+  <div>
+    <form id="load-form" action="#" method="get" class="hidden">
+      <h1>Load TSV</h1>
+      <div class="input">
+        <label for="file-input">Pick a file:</label>
+        <input id="file-input" name="file-input" type="file"
+          accept=".tsv,.tab,text/tab-separated-values" />
+        <button type="submit">Load</button>
+      </div>
+      <div class="input">
+        <label>Save:</label>
+        <a id="download-link" href="#" class="button">Save TSV</a>
+      </div>
+    </form>
+  </div>
+
+  <div id="message"></div>
+
+  <table>
+    <tbody id="table-body" class="hidden">
+    </tbody>
+  </table>
+
+
+<script type="text/javascript">
+<!--
+(function () {
+
+    "use strict";
+
+    var load_form,
+        table,
+        message,
+        tokenizer,
+        file_input,
+        file_name,
+        download_link,
+        cells = [],
+        KANJI_RE = /[\u4e00-\u9faf\u3400-\u4dbf]/,
+        focused = null,
+        focused_pos = [-1, -1],
+        katakana_to_hiragana_table = {
+            "ア": "あ", "イ": "い", "ウ": "う", "エ": "え", "オ": "お",
+            "カ": "か", "キ": "き", "ク": "く", "ケ": "け", "コ": "こ",
+            "ガ": "が", "ギ": "ぎ", "グ": "ぐ", "ゲ": "げ", "ゴ": "ご",
+            "サ": "さ", "シ": "し", "ス": "す", "セ": "せ", "ソ": "そ",
+            "ザ": "ざ", "ジ": "じ", "ズ": "ず", "ゼ": "ぜ", "ゾ": "ぞ",
+            "タ": "た", "チ": "ち", "ツ": "つ", "テ": "て", "ト": "と",
+            "ダ": "だ", "ヂ": "ぢ", "ヅ": "づ", "デ": "で", "ド": "ど",
+            "ナ": "な", "ニ": "に", "ヌ": "ぬ", "ネ": "ね", "ノ": "の",
+            "ハ": "は", "ヒ": "ひ", "フ": "ふ", "ヘ": "へ", "ホ": "ほ",
+            "バ": "ば", "ビ": "び", "ブ": "ぶ", "ベ": "べ", "ボ": "ぼ",
+            "パ": "ぱ", "ピ": "ぴ", "プ": "ぷ", "ペ": "ぺ", "ポ": "ぽ",
+            "マ": "ま", "ミ": "み", "ム": "む", "メ": "め", "モ": "も",
+            "ヤ": "や",             "ユ": "ゆ",             "ヨ": "よ",
+            "ャ": "ゃ",             "ュ": "ゅ",             "ョ": "ょ",
+            "ラ": "ら", "リ": "り", "ル": "る", "レ": "れ", "ロ": "ろ",
+            "ワ": "わ",                                     "ヲ": "を",
+            "ン": "ん",
+            "ッ": "っ"
+        };
+
+    function $(obj)
+    {
+        if (typeof(obj) === "string") {
+            obj = document.getElementById(obj);
+        }
+
+        return obj;
+    };
+
+    function show(obj)
+    {
+        var cls;
+
+        obj = $(obj);
+        cls = obj.getAttribute("class") || "";
+        obj.setAttribute("class", cls.replace(/(^| )hidden($| )/g, "$2"));
+    }
+
+    function hide(obj)
+    {
+        var cls;
+
+        obj = $(obj);
+        cls = obj.getAttribute("class") || "";
+        obj.setAttribute("class", cls.replace(/(^| )hidden($| )/g, "$2") + " hidden");
+    }
+
+    function handle_table_click(evt)
+    {
+        var td, m, row_idx, cell_idx, cell, rewritten, i;
+
+        evt = evt || event;
+        td = evt.target;
+
+        if (td.tagName.toLowerCase() !== "td") {
+            return;
+        }
+
+        i = td.getAttribute("id");
+
+        if (focused && focused.getAttribute("id") === i) {
+            return;
+        }
+
+        unfocus();
+
+        m = i.match(/^c-([0-9]+)-([0-9]+)$/);
+
+        if (!m) {
+            return;
+        }
+
+        row_idx = Number(m[1]);
+        cell_idx = Number(m[2]);
+
+        cell = cells[row_idx][cell_idx];
+        rewritten = (cell_idx === 3) ? rewrite_cell(cell) : null;
+
+        td.innerText = (rewritten !== null) ? rewritten : cell;
+        td.setAttribute("contenteditable", "true");
+        td.focus();
+        focused = td;
+        focused_pos = [row_idx, cell_idx];
+    }
+
+    function unfocus()
+    {
+        var cell,
+            i;
+
+        if (!focused) {
+            return;
+        }
+
+        i = focused_pos[1];
+        cell = focused.innerText;
+        cells[focused_pos[0]][i] = cell;
+
+        focused.innerHTML = (i === 3) ? format_text(cell) : quote_html(cell);
+
+        focused.setAttribute("class", "edited");
+        focused.setAttribute("contenteditable", "false");
+        focused.blur();
+        focused = null;
+        focused_pos = [-1, -1];
+    }
+
+    function stop_event(evt)
+    {
+        evt = evt || event;
+        evt.preventDefault();
+
+        return false;
+    }
+
+    function handle_form_submit(evt)
+    {
+        if (file_input.files.length >= 1) {
+            read_file(file_input.files[0], process_tsv);
+        }
+
+        return stop_event(evt);
+    }
+
+    function process_tsv(name, contents)
+    {
+        var lines = contents.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n"),
+            line,
+            tr,
+            td,
+            row,
+            row_i,
+            cell,
+            rewritten,
+            i, l, j, ll;
+
+        cells = [];
+        table.innerHTML = "";
+        file_name = name;
+
+        for (i = 0, row_i = 0, l = lines.length; i < l; ++i) {
+            line = lines[i].trim();
+
+            if (line === "") {
+                continue;
+            }
+
+            line = line.split("\t");
+            tr = document.createElement("tr");
+            row = [];
+
+            while (line.length < 5) {
+                line.push("");
+            }
+
+            for (j = 0; j < 5; ++j) {
+                rewritten = null;
+                cell = unquote_tsv(line[j]);
+                row.push(cell);
+                td = document.createElement("td");
+                td.setAttribute("id", "c-" + String(row_i) + "-" + String(j));
+
+                if (j === 3) {
+                    rewritten = rewrite_cell(cell);
+                }
+
+                if (rewritten === null) {
+                    td.setAttribute("class", "verified");
+                    td.innerHTML = (j === 3) ? format_text(cell) : quote_html(cell);
+                } else {
+                    td.innerHTML = format_text(rewritten);
+                }
+
+                tr.appendChild(td);
+            }
+
+            cells.push(row);
+            ++row_i;
+            table.appendChild(tr);
+        }
+    }
+
+    function rewrite_cell(cell)
+    {
+        var jpn, eng;
+
+        if (!cell.match(/\|\}/)) {
+            return null;
+        }
+
+        cell = cell.replace(/[{}|]/g, "").trim();
+
+        if (cell === "") {
+            return null;
+        }
+
+        cell = cell.split(/\n/);
+        jpn = suggest_furigana(cell[0]);
+        eng = cell[1];
+
+        return jpn + "\n" + eng;
+    }
+
+    function suggest_furigana(text)
+    {
+        var tokens = tokenizer.tokenize(text),
+            parts = [],
+            token,
+            i, l, s, r;
+
+        for (i = 0, l = tokens.length; i < l; ++i) {
+            token = tokens[i];
+            s = token["surface_form"];
+            r = token["reading"];
+
+            if (KANJI_RE.test(s)) {
+                r = katakana_to_hiragana(r);
+                parts.push(simplify_furigana(s, r));
+            } else {
+                parts.push(s);
+            }
+        }
+
+        return parts.join("");
+    }
+
+    function simplify_furigana(word, reading)
+    {
+        var suffix, prefix, wi, ri, we, re;
+
+        suffix = "";
+        wi = word.length - 1;
+        ri = reading.length - 1;
+
+        while ((we = word.substring(wi, wi + 1)) === (re = reading.substring(ri, ri + 1))) {
+            suffix = we + suffix;
+            --wi;
+            --ri;
+        }
+
+        word = word.substring(0, wi + 1);
+        reading = reading.substring(0, ri + 1);
+
+        prefix = "";
+        wi = 0;
+        ri = 0;
+
+        while ((we = word.substring(wi, wi + 1)) === (re = reading.substring(ri, ri + 1))) {
+            prefix = prefix + we;
+            ++wi;
+            ++ri;
+        }
+
+        word = word.substring(wi);
+        reading = reading.substring(ri);
+
+        return prefix + "{" + word + "|" + reading + "}" + suffix;
+    }
+
+    function katakana_to_hiragana(text)
+    {
+        var result = [],
+            problem = false,
+            i, l, c;
+
+        for (i = 0, l = text.length; i < l; ++i) {
+            c = text.substring(i, i + 1);
+
+            if (katakana_to_hiragana_table.hasOwnProperty(c)) {
+                c = katakana_to_hiragana_table[c];
+            } else {
+                problem = true;
+            }
+
+            result.push(c);
+        }
+
+        if (problem) {
+            console.log("PROBLEM: " + text);
+        }
+
+        return result.join("");
+    }
+
+    function read_file(file, callback)
+    {
+        var reader = new FileReader(),
+            handle_error;
+
+        handle_error = function () {
+            show_message("Error reading file: " + quote_html(String(reader.error || "unknown error")));
+        };
+
+        reader.onerror = handle_error;
+        reader.onabort = handle_error;
+        reader.onload = function ()
+        {
+            var error;
+
+            try {
+                callback(String(file.name), reader.result);
+            } catch (error) {
+                show_message(quote_html(error));
+
+                return;
+            }
+
+        };
+
+        reader.readAsText(file);
+    }
+
+    function show_message(text)
+    {
+        message.innerHTML = text;
+    }
+
+    function format_text(text)
+    {
+        return (
+            quote_html(text)
+                .replace(
+                    /\{([^|}]*?)\|([^}]*)\}/g,
+                    "<span class=\"furigana\"><ruby>$1<rt>$2</rt></ruby></span>"
+                )
+                .replace(/\{([^}]*)\}/g, "<small>($1)</small>")
+                .replace(/_([^_]*)_/g, "<em>$1</em>")
+                .replace(/\*([^*]*)\*/g, "<strong>$1</strong>")
+                .replace(/-+&gt;/g, "&rarr;")
+                .replace(/&lt;-+/g, "&larr;")
+                .replace(/\n/g, "<br/>")
+        );
+    }
+
+    function unquote_tsv(tsv_str)
+    {
+        return (
+            tsv_str
+                .replace(/\\\\/g, "\\")
+                .replace(/\\t/g, "\t")
+                .replace(/\\r/g, "\r")
+                .replace(/\\n/g, "\n")
+                .trim()
+        );
+    }
+
+    function quote_tsv(text)
+    {
+        return (
+            text
+                .replace(/\\/g, "\\\\")
+                .replace(/\t/g, "\\t")
+                .replace(/\r/g, "\\r")
+                .replace(/\n/g, "\\n")
+        );
+    }
+
+    function quote_html(text)
+    {
+        return text.replace(/&/g, "&amp;")
+            .replace(/>/g, "&gt;")
+            .replace(/</g, "&lt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function handle_tokenizer_ready(error, _tokenizer)
+    {
+        if (error) {
+            show_message("Error loading tokenizer: " + quote_html(error));
+            return;
+        }
+
+        tokenizer = _tokenizer;
+        show(load_form);
+        show(table);
+        hide($("loading"));
+    }
+
+    function handle_download_click(evt)
+    {
+        unfocus();
+        download_link.href = URL.createObjectURL(
+            new Blob([export_tsv()], {"type": "text/tab-separated-values"})
+        );
+        download_link.download = file_name;
+    }
+
+    function export_tsv()
+    {
+        var lines = [],
+            row, line,
+            i, l, j, ll;
+
+        for (i = 0, l = cells.length; i < l; ++i) {
+            row = cells[i];
+            line = [];
+
+            for (j = 0, ll = row.length; j < ll; ++j) {
+                line.push(quote_tsv(row[j].trim()));
+            }
+
+            lines.push(line.join("\t"));
+        }
+
+        return lines.join("\n");
+    }
+
+    window.onload = function ()
+    {
+        file_input = $("file-input");
+        load_form = $("load-form");
+        message = $("message");
+        table = $("table-body");
+        download_link = $("download-link");
+
+        load_form.onsubmit = handle_form_submit;
+        table.onclick = handle_table_click;
+        download_link.onclick = handle_download_click;
+
+        kuromoji.builder({"dicPath": "kuromojijs/dict/"}).build(
+            handle_tokenizer_ready
+        );
+    };
+
+}())
+//-->
+</script>
+    <script type="text/javascript" src="kuromojijs/kuromoji.js"></script>
+
+</body>
+</html>
+
