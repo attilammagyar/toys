@@ -56,7 +56,24 @@ def main(argv):
                     grade, rad_names, nanoris, on_readings, kun_readings, meanings, jlpt
                 ]
 
-    print("window.kanjidic = {")
+    print("""\
+/*
+
+The following data is generated from the KANJIDIC [1] dictionary files.
+This data is the property of the Electronic Dictionary Research and
+Development Group [2] and are used in conformance with the Group's
+license [3].
+
+  [1]: https://www.edrdg.org/wiki/index.php/KANJIDIC_Project
+  [2]: http://www.edrdg.org/
+  [3]: http://www.edrdg.org/edrdg/licence.html
+
+Creative Commons Attribution-ShareAlike Licence 3.0:
+https://creativecommons.org/licenses/by-sa/3.0/
+
+*/
+window.kanjidic = {
+""")
 
     print(
         ",\n".join(

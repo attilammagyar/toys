@@ -29,6 +29,19 @@ def main(argv):
         char_data[f"k{code}"] = [elements, paths]
 
     j = json.dumps(char_data, indent=1, ensure_ascii=False)
+    print("""\
+/*
+
+The following stroke data is from Ulrich Apel's KanjiVG project [1].
+(See also: https://github.com/KanjiVG/kanjivg/)
+
+  [1]: https://kanjivg.tagaini.net/
+
+Creative Commons Attribution-Share Aline 3.0:
+https://creativecommons.org/licenses/by-sa/3.0/
+
+*/
+""")
     print(f"window.kanjivg = {j};")
 
     return 0

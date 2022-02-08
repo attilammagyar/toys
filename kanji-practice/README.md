@@ -35,8 +35,10 @@ Acknowledgements
 ----------------
 
 This software uses stroke data from Ulrich Apel's [KanjiVG][kanjivg] project.
+(See also: [KanjiVG on GitHub][kanjivggithub].)
 
   [kanjivg]: https://kanjivg.tagaini.net/
+  [kanjivggithub]: https://github.com/KanjiVG/kanjivg/
 
 This projects uses kanji data from the [KANJIDIC][kanjidic] dictionary files.
 These files are the property of the [Electronic Dictionary Research and
