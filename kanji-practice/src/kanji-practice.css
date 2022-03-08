@@ -638,6 +638,12 @@ h1 {
   vertical-align: top;
 }
 
+#practice-kanji-details-about p {
+  text-align: center;
+  font-size: 3vmin;
+  margin: 3vmin;
+}
+
 #notes-preview {
   vertical-align: top;
   position: relative;

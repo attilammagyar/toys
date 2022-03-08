@@ -6,7 +6,7 @@ learning Japanese kanji.
 
 Key differences from other similar apps:
 
- * It has a **dark design**.
+ * **Dark colorshceme**.
 
  * **No stroke recognition**, so you won't experience the frustration of the
    app repeatedly failing to accept a correct stroke.
@@ -22,14 +22,14 @@ Key differences from other similar apps:
    an internet connection. This also means that you don't have to worry about
    an update introducing unwanted changes. You can even change the source code
    if you want to. (Note: the app's data storage in the browser is associated
-   with its location and file name, so before changing these, make sure to
-   save your deck of flashcards using the menu in order to avoid losing them.)
+   with its location and file name, so before changing these, make sure to save
+   your deck of flashcards using the menu in order to avoid losing them.)
 
  * It's **completely offline**, there's no background communication with any
-   servers or clouds, so it won't start lagging and glitching while you are
-   practising. This also means that you will have to manually save or export
-   your flashcards using the app's menu if you want to transfer and access
-   them from a different device.
+   servers, so it won't start lagging and glitching while you are practising.
+   This also implies that you will have to manually save or export your
+   flashcards using the app's menu if you want to transfer and access them from
+   a different device.
 
 Acknowledgements
 ----------------
