@@ -1,5 +1,5 @@
 .PHONY: all
-all: ./kanji-practice/index.html ./flashcards/index.html
+all: ./kanji-practice/index.html ./flashcards/index.html ./calcle/index.html
 
 .PHONY: clean
 clean:
@@ -19,3 +19,9 @@ clean:
 		kanji-practice/src/kanji-practice.html \
 		kanji-practice/index.html \
 		4
+
+./calcle/index.html:
+	python3 single_html.py \
+		calcle/src/calcle.html \
+		calcle/index.html \
+		2

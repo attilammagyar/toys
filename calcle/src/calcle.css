@@ -1,0 +1,267 @@
+* {
+  font-family: Verdana, sans-serif;
+  color: #e0e0f0;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  background-color: #080808;
+}
+
+#calculation-container {
+  background-color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 3vmin auto;
+  font-size: 5vmin;
+  text-align: left;
+  width: 90vmin;
+  min-height: 12vmin;
+  border: inset 0.5vmin #223;
+  border-radius: 1vmin;
+  padding-left: 1vmin;
+  padding-right: 1vmin;
+}
+
+#calculation {
+  margin-right: 1.5vmin;
+}
+
+#calculation-container a.button {
+  margin-top: 2vmin;
+}
+
+#calculation span.wrong {
+  color: #d84000;
+  background: linear-gradient(to left top, transparent 45%, currentColor 47%, currentColor 53%, transparent 55%);
+}
+
+#calculation span.good {
+  color: #30c090;
+}
+
+#calculation span.partial-result {
+  color: #363636;
+}
+
+#stats-container {
+  display: flex;
+  justify-content: space-between;
+  margin: 0 auto;
+  font-size: 5vmin;
+  width: 90vmin;
+  height: 10vmin;
+  line-height: 10vmin;
+}
+
+#level {
+}
+
+#score {
+  font-weight: bold;
+}
+
+#score-delta {
+}
+
+#score-delta.good {
+  color: #e0f000;
+}
+
+#score-delta.bad {
+  color: #d84000;
+}
+
+#tiles {
+  margin: auto;
+  width: 96vmin;
+  transition: opacity 0.3s;
+  text-align: center;
+}
+
+#tiles.hidden {
+  opacity: 0;
+}
+
+#example a,
+#tiles a {
+  cursor: default;
+  display: inline-block;
+  font-weight: bold;
+  width: 10.4vmin;
+  height: 10.4vmin;
+  font-size: 4.8vmin;
+  line-height: 10.4vmin;
+  margin: 0.15vmin;
+  text-align: center;
+  color: #fffff0;
+  transition: opacity 0.2s;
+}
+
+#example a {
+  width: 7.5vmin;
+  height: 7.5vmin;
+  font-size: 4vmin;
+  line-height: 7.5vmin;
+  margin: 0.2vmin;
+}
+
+#tiles a.hidden {
+  opacity: 0;
+}
+
+#example a.type-0,
+#tiles a.type-0 {
+  background-color: #307090;
+  border-color: #104070;
+}
+
+#example a.type-1,
+#tiles a.type-1 {
+  background-color: #309030;
+  border-color: #207020;
+}
+
+#example a.type-2,
+#tiles a.type-2 {
+  background-color: #904020;
+  border-color: #702010;
+}
+
+#example a.type-3,
+#tiles a.type-3 {
+  background-color: #909030;
+  border-color: #707020;
+}
+
+#example a.type-4,
+#tiles a.type-4 {
+  background-color: #903080;
+  border-color: #702060;
+}
+
+
+button,
+a.button,
+#example a,
+#tiles a {
+  border-style: outset;
+  border-width: 0.5vmin;
+  border-radius: 1vmin;
+}
+
+button,
+a.button {
+  color: #e0e0f0;
+  display: inline-block;
+  font-size: 4.2vmin;
+  line-height: 4.2vmin;
+  height: 4.2vmin;
+  font-weight: bold;
+  padding: 1.6vmin 2vmin;
+  text-decoration: none;
+}
+
+svg.icon {
+  padding: 0;
+  margin: 0;
+  border-width: 0;
+  width: 3.6vmin;
+  height: 3.6vmin;
+}
+
+#delete-button {
+  background: #800909;
+  border-color: #600404;
+}
+
+#next-level-button {
+  background: #103675;
+  border-color: #102068;
+}
+
+#about-button {
+  background: #005030;
+  border-color: #004020;
+}
+
+.modal {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 98vw;
+  min-height: 98vh;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.modal-content {
+  margin-left: 10vw;
+  margin-top: 20vh;
+  width: 80vw;
+  min-height: 30vh;
+  background: #181818;
+  border: outset 0.5vmin #101010;
+  border-radius: 1vh;
+  padding: 2vmin;
+}
+
+.modal-content h1 {
+  text-align: center;
+  margin: 3vmin;
+  font-size: 6vmin;
+}
+
+.modal-content p {
+  text-align: center;
+  margin: 2vmin;
+  font-size: 4vmin;
+}
+
+.modal-content form {
+  text-align: center;
+}
+
+.modal-content small {
+  text-align: center;
+  margin: 2vmin;
+  font-size: 2.7vmin;
+}
+
+.modal-close {
+  display: block;
+  right: 0;
+  float: right;
+  border-color: #606060;
+  color: #c0c0c0;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+#copy-text {
+  width: 70vw;
+  height: 12vh;
+  border: inset 0.5vmin #888;
+  background: #000;
+  border-radius: 1vmin;
+  margin: 2vmin;
+  font-size: 4vmin;
+}
+
+#copy-button {
+  margin-right: 5vmin;
+  background: #103675;
+  border-color: #102068;
+  color: #f8f8ff;
+}
+
+#restart-button {
+  margin-left: 5vmin;
+  background: #005030;
+  border-color: #004020;
+  color: #f8fff8;
+}

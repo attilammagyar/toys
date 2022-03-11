@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Calcle</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="description" content="A game where you have to assemble the longest correct calculation with the highest result you can. New challenge every day." />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta property="og:title" content="Calcle" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://attilammagyar.github.io/toys/calcle" />
+  <meta property="og:image" content="https://attilammagyar.github.io/toys/calcle/calcle.jpg" />
+  <meta property="og:image:alt" content="Screenshot of the game" />
+  <meta property="og:image:width" content="1280" />
+  <meta property="og:image:height" content="720" />
+  <meta property="og:description" content="A game where you have to assemble the longest correct calculation with the highest result you can. New challenge every day." />
+
+<style>
+* {
+  font-family: Verdana, sans-serif;
+  color: #e0e0f0;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  background-color: #080808;
+}
+
+#calculation-container {
+  background-color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 3vmin auto;
+  font-size: 5vmin;
+  text-align: left;
+  width: 90vmin;
+  min-height: 12vmin;
+  border: inset 0.5vmin #223;
+  border-radius: 1vmin;
+  padding-left: 1vmin;
+  padding-right: 1vmin;
+}
+
+#calculation {
+  margin-right: 1.5vmin;
+}
+
+#calculation-container a.button {
+  margin-top: 2vmin;
+}
+
+#calculation span.wrong {
+  color: #d84000;
+  background: linear-gradient(to left top, transparent 45%, currentColor 47%, currentColor 53%, transparent 55%);
+}
+
+#calculation span.good {
+  color: #30c090;
+}
+
+#calculation span.partial-result {
+  color: #363636;
+}
+
+#stats-container {
+  display: flex;
+  justify-content: space-between;
+  margin: 0 auto;
+  font-size: 5vmin;
+  width: 90vmin;
+  height: 10vmin;
+  line-height: 10vmin;
+}
+
+#level {
+}
+
+#score {
+  font-weight: bold;
+}
+
+#score-delta {
+}
+
+#score-delta.good {
+  color: #e0f000;
+}
+
+#score-delta.bad {
+  color: #d84000;
+}
+
+#tiles {
+  margin: auto;
+  width: 96vmin;
+  transition: opacity 0.3s;
+  text-align: center;
+}
+
+#tiles.hidden {
+  opacity: 0;
+}
+
+#example a,
+#tiles a {
+  cursor: default;
+  display: inline-block;
+  font-weight: bold;
+  width: 10.4vmin;
+  height: 10.4vmin;
+  font-size: 4.8vmin;
+  line-height: 10.4vmin;
+  margin: 0.15vmin;
+  text-align: center;
+  color: #fffff0;
+  transition: opacity 0.2s;
+}
+
+#example a {
+  width: 7.5vmin;
+  height: 7.5vmin;
+  font-size: 4vmin;
+  line-height: 7.5vmin;
+  margin: 0.2vmin;
+}
+
+#tiles a.hidden {
+  opacity: 0;
+}
+
+#example a.type-0,
+#tiles a.type-0 {
+  background-color: #307090;
+  border-color: #104070;
+}
+
+#example a.type-1,
+#tiles a.type-1 {
+  background-color: #309030;
+  border-color: #207020;
+}
+
+#example a.type-2,
+#tiles a.type-2 {
+  background-color: #904020;
+  border-color: #702010;
+}
+
+#example a.type-3,
+#tiles a.type-3 {
+  background-color: #909030;
+  border-color: #707020;
+}
+
+#example a.type-4,
+#tiles a.type-4 {
+  background-color: #903080;
+  border-color: #702060;
+}
+
+
+button,
+a.button,
+#example a,
+#tiles a {
+  border-style: outset;
+  border-width: 0.5vmin;
+  border-radius: 1vmin;
+}
+
+button,
+a.button {
+  color: #e0e0f0;
+  display: inline-block;
+  font-size: 4.2vmin;
+  line-height: 4.2vmin;
+  height: 4.2vmin;
+  font-weight: bold;
+  padding: 1.6vmin 2vmin;
+  text-decoration: none;
+}
+
+svg.icon {
+  padding: 0;
+  margin: 0;
+  border-width: 0;
+  width: 3.6vmin;
+  height: 3.6vmin;
+}
+
+#delete-button {
+  background: #800909;
+  border-color: #600404;
+}
+
+#next-level-button {
+  background: #103675;
+  border-color: #102068;
+}
+
+#about-button {
+  background: #005030;
+  border-color: #004020;
+}
+
+.modal {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 98vw;
+  min-height: 98vh;
+  z-index: 100;
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.modal-content {
+  margin-left: 10vw;
+  margin-top: 20vh;
+  width: 80vw;
+  min-height: 30vh;
+  background: #181818;
+  border: outset 0.5vmin #101010;
+  border-radius: 1vh;
+  padding: 2vmin;
+}
+
+.modal-content h1 {
+  text-align: center;
+  margin: 3vmin;
+  font-size: 6vmin;
+}
+
+.modal-content p {
+  text-align: center;
+  margin: 2vmin;
+  font-size: 4vmin;
+}
+
+.modal-content form {
+  text-align: center;
+}
+
+.modal-content small {
+  text-align: center;
+  margin: 2vmin;
+  font-size: 2.7vmin;
+}
+
+.modal-close {
+  display: block;
+  right: 0;
+  float: right;
+  border-color: #606060;
+  color: #c0c0c0;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+#copy-text {
+  width: 70vw;
+  height: 12vh;
+  border: inset 0.5vmin #888;
+  background: #000;
+  border-radius: 1vmin;
+  margin: 2vmin;
+  font-size: 4vmin;
+}
+
+#copy-button {
+  margin-right: 5vmin;
+  background: #103675;
+  border-color: #102068;
+  color: #f8f8ff;
+}
+
+#restart-button {
+  margin-left: 5vmin;
+  background: #005030;
+  border-color: #004020;
+  color: #f8fff8;
+}
+
+</style>
+</head>
+<body>
+  <div id="about-screen" class="modal">
+    <div id="about" class="modal-content">
+      <a class="button modal-close" id="about-close" href="#" title="Close">
+        <svg class="icon" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+         <g>
+          <title>Close</title>
+          <path stroke-width="80" stroke="#e0d0d0" d="M 30 30 L 440 440 M 30 440 L 440 30"></path>
+         </g>
+        </svg>
+      </a>
+      <h1>Calcle</h1>
+      <p>
+        Assemble correct calculations - the higher the results and the longer
+        the calculations the better. New challenge every day.
+      </p>
+      <p id="example">
+        <a class="type-0">2</a><a class="type-1">+</a><a class="type-0">3</a><a class="type-3">×</a><a class="type-0">5</a><a class="type-4">=</a><a class="type-0">17</a>
+      </p>
+      <p>
+        <small>
+          <a href="https://www.nytimes.com/games/wordle/index.html"
+            target="_blank">Inspired by Wordle.</a>
+          <br/>
+          (This website doesn't use any cookies.)<br/>
+          <a href="https://github.com/attilammagyar/toys"
+            target="_blank">Source code on GitHub</a>
+        </small>
+      </p>
+    </div>
+  </div>
+  <div id="end-screen" class="modal hidden">
+    <div id="end" class="modal-content">
+      <h1>Well done!</h1>
+      <p>
+        <span id="final-score"></span>
+        <br/>
+        Next challenge: <span id="countdown"></span>
+      </p>
+      <form action="#" method="get">
+        <div>
+          <textarea id="copy-text" name="copy-text" rows="3" cols="70" readonly="readonly"></textarea>
+        </div>
+        <div>
+          <a id="copy-button" class="button" href="#" title="Copy">
+            Copy
+          </a>
+          <a id="restart-button" class="button" href="#" title="Restart">
+            Restart
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div id="main-screen">
+    <div id="stats-container">
+      <span>
+        <a id="about-button" class="button" href="#" title="About">
+          <svg class="icon" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+           <g>
+            <title>About</title>
+            <ellipse id="svg-8" fill-opacity="0" ry="210" rx="210" cy="250" cx="250" stroke-width="44" stroke="#e0d0d0" fill="#e0d0d0"/>
+            <rect id="svg-9" height="120" width="53" y="250" x="220" stroke-width="30" stroke="#e0d0d0" fill="#e0d0d0"/>
+            <ellipse id="svg-10" ry="30" rx="30" cy="160" cx="250" stroke-width="30" stroke="#e0d0d0" fill="#e0d0d0"/>
+           </g>
+          </svg>
+        </a>
+        <span id="score"></span>
+        <span id="score-delta"></span>
+      </span>
+      <span>
+        <span id="level"></span>
+        <a id="next-level-button" class="button" href="#" title="Go to next level">
+          <svg class="icon" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+           <g>
+            <title>Go to next level</title>
+            <rect id="svg-1" stroke="none" height="320" width="200" y="150" x="150" fill="#e0d0d0"/>
+            <polygon id="svg-2" stroke="none" points="30,280,470,280,250,30" fill="#e0d0d0" />
+           </g>
+          </svg>
+        </a>
+      </span>
+    </div>
+    <div id="calculation-container">
+      <span id="calculation"></span>
+      <a id="delete-button" class="button" href="#" title="Clear">
+        <svg class="icon" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+         <g>
+          <title>Clear</title>
+          <rect id="svg-3" stroke="#e0d0d0" stroke-width="50" height="320" width="300" y="150" x="100" fill="none"/>
+          <rect id="svg-4" stroke="none" height="320" width="50" y="150" x="177" fill="#e0d0d0"/>
+          <rect id="svg-5" stroke="none" height="320" width="50" y="150" x="273" fill="#e0d0d0"/>
+          <rect id="svg-6" transform="rotate(-5 30 80)" stroke="none" height="60" width="440" y="80" x="30" fill="#e0d0d0"/>
+          <rect id="svg-7" transform="rotate(-5 30 80)" stroke="none" height="60" width="100" y="20" x="200" fill="#e0d0d0"/>
+         </g>
+        </svg>
+      </a>
+    </div>
+    <div id="tiles"></div>
+  </div>
+<script type="text/javascript">
+<!--
+(function () {
+
+    "use strict";
+
+    var NUM = 0,
+        ADD = 1,
+        SUB = 2,
+        MUL = 3,
+        EQ = 4,
+        PREC = [0, 1, 1, 2],
+        MAX_LEVEL = 5,
+        rng_x,
+        rng_c,
+        is_playing,
+        next_challenge,
+        is_done,
+        score,
+        score_delta,
+        roller,
+        level,
+        calculation,
+        polish,
+        op_stack,
+        has_operator,
+        has_eq,
+        numbers,
+        eqs,
+        operators,
+        tiles,
+        tile_ids,
+        tiles_count,
+        prev_tile,
+        score_node,
+        level_node,
+        score_delta_node,
+        calculation_node,
+        tiles_node,
+        about_screen,
+        end_screen,
+        copy_text_node,
+        countdown_node,
+        final_score_node,
+        main_screen;
+
+    function main()
+    {
+        score_node = $("score");
+        level_node = $("level");
+        score_delta_node = $("score-delta");
+        calculation_node = $("calculation");
+        tiles_node = $("tiles");
+        about_screen = $("about-screen");
+        end_screen = $("end-screen");
+        copy_text_node = $("copy-text");
+        countdown_node = $("countdown");
+        final_score_node = $("final-score");
+
+        $("next-level-button").onclick = handle_next_level_click;
+        $("delete-button").onclick = handle_delete_click;
+
+        $("about").onclick = stop_event;
+        $("about-button").onclick = handle_about_button_click;
+        $("about-close").onclick = handle_about_close_click;
+        $("copy-button").onclick = copy;
+        $("restart-button").onclick = handle_restart_click;
+        about_screen.onclick = handle_about_close_click;
+        copy_text_node.onclick = select;
+
+        restart();
+
+        setInterval(tick, 1000);
+    }
+
+    function handle_delete_click(evt)
+    {
+        evt = evt || event;
+
+        if (calculation.length > 0) {
+            cancel_calculation();
+        }
+
+        return stop_event(evt);
+    }
+
+    function handle_about_button_click(evt)
+    {
+        evt = evt || event;
+
+        show(about_screen);
+        is_playing = false;
+
+        return stop_event(evt);
+    }
+
+    function handle_about_close_click(evt)
+    {
+        evt = evt || event;
+
+        hide(about_screen);
+        is_playing = true;
+
+        return stop_event(evt);
+    }
+
+    function select(evt)
+    {
+        evt = evt || event;
+
+        copy_text_node.select();
+        copy_text_node.setSelectionRange(0, 99999);
+
+        return stop_event(evt);
+    }
+
+    function copy(evt)
+    {
+        evt = evt || event;
+
+        select();
+        navigator.clipboard.writeText(copy_text_node.value);
+
+        return stop_event(evt);
+    }
+
+    function handle_about_end_click(evt)
+    {
+        hide(end_screen);
+    }
+
+    function cancel_calculation()
+    {
+        adjust_score_delta(-10 * calculation.length);
+        new_calculation();
+        update_calculation();
+
+        if ((eqs < 1) || (operators < 1)) {
+            level_up();
+            schedule_new_board();
+        }
+    }
+
+    function handle_next_level_click(evt)
+    {
+        evt = evt || event;
+
+        if (calculation.length > 0) {
+            cancel_calculation();
+        }
+
+        adjust_score_delta(-10 * tiles_count);
+        level_up();
+        schedule_new_board();
+
+        return stop_event(evt);
+    }
+
+    function handle_restart_click(evt)
+    {
+        evt = evt || event;
+        restart();
+        hide(end_screen);
+
+        return stop_event(evt);
+    }
+
+    function restart()
+    {
+        var d = new Date();
+
+        init_random(d);
+
+        d.setDate(d.getDate() + 1);
+        d.setHours(0, 0, 0, 0);
+        next_challenge = d.getTime();
+
+        new_game();
+        is_playing = true;
+        is_done = false;
+    }
+
+    function new_game()
+    {
+        score = 0;
+        score_delta = 0;
+        roller = null;
+        level = 0;
+
+        level_up();
+        new_board();
+        update_calculation();
+    }
+
+    function new_board()
+    {
+        new_calculation();
+        generate_tiles();
+        shuffle(tile_ids);
+        update_score();
+        show_tiles();
+    }
+
+    function new_calculation()
+    {
+        calculation = [];
+        polish = [];
+        op_stack = [];
+        prev_tile = null;
+        has_operator = false;
+        has_eq = false;
+    }
+
+    function tick()
+    {
+        var d, t, h, m, s;
+
+        if (is_playing && (score > 0)) {
+            --score;
+            update_score();
+        } else if (is_done) {
+            d = Math.floor(Math.max(0, next_challenge - (new Date()).getTime()) / 1000);
+            s = d % 60;
+            m = Math.floor(d / 60) % 60;
+            h = Math.floor(d / 3600);
+            t = (
+                ((h < 10) ? "0" : "") + String(h)
+                + ":"
+                + ((m < 10) ? "0" : "") + String(m)
+                + ":"
+                + ((s < 10) ? "0" : "") + String(s)
+            );
+            countdown_node.innerHTML = t;
+        }
+    }
+
+    function generate_tiles()
+    {
+        var i, j, m, op, elements, num, result, max_num;
+
+        max_num = level * 12 + 10;
+        clear_tiles();
+
+        while (tiles_count < 30) {
+            elements = random(1, 4);
+            result = 0;
+            num = random(3, max_num);
+            create_number_tiles(num);
+
+            for (i = 0; i < elements; ++i) {
+                if ((random(0, 100) <= 20) && (result > 2)) {
+                    num = random(1, result);
+                    create_tile(SUB, "-");
+                    create_number_tiles(num);
+                    result -= num;
+                } else {
+                    num = random(1, max_num);
+                    create_tile(ADD, "+");
+                    create_number_tiles(num);
+                    result += num;
+                }
+
+                if (random(0, 100) <= 10) {
+                    create_tile(NUM, result);
+                }
+            }
+
+            create_tile(EQ, "=");
+            create_tile(NUM, result);
+        }
+    }
+
+    function create_number_tiles(num)
+    {
+        var f, c;
+
+        if ((level > 2) && (tiles_count < 30) && (random(0, 100) <= 20)) {
+            c = 0;
+
+            while (((f = find_factor(num)) > 1) && (num > 1)) {
+                num /= f;
+                create_tile(NUM, f);
+
+                if (c > 0) {
+                    create_tile(MUL, "×");
+                }
+
+                ++c;
+            }
+
+            if ((c < 2) && (random(0, 100) <= 15)) {
+                create_tile(MUL, "×");
+                create_tile(NUM, 1);
+            }
+        } else {
+            create_tile(NUM, num);
+        }
+    }
+
+    function find_factor(num)
+    {
+        var f;
+
+        if (random(0, 100) <= 50) {
+            if ((num > 4) && (num % 4 === 0)) {
+                return num / 4;
+            }
+
+            if ((num > 2) && (num % 2 === 0)) {
+                return num / 2;
+            }
+        }
+
+        f = Math.floor(Math.sqrt(num));
+
+        while (f > 1) {
+            if (num % f === 0) {
+                return f;
+            }
+
+            --f;
+        }
+
+        return num;
+    }
+
+    function clear_tiles()
+    {
+        tiles = {};
+        tile_ids = [];
+        tiles_count = 0;
+        operators = 0;
+        numbers = 0;
+        eqs = 0;
+    }
+
+    function create_tile(type, value)
+    {
+        var tile_id;
+
+        ++tiles_count;
+
+        tile_id = "t-" + String(tiles_count);
+        tiles[tile_id] = [type, value];
+        tile_ids.push(tile_id);
+
+        switch (type) {
+            case NUM:
+                if (value < 0)
+                    throw "WHAT?";
+                ++numbers;
+                break
+            case ADD:
+            case SUB:
+            case MUL:
+                ++operators;
+                break;
+            case EQ:
+                ++eqs;
+                break;
+        }
+
+        return tile_id;
+    }
+
+    function shuffle(arr)
+    {
+        var l = arr.length,
+            i, j, tmp;
+
+        for (i = l - 1; i > 0; --i) {
+            j = random(0, l);
+            tmp = arr[i];
+            arr[i] = arr[j];
+            arr[j] = tmp;
+        }
+    }
+
+    function show_tiles()
+    {
+        var i, a, tile, tile_id;
+
+        tiles_node.innerHTML = "";
+
+        for (i = 0; i < tiles_count; ++i) {
+            tile_id = tile_ids[i];
+            tile = tiles[tile_id];
+            a = document.createElement("a");
+            a.innerText = String(tile[1]);
+            a.setAttribute("id", tile_id);
+            a.setAttribute("class", "type-" + String(tile[0]));
+            a.onclick = handle_tile_click;
+            tiles_node.appendChild(a);
+        }
+
+        show(tiles_node);
+    }
+
+    function handle_tile_click(evt)
+    {
+        var is_complete = false,
+            a, tile_id;
+
+        evt = evt || event;
+        a = evt.target;
+        tile_id = a.getAttribute("id");
+
+        if (append_tile(tile_id)) {
+            hide(a);
+
+            is_complete = is_calculation_complete();
+
+            if (is_complete) {
+                evaluate_calculation();
+            }
+        }
+
+        if (!is_complete) {
+            update_calculation();
+        }
+
+        update_score();
+
+        return stop_event(evt);
+    }
+
+    function adjust_score_delta(change)
+    {
+        score_delta += change;
+
+        if (roller === null && score_delta !== 0) {
+            roller = setInterval(roll_score, 100);
+        }
+    }
+
+    function append_tile(tile_id)
+    {
+        var prev_type = null,
+            is_valid = false,
+            tile, value, is_valid;
+
+        tile = tiles[tile_id];
+
+        if (tile && is_valid_as_next_tile(tile)) {
+            --tiles_count;
+            is_valid = true;
+
+            if (prev_tile !== null) {
+                prev_type = prev_tile[0];
+            }
+
+            value = tile[1];
+            calculation.push(tile);
+            tiles[tile_id] = null;
+            adjust_score_delta(3);
+            prev_tile = tile;
+
+            switch (tile[0]) {
+                case ADD:
+                    append_operator(tile);
+                    break;
+                case SUB:
+                    adjust_score_delta(7);
+                    append_operator(tile);
+                    break;
+                case MUL:
+                    adjust_score_delta(17);
+                    append_operator(tile);
+                    break;
+                case EQ:
+                    has_eq = true;
+                    --eqs;
+                    break;
+                case NUM:
+                    --numbers;
+
+                    if (!has_eq) {
+                        polish.push(tile);
+                    }
+
+                    if (is_board_exhausted()) {
+                        level_up();
+                        schedule_new_board();
+                    }
+
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return is_valid;
+    }
+
+    function append_operator(tile)
+    {
+        var p = PREC[tile[0]];
+
+        has_operator = true;
+        --operators;
+
+        while ((op_stack.length > 0) && (op_stack[op_stack.length - 1][2] >= p)) {
+            polish.push(op_stack.pop());
+        }
+
+        op_stack.push([tile[0], tile[1], p]);
+    }
+
+    function partial_result()
+    {
+        var stack = [],
+            p = polish.slice(),
+            o = op_stack.slice(),
+            e, a, b,
+            i, l;
+
+        if ((calculation.length < 3) || ((prev_tile[0] !== NUM) && (prev_tile[0] !== EQ))) {
+            return null;
+        }
+
+        while (o.length > 0) {
+            p.push(o.pop());
+        }
+
+        for (i = 0, l = p.length; i < l; ++i) {
+            e = p[i];
+
+            switch (e[0]) {
+                case NUM:
+                    stack.push(e[1]);
+                    break;
+                case ADD:
+                    b = stack.pop();
+                    a = stack.pop();
+                    stack.push(a + b);
+                    break;
+                case SUB:
+                    b = stack.pop();
+                    a = stack.pop();
+                    stack.push(a - b);
+                    break;
+                case MUL:
+                    b = stack.pop();
+                    a = stack.pop();
+                    stack.push(a * b);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return stack[0];
+    }
+
+    function is_calculation_complete()
+    {
+        return has_eq && prev_tile !== null && prev_tile[0] === NUM;
+    }
+
+    function evaluate_calculation()
+    {
+        var value = prev_tile[1],
+            expected = partial_result();
+
+        if (expected === value) {
+            adjust_score_delta(Math.min(1000, expected * calculation.length));
+            show_correct_calculation();
+
+            if (tiles_count < 1) {
+                adjust_score_delta(2000);
+            }
+        } else {
+            adjust_score_delta(
+                - Math.max(50, Math.min(500, Math.abs(value - expected) * calculation.length))
+            );
+            show_wrong_calculation(expected);
+        }
+
+        new_calculation();
+    }
+
+    function is_board_exhausted()
+    {
+        return (eqs < 1) || (has_eq && (operators < 1));
+    }
+
+    function level_up()
+    {
+        ++level;
+
+        if (level <= MAX_LEVEL) {
+            update_level();
+        } else {
+            end_game();
+        }
+    }
+
+    function end_game()
+    {
+        var final_score = Math.max(0, score + score_delta),
+            final_score_str, high_score, high_score_str, ex, msg;
+
+        try {
+            high_score = Math.max(0, Number(localStorage.getItem("calcle_high_score")));
+        } catch (ex) {
+            high_score = 0;
+        }
+
+        is_done = true;
+        is_playing = false;
+        final_score_str = String(final_score);
+
+        if (high_score > 0) {
+            high_score = Math.max(final_score, high_score);
+            high_score_str = String(high_score);
+            final_score_node.innerHTML = (
+                "Score: " + final_score_str
+                + " (High score: " + high_score_str + ")"
+            );
+            msg = (
+                "I just scored " + final_score_str + " in Calcle"
+                + " (my highest score is " + high_score_str + "):"
+                + " https://attilammagyar.github.io/toys/calcle"
+            );
+        } else {
+            high_score = Math.max(final_score, high_score);
+            final_score_node.innerHTML = "Score: " + String(final_score);
+            msg = (
+                "I just scored " + final_score_str + " in Calcle:"
+                + " https://attilammagyar.github.io/toys/calcle"
+            );
+        }
+
+        copy_text_node.value = msg;
+
+        tick();
+        show(end_screen);
+
+        localStorage.setItem("calcle_high_score", high_score);
+    }
+
+    function schedule_new_board()
+    {
+        hide(tiles_node);
+        setTimeout(new_board, 300);
+    }
+
+    function roll_score()
+    {
+        var sgn = (score_delta > 0) ? 1 : -1,
+            new_delta, diff;
+
+        new_delta = sgn * Math.floor(Math.abs(score_delta) * 0.8);
+        diff = score_delta - new_delta;
+
+        score = Math.max(0, score + diff);
+        score_delta = new_delta;
+
+        if (score_delta === 0) {
+            clearInterval(roller);
+            roller = null;
+        }
+
+        update_score();
+    }
+
+    function is_valid_as_next_tile(tile)
+    {
+        var type = tile[0];
+
+        switch (type) {
+            case NUM:
+                return prev_tile === null || prev_tile[0] !== NUM;
+            case ADD:
+            case SUB:
+            case MUL:
+                return prev_tile !== null && prev_tile[0] === NUM;
+            case EQ:
+                return has_operator && prev_tile !== null && prev_tile[0] === NUM;
+            default:
+                return false;
+        }
+    }
+
+    function update_calculation()
+    {
+        var p = partial_result(),
+            html = calculation_to_string("<wbr/>");
+
+        if (p !== null) {
+            html += '<wbr/><span class="partial-result">' + (has_eq ? "" : "=") + String(p) + "</span>";
+        }
+
+        calculation_node.innerHTML = html;
+    }
+
+    function calculation_to_string(separator)
+    {
+        return calculation_to_array(separator).join("");
+    }
+
+    function calculation_to_array(separator)
+    {
+        var c, p, i, l;
+
+        c = "";
+
+        for (i = 0, l = calculation.length; i < l; ++i) {
+            p = String(calculation[i][1]);
+            c += separator + p;
+
+            if (p === "=") {
+                ++i;
+                break;
+            }
+        }
+
+        if (i < l) {
+            return [c, String(calculation[i][1])];
+        }
+
+        return [c, ""];
+    }
+
+    function show_wrong_calculation(expected)
+    {
+        var c = calculation_to_array("<wbr/>");
+
+        calculation_node.innerHTML = (
+            c[0]
+            + "<span class=\"wrong\">"
+            + c[1]
+            + "</span> <span class=\"good\">"
+            + String(expected)
+            + "</span>"
+        );
+    }
+
+    function show_correct_calculation()
+    {
+        calculation_node.innerHTML = (
+            "<span class=\"good\">"
+            + calculation_to_string("<wbr/>")
+            + "</span>"
+        );
+    }
+
+    function update_score()
+    {
+        score_node.innerHTML = String(score);
+
+        if (score_delta === 0) {
+            score_delta_node.innerHTML = "";
+        } else if (score_delta > 0) {
+            score_delta_node.innerHTML = "+" + String(score_delta);
+            score_delta_node.setAttribute("class", "good");
+        } else {
+            score_delta_node.innerHTML = String(score_delta);
+            score_delta_node.setAttribute("class", "bad");
+        }
+    }
+
+    function update_level()
+    {
+        level_node.innerHTML = String(level) + "/" + String(MAX_LEVEL);
+    }
+
+    function $(obj)
+    {
+        if (typeof(obj) === "string") {
+            obj = document.getElementById(obj);
+        }
+
+        return obj;
+    };
+
+    function stop_event(evt)
+    {
+        evt = evt || event;
+        evt.preventDefault();
+        evt.stopPropagation();
+
+        return false;
+    }
+
+    function show(obj)
+    {
+        var cls;
+
+        obj = $(obj);
+        cls = obj.getAttribute("class") || "";
+        obj.setAttribute("class", cls.replace(/(^| )hidden($| )/g, "$2"));
+    }
+
+    function hide(obj)
+    {
+        var cls;
+
+        obj = $(obj);
+        cls = obj.getAttribute("class") || "";
+        obj.setAttribute("class", cls.replace(/(^| )hidden($| )/g, "$2") + " hidden");
+    }
+
+    function init_random(date)
+    {
+        var year = date.getFullYear(),
+            month = date.getMonth() + 1,
+            day = date.getDate(),
+            seed;
+
+        seed = (year << 9) + ((month + (day & 3)) << 5) + day + 0x345;
+        rng_x = seed & 0xffff
+        rng_c = (((~seed) >> 3) ^ 0x3cf5) & 0xffff
+    }
+
+    function random(min, max)
+    {
+        // https://en.wikipedia.org/wiki/Multiply-with-carry_pseudorandom_number_generator
+        var diff;
+
+        rng_x = 32718 * rng_x + rng_c;
+        rng_c = rng_x >> 16;
+        rng_x = rng_x  & 0xffff;
+
+        diff = (max >= min) ? max - min : 0;
+
+        return min + Math.floor(diff * (rng_x / 0x10000));
+    }
+
+    function stats(arr)
+    {
+        var l = arr.length,
+            mean, sd, median, sum, i, m, d;
+
+        if (l < 1) {
+            return {
+                "valid": false,
+                "min": 0,
+                "max": 0,
+                "mean": 0,
+                "median": 0,
+                "sd": 0
+            };
+        }
+
+        arr = arr.slice();
+        arr.sort(function (a, b) { return a - b; });
+
+        for (i = 0, sum = 0; i < l; ++i) {
+            sum += arr[i];
+        }
+
+        mean = sum / l;
+
+        for (i = 0, sum = 0; i < l; ++i) {
+            d = arr[i] - mean;
+            sum += d * d;
+        }
+
+        sd = Math.sqrt(sum / l);
+
+        m = Math.floor(l / 2);
+
+        if (l % 2 == 0) {
+            median = (arr[m - 1] + arr[m]) / 2;
+        } else {
+            median = arr[m];
+        }
+
+        return {
+            "valid": true,
+            "min": arr[0],
+            "max": arr[l - 1],
+            "mean": mean,
+            "median": median,
+            "sd": sd
+        };
+    }
+
+    function run_tests()
+    {
+        var noop = function () {};
+
+        schedule_new_board = noop;
+        show_correct_calculation = noop;
+        show_tiles = noop;
+        show_wrong_calculation = noop;
+        update_calculation = noop;
+        update_level = noop;
+        update_score = noop;
+        roller = "not-none";
+
+        QUnit.module("calcle", function () {
+            var dummy_tile_1,
+                dummy_tile_2,
+                dummy_tile_3,
+                dummy_tile_add,
+                dummy_tile_eq;
+
+            function set_up_gameplay_test()
+            {
+                init_random(new Date(2022, 0, 1));
+                new_game();
+                clear_tiles();
+                new_calculation();
+
+                dummy_tile_1 = create_tile(NUM, 1);
+                dummy_tile_2 = create_tile(NUM, 2);
+                dummy_tile_3 = create_tile(NUM, 3);
+                dummy_tile_add = create_tile(ADD, "+");
+                dummy_tile_eq = create_tile(EQ, "=");
+            }
+
+            function assert_can_append(assert, type, value, expect_completion, expected_partial_result)
+            {
+                assert.ok(
+                    append_tile(create_tile(type, value)),
+                    "Expected " + String(value) + " to be accepted after '" + calculation_to_string("") + "'"
+                );
+
+                assert.equal(
+                    is_calculation_complete(),
+                    expect_completion,
+                    "Expected '" + calculation_to_string("") + "' to be "
+                    + (expect_completion ? "complete" : "incomplete")
+                );
+
+                assert.equal(
+                    partial_result(),
+                    expected_partial_result,
+                    "Unexpected partial result for '" + calculation_to_string("") + "'"
+                );
+            }
+
+            function assert_cannot_append(assert, type, value)
+            {
+                assert.notOk(
+                    append_tile(create_tile(type, value)),
+                    "Expected " + String(value) + " not to be accepted after '" + calculation_to_string("") + "'"
+                );
+            }
+
+            QUnit.test("calculation_to_string", function (assert) {
+                set_up_gameplay_test();
+
+                assert_can_append(assert, NUM, 1, false, null);
+                assert_can_append(assert, ADD, "+", false, null);
+                assert_can_append(assert, NUM, 2, false, 3);
+                assert_can_append(assert, MUL, "×", false, null);
+                assert_can_append(assert, NUM, 3, false, 7);
+                assert_can_append(assert, SUB, "-", false, null);
+                assert_can_append(assert, NUM, 4, false, 3);
+                assert_can_append(assert, ADD, "+", false, null);
+                assert_can_append(assert, NUM, 5, false, 8);
+                assert_can_append(assert, EQ, "=", false, 8);
+                assert_can_append(assert, NUM, 8, true, 8);
+
+                assert.equal(calculation_to_string(""), "1+2×3-4+5=8");
+            });
+
+            QUnit.test("1+2=3", function (assert) {
+                set_up_gameplay_test();
+
+                assert_cannot_append(assert, EQ, "=");
+                assert_cannot_append(assert, ADD, "+");
+                assert_cannot_append(assert, SUB, "+");
+                assert_cannot_append(assert, MUL, "×");
+
+                assert_can_append(assert, NUM, 1, false, null);
+                assert_cannot_append(assert, NUM, 2);
+                assert_cannot_append(assert, EQ, "=");
+
+                assert_can_append(assert, ADD, "+", false, null);
+                assert_cannot_append(assert, EQ, "=");
+                assert_cannot_append(assert, ADD, "+");
+                assert_cannot_append(assert, SUB, "+");
+                assert_cannot_append(assert, MUL, "×");
+
+                assert_can_append(assert, NUM, 2, false, 3);
+                assert_cannot_append(assert, NUM, 2);
+
+                assert_can_append(assert, EQ, "=", false, 3);
+                assert_cannot_append(assert, EQ, "=");
+                assert_cannot_append(assert, ADD, "+");
+                assert_cannot_append(assert, SUB, "+");
+                assert_cannot_append(assert, MUL, "×");
+
+                assert_can_append(assert, NUM, 3, true, 3);
+            });
+
+            QUnit.test("complicated_calculation", function (assert) {
+                set_up_gameplay_test();
+
+                assert_can_append(assert, NUM, 1, false, null);
+                assert_can_append(assert, ADD, "+", false, null);
+                assert_can_append(assert, NUM, 2, false, 3);
+                assert_can_append(assert, MUL, "×", false, null);
+                assert_can_append(assert, NUM, 3, false, 7);
+                assert_can_append(assert, MUL, "×", false, null);
+                assert_can_append(assert, NUM, 5, false, 31);
+                assert_can_append(assert, SUB, "-", false, null);
+                assert_can_append(assert, NUM, 4, false, 27);
+                assert_can_append(assert, MUL, "×", false, null);
+                assert_can_append(assert, NUM, 7, false, 3);
+                assert_can_append(assert, ADD, "+", false, null);
+                assert_can_append(assert, NUM, 97, false, 100);
+                assert_can_append(assert, EQ, "=", false, 100);
+                assert_can_append(assert, NUM, 100, true, 100);
+
+                assert.equal(calculation_to_string(""), "1+2×3×5-4×7+97=100");
+            });
+
+            QUnit.test("wrong result", function (assert) {
+                set_up_gameplay_test();
+
+                assert_can_append(assert, NUM, 1, false, null);
+                assert_can_append(assert, ADD, "+", false, null);
+                assert_can_append(assert, NUM, 2, false, 3);
+                assert_can_append(assert, MUL, "×", false, null);
+                assert_can_append(assert, NUM, 3, false, 7);
+                assert_can_append(assert, SUB, "-", false, null);
+                assert_can_append(assert, NUM, 5, false, 2);
+                assert_can_append(assert, EQ, "=", false, 2);
+                assert_can_append(assert, NUM, 3, true, 2);
+
+                score_delta = 0;
+                evaluate_calculation();
+
+                assert.ok(score_delta < 0, "Expected penalty for wrong result, got: " + String(score_delta));
+            });
+
+            QUnit.test("correct result", function (assert) {
+                set_up_gameplay_test();
+
+                assert_can_append(assert, NUM, 1, false, null);
+                assert_can_append(assert, ADD, "+", false, null);
+                assert_can_append(assert, NUM, 2, false, 3);
+                assert_can_append(assert, MUL, "×", false, null);
+                assert_can_append(assert, NUM, 3, false, 7);
+                assert_can_append(assert, SUB, "-", false, null);
+                assert_can_append(assert, NUM, 5, false, 2);
+                assert_can_append(assert, EQ, "=", false, 2);
+                assert_can_append(assert, NUM, 2, true, 2);
+
+                score_delta = 0;
+                evaluate_calculation();
+
+                assert.ok(score_delta > 0, "Expected reward for correct result, got: " + String(score_delta));
+            });
+
+            QUnit.test("is_board_exhausted", function (assert) {
+                set_up_gameplay_test();
+
+                assert_can_append(assert, NUM, 1, false, null);
+                assert_can_append(assert, ADD, "+", false, null);
+                assert_can_append(assert, NUM, 2, false, 3);
+                assert_can_append(assert, EQ, "=", false, 3);
+                assert_can_append(assert, NUM, 3, true, 3);
+
+                assert.notOk(is_board_exhausted(), "Expected board not to be exhausted");
+
+                new_calculation();
+
+                assert.ok(append_tile(dummy_tile_1));
+                assert.ok(append_tile(dummy_tile_add));
+                assert.ok(append_tile(dummy_tile_2));
+                assert.ok(append_tile(dummy_tile_eq));
+                assert.ok(append_tile(dummy_tile_3));
+
+                assert.ok(is_board_exhausted(), "Expected board to be exhausted");
+            });
+
+            QUnit.test("random", function(assert) {
+                var n = 365 * 20,
+                    expected_sd = Math.sqrt((200 - 100) * (200 - 100) / 12),
+                    a, d, ds, i, j, s, r, off_limits;
+
+                for (i = 0; i < n; ++i) {
+                    d = new Date(2022, 0, i);
+                    ds = (
+                        " (seed: "
+                        + String(d.getFullYear())
+                        + "-" + String(d.getMonth() + 1)
+                        + "-" + String(d.getDate())
+                        + ")"
+                    );
+                    a = [];
+                    off_limits = [];
+                    init_random(d);
+
+                    for (j = 0; j < 500; ++j) {
+                        r = random(100, 200);
+                        a.push(r);
+
+                        if (!((Math.floor(r) === r) && (100 <= r) && (r <= 199))) {
+                            off_limits.push(r);
+                        }
+                    }
+
+                    s = stats(a);
+
+                    assert.deepEqual(
+                        off_limits,
+                        [],
+                        "Expected all random numbers to be integers between 100 and 199, got: " + String(off_limits) + ds
+                    );
+                    assert.ok(
+                        (100 <= s["min"]) && (s["min"] < 105),
+                        "Expected smallest random number to be between 100 and 105, got " + String(s["min"]) + ds
+                    );
+                    assert.ok(
+                        (195 <= s["max"]) && (s["max"] <= 199),
+                        "Expected biggest random number to be between 195 and 199, got " + String(s["max"]) + ds
+                    );
+                    assert.ok(
+                        Math.abs(s["median"] - 150) <= 10,
+                        "Expected the median to be around 150 (+/- 10), got " + String(s["median"]) + ds
+                    );
+                    assert.ok(
+                        Math.abs(s["mean"] - 150) <= 10,
+                        "Expected the mean to be around 150 (+/- 10), got " + String(s["mean"]) + ds
+                    );
+                    assert.ok(
+                        Math.abs(s["sd"] - expected_sd) <= 5,
+                        "Expected the standard deviation to be around "
+                        + String(expected_sd)
+                        + " (+/- 5), got " + String(s["sd"]) + ds
+                    );
+
+                }
+            });
+        })
+    }
+
+    window.onload = function ()
+    {
+        if (typeof(QUnit) === "object") {
+            console.log("QUnit detected, running tests...");
+            run_tests();
+        } else {
+            main();
+        }
+    };
+
+}())
+
+//-->
+</script>
+</body>
+</html>

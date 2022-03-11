@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Calcle</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="description" content="A game where you have to assemble the longest correct calculation with the highest result you can. New challenge every day." />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+  <meta name="twitter:card" content="summary" />
+  <meta property="og:title" content="Calcle" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://attilammagyar.github.io/toys/calcle" />
+  <meta property="og:image" content="https://attilammagyar.github.io/toys/calcle/calcle.jpg" />
+  <meta property="og:image:alt" content="Screenshot of the game" />
+  <meta property="og:image:width" content="1280" />
+  <meta property="og:image:height" content="720" />
+  <meta property="og:description" content="A game where you have to assemble the longest correct calculation with the highest result you can. New challenge every day." />
+
+  <link rel="stylesheet" href="calcle.css" />
+</head>
+<body>
+  <div id="about-screen" class="modal">
+    <div id="about" class="modal-content">
+      <a class="button modal-close" id="about-close" href="#" title="Close">
+        <svg class="icon" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+         <g>
+          <title>Close</title>
+          <path stroke-width="80" stroke="#e0d0d0" d="M 30 30 L 440 440 M 30 440 L 440 30"></path>
+         </g>
+        </svg>
+      </a>
+      <h1>Calcle</h1>
+      <p>
+        Assemble correct calculations - the higher the results and the longer
+        the calculations the better. New challenge every day.
+      </p>
+      <p id="example">
+        <a class="type-0">2</a><a class="type-1">+</a><a class="type-0">3</a><a class="type-3">×</a><a class="type-0">5</a><a class="type-4">=</a><a class="type-0">17</a>
+      </p>
+      <p>
+        <small>
+          <a href="https://www.nytimes.com/games/wordle/index.html"
+            target="_blank">Inspired by Wordle.</a>
+          <br/>
+          (This website doesn't use any cookies.)<br/>
+          <a href="https://github.com/attilammagyar/toys"
+            target="_blank">Source code on GitHub</a>
+        </small>
+      </p>
+    </div>
+  </div>
+  <div id="end-screen" class="modal hidden">
+    <div id="end" class="modal-content">
+      <h1>Well done!</h1>
+      <p>
+        <span id="final-score"></span>
+        <br/>
+        Next challenge: <span id="countdown"></span>
+      </p>
+      <form action="#" method="get">
+        <div>
+          <textarea id="copy-text" name="copy-text" rows="3" cols="70" readonly="readonly"></textarea>
+        </div>
+        <div>
+          <a id="copy-button" class="button" href="#" title="Copy">
+            Copy
+          </a>
+          <a id="restart-button" class="button" href="#" title="Restart">
+            Restart
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div id="main-screen">
+    <div id="stats-container">
+      <span>
+        <a id="about-button" class="button" href="#" title="About">
+          <svg class="icon" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+           <g>
+            <title>About</title>
+            <ellipse id="svg-8" fill-opacity="0" ry="210" rx="210" cy="250" cx="250" stroke-width="44" stroke="#e0d0d0" fill="#e0d0d0"/>
+            <rect id="svg-9" height="120" width="53" y="250" x="220" stroke-width="30" stroke="#e0d0d0" fill="#e0d0d0"/>
+            <ellipse id="svg-10" ry="30" rx="30" cy="160" cx="250" stroke-width="30" stroke="#e0d0d0" fill="#e0d0d0"/>
+           </g>
+          </svg>
+        </a>
+        <span id="score"></span>
+        <span id="score-delta"></span>
+      </span>
+      <span>
+        <span id="level"></span>
+        <a id="next-level-button" class="button" href="#" title="Go to next level">
+          <svg class="icon" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+           <g>
+            <title>Go to next level</title>
+            <rect id="svg-1" stroke="none" height="320" width="200" y="150" x="150" fill="#e0d0d0"/>
+            <polygon id="svg-2" stroke="none" points="30,280,470,280,250,30" fill="#e0d0d0" />
+           </g>
+          </svg>
+        </a>
+      </span>
+    </div>
+    <div id="calculation-container">
+      <span id="calculation"></span>
+      <a id="delete-button" class="button" href="#" title="Clear">
+        <svg class="icon" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+         <g>
+          <title>Clear</title>
+          <rect id="svg-3" stroke="#e0d0d0" stroke-width="50" height="320" width="300" y="150" x="100" fill="none"/>
+          <rect id="svg-4" stroke="none" height="320" width="50" y="150" x="177" fill="#e0d0d0"/>
+          <rect id="svg-5" stroke="none" height="320" width="50" y="150" x="273" fill="#e0d0d0"/>
+          <rect id="svg-6" transform="rotate(-5 30 80)" stroke="none" height="60" width="440" y="80" x="30" fill="#e0d0d0"/>
+          <rect id="svg-7" transform="rotate(-5 30 80)" stroke="none" height="60" width="100" y="20" x="200" fill="#e0d0d0"/>
+         </g>
+        </svg>
+      </a>
+    </div>
+    <div id="tiles"></div>
+  </div>
+  <script type="text/javascript" src="calcle.js"></script>
+</body>
+</html>
