@@ -244,11 +244,13 @@ button {
   text-align: right;
 }
 
+#copy-button,
 #tweet {
   cursor: pointer;
   display: inline-block;
   height: 5vmax;
-  width: 36vmax;
+  width: 32vmax;
+  margin: 0.5vmax;
   font-weight: normal;
   border: outset 0.3vmax #bbc;
   border-radius: 15vmax;
@@ -278,4 +280,16 @@ button {
   bottom: 10vh;
   left: 10vw;
   z-index: 30;
+}
+
+#copy-text {
+  margin: 2vmin;
+  font-size: 2vmax;
+  width: 70vw;
+  height: 20vh;
+  background-color: #000;
+  color: #bbc;
+  border-radius: 1vmax;
+  border: inset 0.3vmax #bbc;
+  padding: 0.3vmax;
 }

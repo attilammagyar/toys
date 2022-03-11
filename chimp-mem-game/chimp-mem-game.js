@@ -21,6 +21,24 @@ var CTH = {
     start_round_btn_node: null,
     mute_node: null,
     audio_nodes: null,
+    tweet_node: null,
+    copy_text_node: null,
+    stats_round_node: null,
+    stats_score_node: null,
+    stats_perfect_rounds_node: null,
+    game_node: null,
+    end_node: null,
+    intro_node: null,
+    stats_mem_time_mean_node: null,
+    stats_mem_time_min_node: null,
+    stats_mem_time_max_node: null,
+    stats_mem_time_median_node: null,
+    stats_mem_time_sd_node: null,
+    status_text_node: null,
+    card_num_nodes: {},
+    difficulty_nodes: {},
+    rounds_nodes: {},
+    auto_hide_nodes: {},
     numbers: 3,
     rounds: 10,
     card_nodes: [],
@@ -105,7 +123,7 @@ var CTH = {
 
     update_status: function ()
     {
-        $("status-text").innerHTML = (
+        CTH.status_text_node.innerHTML = (
             "Score: " + String(CTH.score)
             + " (Round " + String(CTH.round) + "/" + String(CTH.rounds) + ")"
         );
@@ -432,7 +450,7 @@ var CTH = {
 
         share_text += CTH.SHARE_HASHTAGS;
 
-        $("tweet").setAttribute(
+        CTH.tweet_node.setAttribute(
             "href",
             [
                 "https://twitter.com/intent/tweet?text=",
@@ -441,66 +459,79 @@ var CTH = {
                 escape(CTH.URL)
             ].join("")
         );
+        CTH.copy_text_node.value = share_text + " " + CTH.URL;
 
-        $("stats-rounds").innerHTML = CTH.rounds;
-        $("stats-score").innerHTML = CTH.score;
-        $("stats-perfect-rounds").innerHTML = CTH.perfect_rounds;
+        CTH.stats_round_node.innerHTML = CTH.rounds;
+        CTH.stats_score_node.innerHTML = CTH.score;
+        CTH.stats_perfect_rounds_node.innerHTML = CTH.perfect_rounds;
 
         if (stats["valid"]) {
-            $("stats-mem-time-mean").innerHTML = stats["mean"] + "s";
-            $("stats-mem-time-min").innerHTML = stats["min"] + "s";
-            $("stats-mem-time-max").innerHTML = stats["max"] + "s";
-            $("stats-mem-time-median").innerHTML = stats["median"] + "s";
-            $("stats-mem-time-sd").innerHTML = stats["sd"] + "s";
+            CTH.stats_mem_time_mean_node.innerHTML = stats["mean"] + "s";
+            CTH.stats_mem_time_min_node.innerHTML = stats["min"] + "s";
+            CTH.stats_mem_time_max_node.innerHTML = stats["max"] + "s";
+            CTH.stats_mem_time_median_node.innerHTML = stats["median"] + "s";
+            CTH.stats_mem_time_sd_node.innerHTML = stats["sd"] + "s";
         } else {
-            $("stats-mem-time-mean").innerHTML = "N/A";
-            $("stats-mem-time-min").innerHTML = "N/A";
-            $("stats-mem-time-max").innerHTML = "N/A";
-            $("stats-mem-time-median").innerHTML = "N/A";
-            $("stats-mem-time-sd").innerHTML = "N/A";
+            CTH.stats_mem_time_mean_node.innerHTML = "N/A";
+            CTH.stats_mem_time_min_node.innerHTML = "N/A";
+            CTH.stats_mem_time_max_node.innerHTML = "N/A";
+            CTH.stats_mem_time_median_node.innerHTML = "N/A";
+            CTH.stats_mem_time_sd_node.innerHTML = "N/A";
         }
 
-        $("game").setAttribute("class", "screen");
-        $("end").setAttribute("class", "screen active");
+        CTH.game_node.setAttribute("class", "screen");
+        CTH.end_node.setAttribute("class", "screen active");
     },
 
     start_game: function ()
     {
-        var i, radio_btn;
+        var key, radio_btn;
 
-        for (i = 3; i < 10; ++i) {
-            if ($("cards-" + String(i)).checked) {
-                CTH.numbers = i;
-                break;
-            }
-        }
+        for (key in CTH.card_num_nodes) {
+            if (CTH.card_num_nodes.hasOwnProperty(key)) {
+                radio_btn = CTH.card_num_nodes[key];
 
-        for (i = 1; i < 4; ++i) {
-            if ($("difficulty-" + String(i)).checked) {
-                CTH.difficulty = i;
-                break;
-            }
-        }
-
-        for (i = 0; i < 3; ++i) {
-            radio_btn = $("rounds-" + String(i));
-
-            if (radio_btn.checked) {
-                CTH.rounds = Number(radio_btn.value);
-                break;
-            }
-        }
-
-        for (i = 0; i < 8; ++i) {
-            radio_btn = $("auto-hide-" + String(i));
-
-            if (radio_btn.checked) {
-                if (i === 0) {
-                    CTH.auto_hide = null;
-                } else {
-                    CTH.auto_hide = Number(radio_btn.value);
+                if (radio_btn.checked) {
+                    CTH.numbers = Number(radio_btn.value);
+                    break;
                 }
-                break;
+            }
+        }
+
+        for (key in CTH.difficulty_nodes) {
+            if (CTH.difficulty_nodes.hasOwnProperty(key)) {
+                radio_btn = CTH.difficulty_nodes[key];
+
+                if (radio_btn.checked) {
+                    CTH.difficulty = Number(radio_btn.value);
+                    break;
+                }
+            }
+        }
+
+        for (key in CTH.rounds_nodes) {
+            if (CTH.rounds_nodes.hasOwnProperty(key)) {
+                radio_btn = CTH.rounds_nodes[key];
+
+                if (radio_btn.checked) {
+                    CTH.rounds = Number(radio_btn.value);
+                    break;
+                }
+            }
+        }
+
+        for (key in CTH.auto_hide_nodes) {
+            if (CTH.auto_hide_nodes.hasOwnProperty(key)) {
+                radio_btn = CTH.auto_hide_nodes[key];
+
+                if (radio_btn.checked) {
+                    if (key === "auto-hide-0") {
+                        CTH.auto_hide = null;
+                    } else {
+                        CTH.auto_hide = Number(radio_btn.value);
+                    }
+                    break;
+                }
             }
         }
 
@@ -508,8 +539,8 @@ var CTH = {
         CTH.score = 0;
         CTH.perfect_rounds = 0;
         CTH.memorization_times = [];
-        $("intro").setAttribute("class", "screen");
-        $("game").setAttribute("class", "screen active");
+        CTH.intro_node.setAttribute("class", "screen");
+        CTH.game_node.setAttribute("class", "screen active");
         CTH.prepare_next_round();
 
         return false;
@@ -517,15 +548,47 @@ var CTH = {
 
     restart_game: function ()
     {
-        $("end").setAttribute("class", "screen");
-        $("intro").setAttribute("class", "screen active");
+        CTH.end_node.setAttribute("class", "screen");
+        CTH.intro_node.setAttribute("class", "screen active");
+    },
+
+    select: function ()
+    {
+        CTH.copy_text_node.select();
+        CTH.copy_text_node.setSelectionRange(0, 99999);
+    },
+
+    copy: function ()
+    {
+        CTH.select();
+        navigator.clipboard.writeText(CTH.copy_text_node.value);
     },
 
     init: function ()
     {
         var game = $("game"),
             body = document.getElementsByTagName("body")[0],
-            i, card_node;
+            i, key, card_node;
+
+        for (i = 3; i < 10; ++i) {
+            key = "cards-" + String(i);
+            CTH.card_num_nodes[key] = $(key);
+        }
+
+        for (i = 1; i < 4; ++i) {
+            key = "difficulty-" + String(i);
+            CTH.difficulty_nodes[key] = $(key);
+        }
+
+        for (i = 0; i < 3; ++i) {
+            key = "rounds-" + String(i);
+            CTH.rounds_nodes[key] = $(key);
+        }
+
+        for (i = 0; i < 8; ++i) {
+            key = "auto-hide-" + String(i);
+            CTH.auto_hide_nodes[key] = $(key);
+        }
 
         CTH.start_round_btn_node = $("start-round");
         CTH.mute_node = $("mute");
@@ -534,6 +597,20 @@ var CTH = {
             "audio-win": $("audio-win"),
             "audio-wrong": $("audio-wrong"),
         };
+        CTH.copy_text_node = $("copy-text");
+        CTH.tweet_node = $("tweet");
+        CTH.stats_round_node = $("stats-rounds");
+        CTH.stats_score_node = $("stats-score");
+        CTH.stats_perfect_rounds_node = $("stats-perfect-rounds");
+        CTH.game_node = game;
+        CTH.end_node = $("end");
+        CTH.intro_node = $("intro");
+        CTH.stats_mem_time_mean_node = $("stats-mem-time-mean");
+        CTH.stats_mem_time_min_node = $("stats-mem-time-min");
+        CTH.stats_mem_time_max_node = $("stats-mem-time-max");
+        CTH.stats_mem_time_median_node = $("stats-mem-time-median");
+        CTH.stats_mem_time_sd_node = $("stats-mem-time-sd");
+        CTH.status_text_node = $("status-text");
 
         for (i = 0; i < CTH.CARDS; ++i) {
             card_node = document.createElement("div");
@@ -551,6 +628,8 @@ var CTH = {
         $("start").addEventListener("click", CTH.start_game);
         $("restart").addEventListener("click", CTH.restart_game);
         CTH.start_round_btn_node.addEventListener("click", CTH.start_round);
+        CTH.copy_text_node.addEventListener("click", CTH.select);
+        $("copy-button").addEventListener("click", CTH.copy);
     }
 }
 
