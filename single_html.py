@@ -15,7 +15,7 @@ def main(argv):
     out_lines = []
     conversions = []
     expected_conversions = int(argv[3])
-    base_dir = os.path.dirname(argv[1])
+    base_dir = os.path.dirname(argv[1]) or "."
     script_re = re.compile(r'<script *type="text/javascript" *src="([^"]+)"> *</script>')
     style_re = re.compile(r'<link *rel="stylesheet" *href="([^"]+)" */>')
 

@@ -1,5 +1,5 @@
 .PHONY: all
-all: ./kanji-practice/index.html ./flashcards/index.html ./calcle/index.html
+all: ./index.html ./kanji-practice/index.html ./flashcards/index.html ./calcle/index.html
 
 .PHONY: clean
 clean:
@@ -7,6 +7,12 @@ clean:
 		|| rm ./kanji-practice/index.html
 	test ! -e ./flashcards/index.html \
 		|| rm ./flashcards/index.html
+
+./index.html:
+	python3 single_html.py \
+		toys.html \
+		index.html \
+		1
 
 ./flashcards/index.html:
 	python3 single_html.py \
