@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>JS-80</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="description" content="Play two flexible, polyphonic, 80's style synthesizers and a sequencer with a MIDI keyboard and your computer keyboard, all in a single browser window." />
+
+  <meta name="twitter:card" content="summary" />
+  <meta property="og:title" content="JS-80" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://attilammagyar.github.io/toys/js-80" />
+  <meta property="og:image" content="https://attilammagyar.github.io/toys/js-80/js-80.jpg" />
+  <meta property="og:image:alt" content="Screenshot of the JS-80 software synthesizer" />
+  <meta property="og:image:width" content="1280" />
+  <meta property="og:image:height" content="720" />
+  <meta property="og:description" content="Play two flexible, polyphonic, 80's style synthesizers and a sequencer with a MIDI keyboard and your computer keyboard, all in a single browser window." />
+
+  <link rel="stylesheet" href="js-80.css" />
+</head>
+<body>
+  <form id="main-form" action="#" method="get">
+    <div id="intro">
+      <h1>JS-80</h1>
+      <p>
+        Play two flexible, polyphonic, 80's style synthesizers and a sequencer
+        with a MIDI keyboard and your computer keyboard, all in a single
+        browser window. (Or produce distorted, disconnected clicks and noises if
+        your device doesn't have enough CPU capacity for this app.)
+      </p>
+      <p>
+        Connect your MIDI keyboard, then hit the button below:
+      </p>
+      <p>
+        <button id="start">Start</button>
+      </p>
+      <h2>Known problems and quirks</h2>
+      <ul>
+        <li>
+          Realtime audio manipulation may require a lot of CPU resources, so
+          it's recommended to close other browser tabs and CPU-intensive
+          programs. Also, this may drain your battery, so it's recommended to
+          connect the charger.
+        </li>
+        <li>
+          As of 2022 June, in order to use a MIDI keyboard as an input device in
+          Firefox, you have to:
+          <ul>
+            <li>
+              set <code>dom.webmidi.enabled</code> to <code>true</code> in the
+              <code>about:config</code> settings (and make sure that
+              <code>midi.testing</code> is <code>false</code>),
+            </li>
+            <li>
+              and if this is the first time you want to use your MIDI keyboard
+              with this app, then
+              <a href="firefox-site-permission-addon-1-0.xpi">install this site
+              permission addon</a>.
+            </li>
+          </ul>
+        </li>
+        <li>
+          As of 2022 June, MIDI keyboards don't work at all in Chromium on
+          Ubuntu, due to a
+          <a href="https://bugs.launchpad.net/ubuntu/+source/chromium-browser/+bug/1854676">
+          bug in its snap packaging</a>.
+        </li>
+        <li>
+          It is possible to put together a patch which causes digital distortion
+          in the sound or no sound at all. If you experience similar sound
+          issues, try to adjust the settings of your patch.
+        </li>
+      </ul>
+      <h2>Tips and tricks</h2>
+      <ul>
+        <li>
+          Keyboard shortcuts are shown on the screen between brackets: for
+          example, pressing <code>1</code> selects the first <em>bank</em> of
+          the <em>Sequencer</em>, and pressing <code>A</code> will play the
+          note <em>A</em> on the virtual keyboard. (Pressing the
+          <code>shift</code> key gives the note a little extra velocity.)
+        <li>
+          The keyboard shortcut labels correspond to the standard US QWERTY
+          keyboard layout, but it's the physical location of the keys that
+          matters, not the label on the computer keys. For example, if you use
+          a QWERTZ keyboard layout, then you have to press the key which has
+          the label <code>Y</code> near the left <code>shift</code> key in order
+          to play the lowest <em>C</em> note of the on-screen virtual piano
+          keyboard.
+        </li>
+        <li>
+          MIDI controllers like the pitch wheel or the modulation wheel usually
+          go from 0% to 100%, but you can make them, for example, go from 20%
+          to 70% using one of the <em>MIDI Controller Shapers</em> at the
+          bottom of the screen. For example, assign <code>MCS 1</code> to a
+          synthesizer parameter, then assign the modulation wheel
+          (<code>modulation (CC 1)</code>) to the input (<code>IN</code>) of the
+          first <em>MIDI Controller Shaper</em>, then set its <code>MIN</code>
+          and <code>MAX</code> value to 20% and 70% respectively.
+        </li>
+        <li>
+          All changes to the <em>Sequence</em> (including turning it off or
+          switching to a different <em>bank</em>) take effect only after the
+          current set of beats has finished playing to the end, so you don't
+          have to be very precise with your timing. The only exceptions are the
+          tempo, arpeggio, gap, and detune parameters which take effect
+          immediately, allowing for example gradual, continuous tempo change
+          while playing.
+        </li>
+        <li>
+          If you set the <em>Target</em> parameter of the <em>Virtual
+          keyboard</em> to <em>Sequencer root note</em> then you can change the
+          <a href="https://en.wikipedia.org/wiki/Mode_(music)#Modern_modes">modality
+          of the scale</a> while it's playing. Example:
+          <ul>
+            <li>
+              Configure the following <em>Scale</em> notes: <code>C</code>,
+              <code>D</code>, <code>E</code>, <code>F</code>, <code>G</code>,
+              <code>A</code>, <code>B</code>. (Make the unneeded ones empty.)
+            </li>
+            <li>
+              Set the <em>BPM</em> to 30.
+            </li>
+            <li>
+              Configure the first beat to play <code>1</code>, <code>3</code>,
+              and <code>5</code>.
+            </li>
+            <li>
+              Configure the second beat to play <code>2</code>, <code>5</code>,
+              and <code>7</code>.
+            </li>
+            <li>
+              Hit the <code>space</code> key, so the <em>Sequencer</em> starts
+              repeating a <em>C-major</em> chord, followed by a <em>G-major</em>
+              (2nd inversion).
+            </li>
+            <li>
+              Press <code>A</code>, so in the next iteration and onwards, the
+              <em>Sequencer</em> will play <em>A-minor</em> and <em>E-minor</em>
+              (2nd inversion).
+            </li>
+            <li>
+              Press <code>Z</code> again to go back to <em>C-major</em> and
+              <em>G-major</em> (2nd inversion).
+            </li>
+          </ul>
+          Note that when the <em>Virtual keyboard</em> is set to control the
+          <em>Sequencer</em> like this, then pressing the keys won't make any
+          sound on its own.
+        </li>
+        <li>
+          The <em>MIDI module</em> has 8 notes polyphony and the
+          <em>Computer module</em> has 6. The <em>Sequencer</em> reserves 5
+          notes from the module to which it is assigned, reducing the polyphonic
+          notes of the module that can be played manually while the
+          <em>Sequencer</em> is playing.
+        </li>
+      </ul>
+    </div>
+    <div id="menu" class="hidden">
+      <div class="menu-item">
+        <a id="export-patch" class="button" href="#" title="Export patch as JSON">
+          Export patch
+        </a>
+      </div>
+      <div class="menu-item">
+        <input type="file" name="patch-file" id="patch-file" accept=".json,application/json" />
+        <button id="import-patch">Import patch</button>
+      </div>
+      <div class="menu-item">
+        <select id="presets" name="presets">
+        </select>
+        <button id="load-preset">Load preset</button>
+      </div>
+    </div>
+    <div id="error" class="hidden">
+    </div>
+    <div id="synth" class="hidden">
+    </div>
+    <div id="confirm" class="hidden">
+      <div id="confirm-window">
+        <div id="confirm-message">Foo bar</div>
+        <div>
+          <a id="confirm-yes" class="button" href="#">Yes</a>
+          <a id="confirm-no" class="button" href="#">No</a>
+        </div>
+      </div>
+    </div>
+  </form>
+  <div class="footer">
+    <a href="https://github.com/attilammagyar/toys"
+      target="_blank">Source code on GitHub</a>
+  </div>
+  <script type="text/javascript" src="js-80.js"></script>
+</body>
+</html>
