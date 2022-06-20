@@ -519,48 +519,57 @@
 
         clear_errors();
 
-        audio_ctx = new AudioContext();
+        try {
+            audio_ctx = new AudioContext();
 
-        if (AudioParam.prototype.cancelAndHoldAtTime === undefined) {
-            patch_audio_param(audio_ctx);
-        }
+            if (AudioParam.prototype.cancelAndHoldAtTime === undefined) {
+                patch_audio_param(audio_ctx);
+            }
 
-        synth_obj = new Synth(audio_ctx);
-        synth_obj.output.connect(audio_ctx.destination);
+            synth_obj = new Synth(audio_ctx);
+            synth_obj.output.connect(audio_ctx.destination);
 
-        restore_patch_from_local_storage();
+            restore_patch_from_local_storage();
 
-        synth_ui = new SynthUI(synth_obj);
+            synth_ui = new SynthUI(synth_obj);
 
-        document.onkeydown = bind(synth_obj, synth_obj.handle_key_down);
-        document.onkeyup = bind(synth_obj, synth_obj.handle_key_up);
-        document.onmouseup = bind(synth_ui, synth_ui.handle_document_mouse_up);
+            document.onkeydown = bind(synth_obj, synth_obj.handle_key_down);
+            document.onkeyup = bind(synth_obj, synth_obj.handle_key_up);
+            document.onmouseup = bind(synth_ui, synth_ui.handle_document_mouse_up);
 
-        window.addEventListener("beforeunload", handle_beforeunload);
+            window.addEventListener("beforeunload", handle_beforeunload);
 
-        if (navigator.requestMIDIAccess) {
-            navigator.requestMIDIAccess({"sysex": false, "software": false})
-                .then(
-                    function (midi_access)
-                    {
-                        var inputs = midi_access.inputs.values(),
-                            input;
+            if (navigator.requestMIDIAccess) {
+                navigator.requestMIDIAccess({"sysex": false, "software": false})
+                    .then(
+                        function (midi_access)
+                        {
+                            var inputs, input, error
 
-                        while ((input = inputs.next()) && input.value) {
-                            synth_obj.register_midi_input(input.value);
+                            try {
+                                inputs = midi_access.inputs.values();
+
+                                while ((input = inputs.next()) && input.value) {
+                                    synth_obj.register_midi_input(input.value);
+                                }
+                            } catch (error) {
+                                show_error("Error registering MIDI inputs: " + String(error));
+                            }
+
+                        },
+                        function (error)
+                        {
+                            show_error("Unable to access MIDI inputs: " + String(error));
                         }
+                    );
+            } else {
+                show_error("Your browser doesn't seem to support the Web MIDI API, so you won't be able to use your MIDI keyboard.");
+            }
 
-                    },
-                    function (error)
-                    {
-                        show_error("Unable to access MIDI inputs: " + String(error));
-                    }
-                );
-        } else {
-            show_error("Your browser doesn't seem to support the Web MIDI API, so you won't be able to use your MIDI keyboard.");
+            synth_dom_node.appendChild(synth_ui.dom_node);
+        } catch (error) {
+            show_error("Error initializing the synthesizers: " + String(error));
         }
-
-        synth_dom_node.appendChild(synth_ui.dom_node);
     }
 
     function patch_audio_param(audio_ctx)
