@@ -245,6 +245,28 @@
             "s58": "59",
             "s59": "60"
         },
+        MOD_NAMES = {
+            "m1": "add",
+            "m2": "AM",
+            "m3": "FM",
+            "m4": "add + AM",
+            "m5": "add + FM",
+            "m6": "AM + FM",
+            "m7": "add + AM + FM",
+        },
+        MOD_MASKS = {
+            "m1": 1,
+            "m2": 2,
+            "m3": 4,
+            "m4": 3,
+            "m5": 5,
+            "m6": 6,
+            "m7": 7,
+        },
+        ENV_HP_FLAG = 1,
+        ENV_LP_FLAG = 2,
+        LFO_HP_FLAG = 4,
+        LFO_LP_FLAG = 8,
         LFOS = 8,
         MIDI_SHAPERS = 16,
         PRT_TIME_MIN = 0.0,
@@ -494,9 +516,17 @@
         setTimeout(
             function ()
             {
-                var synth_dom_node = $("synth");
+                var synth_dom_node = $("synth"),
+                    error;
 
-                init_synth(synth_dom_node);
+                try {
+                    init_synth(synth_dom_node);
+                } catch (error) {
+                    show(error_dom_node);
+                    hide($("intro"));
+
+                    throw error;
+                };
 
                 show(synth_dom_node);
                 show(error_dom_node);
@@ -569,6 +599,7 @@
             synth_dom_node.appendChild(synth_ui.dom_node);
         } catch (error) {
             show_error("Error initializing the synthesizers: " + String(error));
+            throw error;
         }
     }
 
@@ -769,8 +800,8 @@
             new VirtualMIDIController(this.virt_ctl_params[4])
         ];
 
-        for (i = 0; i < 137; ++i) {
-            freqs[i] = Math.pow(2.0, ((i - 69.0) / 12.0)) * 440.0;
+        for (i = 0; i < 228; ++i) {
+            freqs[i] = Math.pow(2.0, ((i - 117.0) / 12.0)) * 440.0;
         }
 
         this._pitch_ctl = new MIDIController(0.5);
@@ -1528,8 +1559,15 @@
         var active_notes = [],
             available_notes = [],
             volume = new GainNode(synth.audio_ctx, {"gain": 1.0}),
+            am_vol = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1}),
+            fm_vol = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1}),
             effects, i;
             i;
+
+        Observer.call(this);
+
+        am_vol.offset.value = 0.0;
+        fm_vol.offset.value = 0.0;
 
         for (i = 0; i < 128; ++i) {
             active_notes.push(null);
@@ -1547,18 +1585,37 @@
         this._available_notes = available_notes;
         this._scheduled_notes = [];
         this._vol = volume;
+        this._am_vol = am_vol;
+        this._fm_vol = fm_vol;
+        this._mod = MOD_MASKS["m1"];
         this.effects = effects;
 
-        this.volume = new LFOControllableParam(synth, key + "_vl", volume.gain, 0, 1, 0.5);
+        this.volume = new LFOControllableParam(synth, key + "_vl", volume.gain, 0.0, 1.0, 0.5);
+        this.modulation = new EnumParam(synth, key + "_md", MOD_NAMES, "m1");
+        this.am_volume = new LFOControllableParam(synth, key + "_avl", am_vol.offset, 0.0, 1.0, 0.5);
+        this.fm_volume = new LFOControllableParam(synth, key + "_fvl", fm_vol.offset, 0.0, 100.0, 5.0);
 
-        this.osc_1 = new MIDINoteBasedOscillator(synth, key + "_o1", poliphony, frequencies, effects.input);
-        this.osc_2 = new MIDINoteBasedOscillator(synth, key + "_o2", poliphony, frequencies, effects.input);
+        this.osc_2 = new MIDINoteBasedOscillator(
+            synth, key + "_o2", poliphony, frequencies, effects.input, null, null, null
+        );
+        this.osc_1 = new MIDINoteBasedOscillator(
+            synth, key + "_o1", poliphony, frequencies, effects.input, this.osc_2, am_vol, fm_vol
+        );
+
+        this.modulation.observers.push(this);
     }
+
+    Voice.prototype.update = function (modulation, arg)
+    {
+        this.osc_1.modulate(MOD_MASKS[arg]);
+    };
 
     Voice.prototype.start = function (when)
     {
         this.osc_1.start(when);
         this.osc_2.start(when);
+        this._am_vol.start(when);
+        this._fm_vol.start(when);
     };
 
     Voice.prototype.trigger_note = function (now, when, midi_note, velocity)
@@ -1664,6 +1721,7 @@
         Voice.call(this, synth, "midi", 8, frequencies, output);
     }
 
+    MIDIVoice.prototype.update = Voice.prototype.update;
     MIDIVoice.prototype.start = Voice.prototype.start;
     MIDIVoice.prototype.trigger_note = Voice.prototype.trigger_note;
     MIDIVoice.prototype.stop_note = Voice.prototype.stop_note;
@@ -1677,6 +1735,7 @@
         Voice.call(this, synth, "cmp", 6, frequencies, output);
     }
 
+    ComputerVoice.prototype.update = Voice.prototype.update;
     ComputerVoice.prototype.start = Voice.prototype.start;
     ComputerVoice.prototype.trigger_note = Voice.prototype.trigger_note;
     ComputerVoice.prototype.stop_note = Voice.prototype.stop_note;
@@ -1699,10 +1758,10 @@
         this.output = reverb.output;
     }
 
-    function Effect(synth, key, output)
+    function Effect(synth, key, input, output, onoff)
     {
-        var input = new GainNode(synth.audio_ctx, {"gain": 1.0}),
-            onoff = new OnOffParam(synth, key + "_st");
+        input = input || new GainNode(synth.audio_ctx, {"gain": 1.0}),
+        onoff = onoff || new OnOffParam(synth, key + "_st");
 
         Observer.call(this);
 
@@ -1757,25 +1816,6 @@
         }
     };
 
-    function LFOCompatibleBiquadFilter(synth, key, filter_type, default_freq, output)
-    {
-        var filter = new BiquadFilterNode(synth.audio_ctx, {"type": filter_type, "Q": FILTER_Q_DEF, "frequency": default_freq});
-
-        Effect.call(this, synth, key, output);
-
-        this._filter = filter;
-        this._input_connections = this._output_connections = [filter];
-        this.bypass();
-
-        this.freq = new LFOControllableParam(synth, key + "f", filter.frequency, SND_FREQ_MIN, SND_FREQ_MAX, default_freq);
-        this.q = new LFOControllableParam(synth, key + "q", filter.Q, FILTER_Q_MIN, FILTER_Q_MAX, FILTER_Q_DEF);
-
-    }
-
-    LFOCompatibleBiquadFilter.prototype.update = Effect.prototype.update;
-    LFOCompatibleBiquadFilter.prototype.bypass = Effect.prototype.bypass;
-    LFOCompatibleBiquadFilter.prototype.engage = Effect.prototype.engage;
-
     function Reverb(synth, key, output)
     {
         /*
@@ -1787,10 +1827,10 @@
 
         var comb_tunings = [1557.0, 1617.0, 1491.0, 1422.0, 1277.0, 1356.0, 1188.0, 1116.0],
             allpass_freqs = [225.0, 556.0, 441.0, 341.0],
-            damping_freq_cns = new ConstantSourceNode(synth.audio_ctx),
-            damping_gain_cns = new ConstantSourceNode(synth.audio_ctx),
-            feedback_cns = new ConstantSourceNode(synth.audio_ctx),
-            width_cns = new ConstantSourceNode(synth.audio_ctx),
+            damping_freq_cns = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1}),
+            damping_gain_cns = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1}),
+            feedback_cns = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1}),
+            width_cns = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1}),
             highpass = new BiquadFilterNode(synth.audio_ctx, {"type": "highpass", "frequency": 100.0}),
             splitter = new ChannelSplitterNode(synth.audio_ctx, {"numberOfOutputs": 2}),
             merger = new ChannelMergerNode(synth.audio_ctx, {"numberOfInputs": 2}),
@@ -1813,7 +1853,7 @@
             prev_filter_left, prev_filter_right,
             i, l, t;
 
-        Effect.call(this, synth, key, output);
+        Effect.call(this, synth, key, null, output, null);
 
         dry_gain.gain.value = 0.7;
         wet_gain.gain.valeu = 0.3;
@@ -1996,8 +2036,7 @@
 
     function Echo(synth, key, output)
     {
-        var loop = new GainNode(synth.audio_ctx, {"gain": 1.0}),
-            dry_gain = new GainNode(synth.audio_ctx, {"gain": 0.9}),
+        var dry_gain = new GainNode(synth.audio_ctx, {"gain": 0.9}),
             wet_gain = new GainNode(synth.audio_ctx, {"gain": 0.5}),
             delay_1 = new DelayNode(synth.audio_ctx, {"maxDelayTime": 4.0}),
             delay_2 = new DelayNode(synth.audio_ctx, {"maxDelayTime": 4.0}),
@@ -2005,12 +2044,12 @@
             pan_2 = new StereoPannerNode(synth.audio_ctx),
             gain_1 = new GainNode(synth.audio_ctx, {"gain": 0.0}),
             gain_2 = new GainNode(synth.audio_ctx, {"gain": 0.0}),
-            delay_time_cns = new ConstantSourceNode(synth.audio_ctx),
-            feedback_cns = new ConstantSourceNode(synth.audio_ctx),
-            width_cns = new ConstantSourceNode(synth.audio_ctx),
+            delay_time_cns = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1}),
+            feedback_cns = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1}),
+            width_cns = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1}),
             width_inv = new GainNode(synth.audio_ctx, {"gain": -1.0}),
-            damping_freq_cns = new ConstantSourceNode(synth.audio_ctx),
-            damping_gain_cns = new ConstantSourceNode(synth.audio_ctx),
+            damping_freq_cns = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1}),
+            damping_gain_cns = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1}),
             highpass = new BiquadFilterNode(synth.audio_ctx, {"type": "highpass", "Q": 1.0, "frequency": 100.0}),
             highshelf_1 = new BiquadFilterNode(
                 synth.audio_ctx,
@@ -2022,7 +2061,7 @@
             ),
             ct = synth.audio_ctx.currentTime;
 
-        Effect.call(this, synth, key, output);
+        Effect.call(this, synth, key, null, output, null);
 
         dry_gain.gain.value = 0.9;
         wet_gain.gain.valeu = 0.5;
@@ -2050,8 +2089,7 @@
 
         highpass.frequency.value = 100;
 
-        highpass.connect(loop);
-        loop.connect(delay_1);
+        highpass.connect(delay_1);
 
         delay_1.connect(gain_1);
         gain_1.connect(highshelf_1);
@@ -2061,12 +2099,11 @@
         delay_2.connect(gain_2);
         gain_2.connect(highshelf_2);
         highshelf_2.connect(pan_2);
-        highshelf_2.connect(loop);
+        highshelf_2.connect(delay_1);
 
         pan_1.connect(wet_gain);
         pan_2.connect(wet_gain);
 
-        this._loop = loop;
         this._highpass = highpass;
         this._delay_1 = delay_1;
         this._delay_2 = delay_2;
@@ -2103,7 +2140,9 @@
 
     function ComplexOscillator(synth, key, output)
     {
-        var volume, pan, lfo_lowpass, lfo_highpass,
+        var pan, vol_cns,
+            lhp_onoff_key, lfo_highpass_onoff, lfo_highpass_freq, lfo_highpass_q,
+            llp_onoff_key, lfo_lowpass_onoff, lfo_lowpass_freq, lfo_lowpass_q,
             waveform_key, ehp_onoff_key, elp_onoff_key,
             env_highpass_onoff, env_lowpass_onoff,
             i;
@@ -2111,22 +2150,21 @@
         Observable.call(this);
         Observer.call(this);
 
-        volume = new GainNode(synth.audio_ctx);
+        vol_cns = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1});
+        vol_cns.offset.value = 0.0;
+
         pan = new StereoPannerNode(synth.audio_ctx);
-        volume.connect(pan);
         pan.connect(output);
 
-        lfo_lowpass = new LFOCompatibleBiquadFilter(synth, key + "_l", "lowpass", SND_FREQ_MAX, volume);
-        lfo_highpass = new LFOCompatibleBiquadFilter(synth, key + "_h", "highpass", SND_FREQ_MIN, lfo_lowpass.input);
-
-        this._vol = volume;
+        this._key = key;
+        this._vol_cns = vol_cns;
         this._pan = pan;
 
         this._waveform_key = waveform_key = key + "_wf";
         this.waveform = new EnumParam(synth, waveform_key, WAVEFORMS, "sine");
         this.waveform.observers.push(this);
 
-        this.volume = new LFOControllableParam(synth, key + "_vl", volume.gain, 0.0, 1.0, 0.5);
+        this.volume = new LFOControllableParam(synth, key + "_vl", vol_cns.offset, 0.0, 1.0, 0.5);
         this.pan = new LFOControllableParam(synth, key + "_pn", pan.pan, -1.0, 1.0, 0.0);
         this.width = new MIDIControllableParam(synth, key + "_wd", -1.0, 1.0, 0.2);
 
@@ -2140,10 +2178,8 @@
             new MIDIControllableParam(synth, key + "_er", ENV_REL_MIN, ENV_REL_MAX, ENV_REL_DEF)
         ];
 
-        this._ehp_onoff_key = ehp_onoff_key = key + "_eho";
-        env_highpass_onoff = new OnOffParam(synth, ehp_onoff_key);
-        env_highpass_onoff.observers.push(this);
-        this.env_highpass_onoff = env_highpass_onoff;
+        ehp_onoff_key = key + "_eho";
+        this.env_highpass_onoff = env_highpass_onoff = new OnOffParam(synth, ehp_onoff_key);
 
         this.env_highpass_params = [
             new MIDIControllableParam(synth, key + "_ehif", SND_FREQ_MIN, SND_FREQ_MAX, SND_FREQ_MIN),
@@ -2158,10 +2194,8 @@
             new MIDIControllableParam(synth, key + "_ehq", FILTER_Q_MIN, FILTER_Q_MAX, FILTER_Q_DEF)
         ];
 
-        this._elp_onoff_key = elp_onoff_key = key + "_elo";
-        env_lowpass_onoff = new OnOffParam(synth, elp_onoff_key);
-        env_lowpass_onoff.observers.push(this);
-        this.env_lowpass_onoff = env_lowpass_onoff;
+        elp_onoff_key = key + "_elo";
+        this.env_lowpass_onoff = env_lowpass_onoff = new OnOffParam(synth, elp_onoff_key);
 
         this.env_lowpass_params = [
             new MIDIControllableParam(synth, key + "_elif", SND_FREQ_MIN, SND_FREQ_MAX, SND_FREQ_MAX),
@@ -2176,8 +2210,42 @@
             new MIDIControllableParam(synth, key + "_elq", FILTER_Q_MIN, FILTER_Q_MAX, FILTER_Q_DEF)
         ];
 
-        this.lfo_highpass = lfo_highpass;
-        this.lfo_lowpass = lfo_lowpass;
+        lfo_highpass_freq = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1});
+        lfo_highpass_q = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1});
+
+        lfo_lowpass_freq = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1});
+        lfo_lowpass_q = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1});
+
+        this._lfo_hp_freq_cns = lfo_highpass_freq;
+        this._lfo_hp_q_cns = lfo_highpass_q;
+
+        this._lfo_lp_freq_cns = lfo_lowpass_freq;
+        this._lfo_lp_q_cns = lfo_lowpass_q;
+
+        lhp_onoff_key = key + "_h_st";
+        this.lfo_highpass_params = [
+            lfo_highpass_onoff = new OnOffParam(synth, lhp_onoff_key),
+            new LFOControllableParam(synth, key + "_hf", lfo_highpass_freq.offset, SND_FREQ_MIN, SND_FREQ_MAX, SND_FREQ_MIN),
+            new LFOControllableParam(synth, key + "_hq", lfo_highpass_q.offset, FILTER_Q_MIN, FILTER_Q_MAX, FILTER_Q_DEF),
+        ];
+
+        llp_onoff_key = key + "_l_st";
+        this.lfo_lowpass_params = [
+            lfo_lowpass_onoff = new OnOffParam(synth, llp_onoff_key),
+            new LFOControllableParam(synth, key + "_lf", lfo_lowpass_freq.offset, SND_FREQ_MIN, SND_FREQ_MAX, SND_FREQ_MAX),
+            new LFOControllableParam(synth, key + "_lq", lfo_lowpass_q.offset, FILTER_Q_MIN, FILTER_Q_MAX, FILTER_Q_DEF)
+        ];
+
+        this._filter_flags = {};
+        this._filter_flags[ehp_onoff_key] = ENV_HP_FLAG;
+        this._filter_flags[elp_onoff_key] = ENV_LP_FLAG;
+        this._filter_flags[lhp_onoff_key] = LFO_HP_FLAG;
+        this._filter_flags[llp_onoff_key] = LFO_LP_FLAG;
+
+        env_highpass_onoff.observers.push(this);
+        env_lowpass_onoff.observers.push(this);
+        lfo_highpass_onoff.observers.push(this);
+        lfo_lowpass_onoff.observers.push(this);
     }
 
     ComplexOscillator.prototype.notify_observers = Observable.prototype.notify_observers;
@@ -2185,29 +2253,65 @@
 
     ComplexOscillator.prototype.start = function (when)
     {
+        this._vol_cns.start(when);
+        this._lfo_hp_freq_cns.start(when);
+        this._lfo_hp_q_cns.start(when);
+        this._lfo_lp_freq_cns.start(when);
+        this._lfo_lp_q_cns.start(when);
     };
 
-    function MIDINoteBasedOscillator(synth, key, poliphony, frequencies, output)
+    function MIDINoteBasedOscillator(synth, key, poliphony, frequencies, output, carrier_osc, am_vol_cns, fm_vol_cns)
     {
         var notes = [],
             fine_detune,
-            i;
+            i, note;
+
+        if (carrier_osc && carrier_osc._notes.length !== poliphony) {
+            throw (
+                "MIDINoteBasedOscillator error: carrier must have the same poliphony as modulator: "
+                + String(carrier_osc._notes.length) + " != " + String(poliphony)
+            );
+        }
 
         ComplexOscillator.call(this, synth, key, output);
 
-        fine_detune = new ConstantSourceNode(synth.audio_ctx);
+        fine_detune = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1});
         fine_detune.offset.value = 0;
 
         for (i = 0; i < poliphony; ++i) {
-            notes.push(new Note(synth.audio_ctx, fine_detune, this.lfo_highpass.input));
+            notes.push(
+                note = new Note(
+                    synth.audio_ctx,
+                    this._vol_cns,
+                    fine_detune,
+                    this._lfo_hp_freq_cns,
+                    this._lfo_hp_q_cns,
+                    this.lfo_highpass_params,
+                    this._lfo_lp_freq_cns,
+                    this._lfo_lp_q_cns,
+                    this.lfo_lowpass_params
+                )
+            );
+            note.output.connect(this._pan);
+
+            if (am_vol_cns !== null) {
+                am_vol_cns.connect(note.am_out.gain);
+            }
+
+            if (fm_vol_cns !== null) {
+                fm_vol_cns.connect(note.fm_out.gain);
+            }
         }
 
         this._notes = notes;
         this._frequencies = frequencies;
         this._last_freq = null;
+        this._mod_mask = 1;
+        this._carrier_osc = carrier_osc;
 
         this._fine_detune = fine_detune;
 
+        this.velocity_sensitivity = new MIDIControllableParam(synth, key + "_v", 0.0, 1.0, 1.0);
         this.vel_ovsens = new MIDIControllableParam(synth, key + "_vs", 0.0, 1.0, 0.0);
         this.prt_time = new MIDIControllableParam(synth, key + "_prt", PRT_TIME_MIN, PRT_TIME_MAX, PRT_TIME_DEF);
         this.prt_depth = new MIDIControllableParam(synth, key + "_prd", -2400.0, 2400.0, 0.0);
@@ -2220,8 +2324,9 @@
     MIDINoteBasedOscillator.prototype.update = function (param, new_value)
     {
         var notes = this._notes,
+            flags = this._filter_flags,
             key = param.key,
-            i, l;
+            i, l, flag;
 
         if (key === this._waveform_key) {
             for (i = 0, l = notes.length; i < l; ++i) {
@@ -2229,24 +2334,16 @@
             }
 
             this.notify_observers(new_value);
-        } else if (key === this._ehp_onoff_key) {
+        } else if (flags.hasOwnProperty(key)) {
+            flag = flags[key];
+
             if (new_value === "on") {
                 for (i = 0, l = notes.length; i < l; ++i) {
-                    notes[i].engage_env_highpass();
+                    notes[i].engage_filter(flag);
                 }
             } else {
                 for (i = 0, l = notes.length; i < l; ++i) {
-                    notes[i].bypass_env_highpass();
-                }
-            }
-        } else if (key === this._elp_onoff_key) {
-            if (new_value === "on") {
-                for (i = 0, l = notes.length; i < l; ++i) {
-                    notes[i].engage_env_lowpass();
-                }
-            } else {
-                for (i = 0, l = notes.length; i < l; ++i) {
-                    notes[i].bypass_env_lowpass();
+                    notes[i].bypass_filter(flag);
                 }
             }
         }
@@ -2257,6 +2354,7 @@
         var notes = this._notes,
             i, l;
 
+        ComplexOscillator.prototype.start.call(this, when);
         this._fine_detune.start(when);
 
         for (i = 0, l = notes.length; i < l; ++i) {
@@ -2264,17 +2362,78 @@
         }
     };
 
+    /**
+     * 1 = add
+     * 2 = amplitude modulation
+     * 4 = frequency modulation
+     */
+    MIDINoteBasedOscillator.prototype.modulate = function (mask)
+    {
+        var mod_notes = this._notes,
+            old_mask = this._mod_mask,
+            need_add, need_am, need_fm,
+            had_add, had_am, had_fm,
+            carr_notes, mod_note, carr_note,
+            i, l;
+
+        if (this._carrier_osc === null) {
+            throw "No carrier set for this MIDINoteBasedOscillator: " + this._key;
+        }
+
+        this._mod_mask = mask;
+        carr_notes = this._carrier_osc._notes;
+
+        need_add = (0 < (mask & 1));
+        need_am = (0 < (mask & 2));
+        need_fm = (0 < (mask & 4));
+        had_add = (0 < (old_mask & 1));
+        had_am = (0 < (old_mask & 2));
+        had_fm = (0 < (old_mask & 4));
+
+        for (i = 0, l = mod_notes.length; i < l; ++i) {
+            mod_note = mod_notes[i];
+            carr_note = carr_notes[i];
+
+            if (need_add) {
+                if (!had_add) {
+                    mod_note.output.connect(this._pan);
+                }
+            } else if (had_add) {
+                mod_note.output.disconnect();
+            }
+
+            if (need_am) {
+                if (!had_am) {
+                    mod_note.am_out.connect(carr_note.am_in);
+                }
+            } else if (had_am) {
+                mod_note.am_out.disconnect();
+            }
+
+            if (need_fm) {
+                if (!had_fm) {
+                    mod_note.fm_out.connect(carr_note.frequency);
+                }
+            } else if (had_fm) {
+                mod_note.fm_out.disconnect();
+            }
+        }
+    };
+
     MIDINoteBasedOscillator.prototype.trigger_note = function (now, when, note_idx, midi_note, velocity, note_pan)
     {
-        var prt_depth, prt_start_freq, vos, freq, v;
+        var vs = this.velocity_sensitivity.value,
+            prt_depth, prt_start_freq, vos, freq, v;
 
-        midi_note += this.detune.value;
+        midi_note += this.detune.value + 48;
 
-        if ((0 > midi_note) || (136 < midi_note)) {
+        if ((0 > midi_note) || (227 < midi_note)) {
             return;
         }
 
         freq = this._frequencies[midi_note];
+
+        velocity = (1.0 - vs) + vs * velocity;
 
         if ((vos = this.vel_ovsens.value) > 0) {
             v = velocity * velocity;
@@ -2324,9 +2483,20 @@
 
         ComplexOscillator.call(this, synth, "th", effects.input);
 
-        vol.connect(this.lfo_highpass.input);
+        note = new Note(
+            synth.audio_ctx,
+            this._vol_cns,
+            null,
+            this._lfo_hp_freq_cns,
+            this._lfo_hp_q_cns,
+            this.lfo_highpass_params,
+            this._lfo_lp_freq_cns,
+            this._lfo_lp_q_cns,
+            this.lfo_lowpass_params
+        );
 
-        note = new Note(synth.audio_ctx, null, vol);
+        note.output.connect(vol);
+        vol.connect(this._pan);
 
         this._audio_ctx = synth.audio_ctx;
         this._note = note;
@@ -2342,28 +2512,28 @@
 
     Theremin.prototype.update = function (param, new_value)
     {
-        var key = param.key;
+        var key = param.key,
+            flags = this._filter_flags,
+            flag;
 
         if (key === this._waveform_key) {
             this._note.set_waveform(new_value);
             this.notify_observers(new_value);
-        } else if (key === this._ehp_onoff_key) {
+        } else if (flags.hasOwnProperty(key)) {
+            flag = flags[key];
+
             if (new_value === "on") {
-                this._note.engage_env_highpass();
+                this._note.engage_filter(flag);
             } else {
-                this._note.bypass_env_highpass();
-            }
-        } else if (key === this._elp_onoff_key) {
-            if (new_value === "on") {
-                this._note.engage_env_lowpass();
-            } else {
-                this._note.bypass_env_lowpass();
+                this._note.bypass_filter(flag);
             }
         }
     };
 
     Theremin.prototype.start = function (when)
     {
+        ComplexOscillator.prototype.start.call(this, when);
+
         this._note.start(when);
     };
 
@@ -2432,28 +2602,114 @@
         );
     };
 
-    function Note(audio_ctx, fine_detune, output)
-    {
-        var osc = new OscillatorNode(audio_ctx),
-            vol = new GainNode(audio_ctx),
-            pan = new StereoPannerNode(audio_ctx),
-            env_highpass = new BiquadFilterNode(audio_ctx, {"type": "highpass", "Q": FILTER_Q_DEF, "frequency": SND_FREQ_MIN}),
-            env_lowpass = new BiquadFilterNode(audio_ctx, {"type": "lowpass", "Q": FILTER_Q_DEF, "frequency": SND_FREQ_MAX});
+    function Note(
+            audio_ctx,
+            vol_cns,
+            fine_detune,
+            lfo_hp_freq_cns, lfo_hp_q_cns, lfo_hp_params,
+            lfo_lp_freq_cns, lfo_lp_q_cns, lfo_lp_params
+    ) {
+        var freq_cns = new ConstantSourceNode(audio_ctx, {"channelCount": 1}),
+            osc = new OscillatorNode(audio_ctx, {"channelCount": 1}),
+            vel_vol = new GainNode(audio_ctx, {"channelCount": 1}),
+            vol = new GainNode(audio_ctx, {"channelCount": 1}),
+            am_in = new GainNode(audio_ctx, {"channelCount": 1}),
+            am_out = new GainNode(audio_ctx, {"channelCount": 1}),
+            fm_freq = new GainNode(audio_ctx, {"channelCount": 1}),
+            fm_out = new GainNode(audio_ctx, {"channelCount": 1}),
+            pan = new StereoPannerNode(audio_ctx, {"channelCount": 2}),
+            env_highpass = new BiquadFilterNode(
+                audio_ctx,
+                {
+                    "type": "highpass",
+                    "Q": FILTER_Q_DEF,
+                    "frequency": SND_FREQ_MIN,
+                    "channelCount": 1
+                }
+            ),
+            env_lowpass = new BiquadFilterNode(
+                audio_ctx,
+                {
+                    "type": "lowpass",
+                    "Q": FILTER_Q_DEF,
+                    "frequency": SND_FREQ_MAX,
+                    "channelCount": 1
+                }
+            ),
+            lfo_highpass = new BiquadFilterNode(
+                audio_ctx,
+                {
+                    "type": "highpass",
+                    "Q": 0.0,
+                    "frequency": 0.0,
+                    "channelCount": 1
+                }
+            ),
+            lfo_lowpass = new BiquadFilterNode(
+                audio_ctx,
+                {
+                    "type": "lowpass",
+                    "Q": 0.0,
+                    "frequency": 0.0,
+                    "channelCount": 1
+                }
+            );
 
-        vol.gain.value = 0;
+        vol.gain.value = 0.0;
+        vel_vol.gain.value = 0.0;
+        am_in.gain.value = 1.0;
+        am_out.gain.value = 0.0;
+        fm_out.gain.value = 0.0;
+        freq_cns.offset.value = 0.0;
+        osc.frequency.value = 0.0;
 
         if (fine_detune !== null) {
             fine_detune.connect(osc.detune);
         }
 
+        osc.connect(am_in);
+
+        vol_cns.connect(vol.gain);
+
+        vel_vol.connect(vol);
         vol.connect(pan);
-        pan.connect(output);
+        vol.connect(am_out);
+        vol.connect(fm_freq);
+
+        freq_cns.connect(osc.frequency);
+        freq_cns.connect(fm_freq.gain);
+        fm_freq.connect(fm_out);
+
+        lfo_highpass.frequency.value = 0.0;
+        lfo_highpass.Q.value = 0.0;
+        lfo_lowpass.frequency.value = 0.0;
+        lfo_lowpass.Q.value = 0.0;
+
+        lfo_hp_freq_cns.connect(lfo_highpass.frequency);
+        lfo_hp_q_cns.connect(lfo_highpass.Q);
+        lfo_lp_freq_cns.connect(lfo_lowpass.frequency);
+        lfo_lp_q_cns.connect(lfo_lowpass.Q);
 
         this._chains = [
-            [osc, vol],
-            [osc, env_highpass, vol],
-            [osc, env_lowpass, vol],
-            [osc, env_highpass, env_lowpass, vol]
+            [am_in, vel_vol],
+            [am_in, env_highpass, vel_vol],
+            [am_in, env_lowpass, vel_vol],
+            [am_in, env_highpass, env_lowpass, vel_vol],
+
+            [am_in, lfo_highpass, vel_vol],
+            [am_in, env_highpass, lfo_highpass, vel_vol],
+            [am_in, env_lowpass, lfo_highpass, vel_vol],
+            [am_in, env_highpass, env_lowpass, lfo_highpass, vel_vol],
+
+            [am_in, lfo_lowpass, vel_vol],
+            [am_in, env_highpass, lfo_lowpass, vel_vol],
+            [am_in, env_lowpass, lfo_lowpass, vel_vol],
+            [am_in, env_highpass, env_lowpass, lfo_lowpass, vel_vol],
+
+            [am_in, lfo_highpass, lfo_lowpass, vel_vol],
+            [am_in, env_highpass, lfo_highpass, lfo_lowpass, vel_vol],
+            [am_in, env_lowpass, lfo_highpass, lfo_lowpass, vel_vol],
+            [am_in, env_highpass, env_lowpass, lfo_highpass, lfo_lowpass, vel_vol]
         ];
         this._chain = 0;
 
@@ -2461,16 +2717,26 @@
 
         this._osc = osc;
         this._vol = vol;
+        this._vel_vol = vel_vol;
         this._env_highpass = env_highpass;
         this._env_lowpass = env_lowpass;
+        this._lfo_highpass = lfo_highpass;
+        this._lfo_lowpass = lfo_lowpass;
+        this._am_in = am_in;
+        this._freq_cns = freq_cns;
+        this._fm_freq = fm_freq;
 
         this._amp_sustain_start = null;
         this._amp_sustain_level = null;
         this._ehp_sustain_start = null;
         this._elp_sustain_start = null;
 
-        this.frequency = osc.frequency;
+        this.am_in = am_in.gain;
+        this.frequency = freq_cns.offset;
         this.pan = pan;
+        this.fm_out = fm_out;
+        this.am_out = am_out;
+        this.output = pan;
     }
 
     Note.prototype._rewire = function (new_chain_idx)
@@ -2495,15 +2761,15 @@
     Note.prototype.start = function (when)
     {
         this._osc.start(when);
+        this._freq_cns.start(when);
     };
 
     Note.prototype.trigger = function (
-        now, when, freq, velocity, pan,
-        prt_start_freq, prt_time,
-        amp_env_params, env_highpass_params, env_lowpass_params
-    )
-    {
-        var g = this._vol.gain,
+            now, when, freq, velocity, pan,
+            prt_start_freq, prt_time,
+            amp_env_params, env_highpass_params, env_lowpass_params
+    ) {
+        var g = this._vel_vol.gain,
             hq = this._env_highpass.Q,
             lq = this._env_lowpass.Q,
             f = this.frequency,
@@ -2598,7 +2864,7 @@
         var chain = this._chain;
 
         this._apply_envelope_r(
-            this._vol.gain,
+            this._vel_vol.gain,
             when,
             this._amp_sustain_start,
             this._amp_sustain_level,
@@ -2646,7 +2912,7 @@
         var chain = this._chain;
 
         this._apply_envelope_r(
-            this._vol.gain,
+            this._vel_vol.gain,
             when,
             this._amp_sustain_start,
             this._amp_sustain_level,
@@ -2682,48 +2948,26 @@
         this._osc.type = new_waveform;
     }
 
-    Note.prototype.engage_env_highpass = function ()
+    Note.prototype.engage_filter = function (flag)
     {
         var chain = this._chain;
 
-        if (0 < (chain & 1)) {
+        if (0 < (chain & flag)) {
             return;
         }
 
-        this._rewire(chain | 1);
+        this._rewire(chain | flag);
     };
 
-    Note.prototype.engage_env_lowpass = function ()
+    Note.prototype.bypass_filter = function (flag)
     {
         var chain = this._chain;
 
-        if (0 < (chain & 2)) {
+        if (1 > (chain & flag)) {
             return;
         }
 
-        this._rewire(chain | 2);
-    };
-
-    Note.prototype.bypass_env_highpass = function ()
-    {
-        var chain = this._chain;
-
-        if (1 > (chain & 1)) {
-            return;
-        }
-
-        this._rewire(chain & 0xfffe);
-    };
-
-    Note.prototype.bypass_env_lowpass = function ()
-    {
-        var chain = this._chain;
-
-        if (1 > (chain & 2)) {
-            return;
-        }
-
-        this._rewire(chain & 0xfffd);
+        this._rewire(chain & (0xffff & ~flag));
     };
 
     function Param(synth, key, default_value)
@@ -2864,9 +3108,9 @@
 
     function LFOControllableParam(synth, key, target_param, min, max, default_value)
     {
-        var mul = new GainNode(synth.audio_ctx),
-            add = new GainNode(synth.audio_ctx),
-            ofs = new ConstantSourceNode(synth.audio_ctx);
+        var mul = new GainNode(synth.audio_ctx, {"channelCount": 1}),
+            add = new GainNode(synth.audio_ctx, {"channelCount": 1}),
+            ofs = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1});
 
         MIDIControllableParam.call(this, synth, key, min, max, default_value);
 
@@ -2950,8 +3194,8 @@
 
     function LFOController(synth, key)
     {
-        var osc = new OscillatorNode(synth.audio_ctx),
-            ws = new WaveShaperNode(synth.audio_ctx, {"curve": new Float32Array([0.0, 1.0])});
+        var osc = new OscillatorNode(synth.audio_ctx, {"channelCount": 1}),
+            ws = new WaveShaperNode(synth.audio_ctx, {"curve": new Float32Array([0.0, 1.0]), "channelCount": 1});
 
         Observable.call(this);
         Observer.call(this);
@@ -3304,13 +3548,16 @@
     function VoiceUI(name, class_names, voice, synth)
     {
         var settings = new UIWidgetGroup(),
-            osc1 = new OscillatorUI("Oscillator 1", "color-4", voice.osc_1, synth),
-            osc2 = new OscillatorUI("Oscillator 2", "color-3", voice.osc_2, synth),
+            osc1 = new OscillatorUI("Oscillator 1 (modulator)", "color-4", voice.osc_1, synth),
+            osc2 = new OscillatorUI("Oscillator 2 (carrier)", "color-3", voice.osc_2, synth),
             effects = new NamedUIWidgetGroup("Effects", "effects color-0", synth);
 
         NamedUIWidgetGroup.call(this, name, "module vertical " + class_names);
 
         settings.add(new FaderUI("VOL", "Volume", "%", 1000, 10, ALL_CONTROLS, voice.volume, synth));
+        settings.add(new FaderUI("AM", "Amplitude modulation volume", "%", 1000, 10, ALL_CONTROLS, voice.am_volume, synth));
+        settings.add(new FaderUI("FM", "Frequency modulation volume", "%", 100, 100, ALL_CONTROLS, voice.fm_volume, synth));
+        settings.add(new SelectUI("1+2", "Modulate Oscillator 2 with Oscillator 1", "modulation", voice.modulation, synth));
 
         effects.add(new EchoUI(synth, voice.effects.echo));
         effects.add(new ReverbUI(synth, voice.effects.reverb));
@@ -3359,13 +3606,14 @@
             amp_env = new NamedUIWidgetGroup("Amplitude envelope", "vertical"),
             env_highpass = new EnvelopeHighpassUI(complex_osc, synth),
             env_lowpass = new EnvelopeLowpassUI(complex_osc, synth),
-            lfo_highpass = new LFOCompatibleHighpassUI("", complex_osc.lfo_highpass, synth),
-            lfo_lowpass = new LFOCompatibleLowpassUI("", complex_osc.lfo_lowpass, synth),
+            lfo_highpass = new LFOCompatibleHighpassUI("", complex_osc.lfo_highpass_params, synth),
+            lfo_lowpass = new LFOCompatibleLowpassUI("", complex_osc.lfo_lowpass_params, synth),
             wav = new SelectUI("WAV", "Waveform", "waveform-selector", complex_osc.waveform, synth);
 
         NamedUIWidgetGroup.call(this, name, "horizontal oscillator " + class_names);
 
         params.add(new FaderUI("VOL", "Volume", "%", 1000, 10, ALL_CONTROLS, complex_osc.volume, synth));
+        params.add(new FaderUI("VS", "Velocity sensitivity", "%", 100, 1, MIDI_CONTROLS, complex_osc.velocity_sensitivity, synth));
         params.add(new FaderUI("VOS", "Velocity oversensitivity", "%", 100, 1, MIDI_CONTROLS, complex_osc.vel_ovsens, synth));
         params.add(new FaderUI("PAN", "Panning", "%", 100, 1, ALL_CONTROLS, complex_osc.pan, synth));
         params.add(new FaderUI("WID", "Width", "%", 100, 1, MIDI_CONTROLS, complex_osc.width, synth));
@@ -3438,35 +3686,35 @@
     EnvelopeLowpassUI.prototype.add = EnvelopeBiquadFilterUI.prototype.add;
     EnvelopeLowpassUI.prototype.set_description = EnvelopeBiquadFilterUI.prototype.set_description;
 
-    function LFOCompatibleBiquadFilterUI(name, class_names, lfo_compatible_filter, synth)
+    function LFOCompatibleBiquadFilterUI(name, class_names, lfo_compatible_filter_params, synth)
     {
-        var onoff = new OnOffSwitch(lfo_compatible_filter.onoff);
+        var onoff = new OnOffSwitch(lfo_compatible_filter_params[0]);
 
         NamedUIWidgetGroup.call(this, name, "vertical " + (class_names || ""));
 
         this._name.appendChild(onoff.dom_node);
         this._onoff = onoff;
 
-        this.add(new FaderUI("FRQ", "Frequency", "Hz", 1, 1, ALL_CONTROLS, lfo_compatible_filter.freq, synth));
-        this.add(new FaderUI("Q", "Q factor", "", 100, 100, ALL_CONTROLS, lfo_compatible_filter.q, synth));
+        this.add(new FaderUI("FRQ", "Frequency", "Hz", 1, 1, ALL_CONTROLS, lfo_compatible_filter_params[1], synth));
+        this.add(new FaderUI("Q", "Q factor", "", 100, 100, ALL_CONTROLS, lfo_compatible_filter_params[2], synth));
     }
 
     LFOCompatibleBiquadFilterUI.prototype.update = NamedUIWidgetGroup.prototype.update;
     LFOCompatibleBiquadFilterUI.prototype.add = NamedUIWidgetGroup.prototype.add;
     LFOCompatibleBiquadFilterUI.prototype.set_description = NamedUIWidgetGroup.prototype.set_description;
 
-    function LFOCompatibleHighpassUI(class_names, lfo_compatible_filter, synth)
+    function LFOCompatibleHighpassUI(class_names, lfo_compatible_filter_params, synth)
     {
-        LFOCompatibleBiquadFilterUI.call(this, "Highpass (LFO compatible)", class_names, lfo_compatible_filter, synth);
+        LFOCompatibleBiquadFilterUI.call(this, "Highpass (LFO compatible)", class_names, lfo_compatible_filter_params, synth);
     }
 
     LFOCompatibleHighpassUI.prototype.update = LFOCompatibleBiquadFilterUI.prototype.update;
     LFOCompatibleHighpassUI.prototype.add = LFOCompatibleBiquadFilterUI.prototype.add;
     LFOCompatibleHighpassUI.prototype.set_description = LFOCompatibleBiquadFilterUI.prototype.set_description;
 
-    function LFOCompatibleLowpassUI(class_names, lfo_compatible_filter, synth)
+    function LFOCompatibleLowpassUI(class_names, lfo_compatible_filter_params, synth)
     {
-        LFOCompatibleBiquadFilterUI.call(this, "Lowpass (LFO compatible)", class_names, lfo_compatible_filter, synth);
+        LFOCompatibleBiquadFilterUI.call(this, "Lowpass (LFO compatible)", class_names, lfo_compatible_filter_params, synth);
     }
 
     LFOCompatibleLowpassUI.prototype.update = LFOCompatibleBiquadFilterUI.prototype.update;
@@ -4175,8 +4423,8 @@
             params = new UIWidgetGroup("horizontal"),
             env_highpass = new EnvelopeHighpassUI(theremin, synth),
             env_lowpass = new EnvelopeLowpassUI(theremin, synth),
-            lfo_highpass = new LFOCompatibleHighpassUI("", theremin.lfo_highpass, synth),
-            lfo_lowpass = new LFOCompatibleLowpassUI("", theremin.lfo_lowpass, synth),
+            lfo_highpass = new LFOCompatibleHighpassUI("", theremin.lfo_highpass_params, synth),
+            lfo_lowpass = new LFOCompatibleLowpassUI("", theremin.lfo_lowpass_params, synth),
             wav = new SelectUI("WAV", "Waveform", "waveform-selector", theremin.waveform, synth),
             effects = new NamedUIWidgetGroup("Effects", "effects color-0", synth);
 
@@ -4246,8 +4494,8 @@
         var rect = this._touch_area.getClientRects()[0];
 
         return [
-            (evt.clientX - rect.left) / rect.width,
-            (evt.clientY - rect.top) / rect.height,
+            Math.max(0.0, Math.min(1.0, (evt.clientX - rect.left) / rect.width)),
+            Math.max(0.0, Math.min(1.0, (evt.clientY - rect.top) / rect.height))
         ];
     };
 
@@ -4478,6 +4726,7 @@
     presets = {
         "p1": {
             "ckb_trg": ["comp", "none"],
+            "cmp_avl": [0.5, "none"],
             "cmp_ech_df": [6000, "none"],
             "cmp_ech_dg": [-6, "none"],
             "cmp_ech_dly": [0.4, "none"],
@@ -4487,6 +4736,8 @@
             "cmp_ech_st": ["off", "none"],
             "cmp_ech_w": [0.5, "none"],
             "cmp_ech_wet": [0.5, "none"],
+            "cmp_fvl": [5, "none"],
+            "cmp_md": ["m1", "none"],
             "cmp_o1_dt": [0, "none"],
             "cmp_o1_ea": [0.02, "none"],
             "cmp_o1_ed": [0.6, "none"],
@@ -4527,6 +4778,7 @@
             "cmp_o1_pn": [0, "none"],
             "cmp_o1_prd": [0, "none"],
             "cmp_o1_prt": [0, "none"],
+            "cmp_o1_v": [1, "none"],
             "cmp_o1_vl": [0.5, "none"],
             "cmp_o1_vs": [0, "none"],
             "cmp_o1_wd": [0.2, "none"],
@@ -4571,6 +4823,7 @@
             "cmp_o2_pn": [0, "none"],
             "cmp_o2_prd": [0, "none"],
             "cmp_o2_prt": [0, "none"],
+            "cmp_o2_v": [1, "none"],
             "cmp_o2_vl": [0.5, "none"],
             "cmp_o2_vs": [0, "none"],
             "cmp_o2_wd": [0.2, "none"],
@@ -4712,6 +4965,7 @@
             "mcs9_ma": [1, "none"],
             "mcs9_mi": [0, "none"],
             "mcs9_rn": [0, "none"],
+            "midi_avl": [0.5, "none"],
             "midi_ech_df": [6000, "none"],
             "midi_ech_dg": [-6, "none"],
             "midi_ech_dly": [0.4, "none"],
@@ -4721,6 +4975,8 @@
             "midi_ech_st": ["off", "none"],
             "midi_ech_w": [0.5, "none"],
             "midi_ech_wet": [0.5, "none"],
+            "midi_fvl": [5, "none"],
+            "midi_md": ["m1", "none"],
             "midi_o1_dt": [0, "none"],
             "midi_o1_ea": [0.02, "none"],
             "midi_o1_ed": [0.6, "none"],
@@ -4761,6 +5017,7 @@
             "midi_o1_pn": [0, "none"],
             "midi_o1_prd": [0, "none"],
             "midi_o1_prt": [0, "none"],
+            "midi_o1_v": [1, "none"],
             "midi_o1_vl": [0.5, "none"],
             "midi_o1_vs": [0, "none"],
             "midi_o1_wd": [0.2, "none"],
@@ -4805,6 +5062,7 @@
             "midi_o2_pn": [0, "none"],
             "midi_o2_prd": [0, "none"],
             "midi_o2_prt": [0, "none"],
+            "midi_o2_v": [1, "none"],
             "midi_o2_vl": [0.5, "none"],
             "midi_o2_vs": [0, "none"],
             "midi_o2_wd": [0.2, "none"],
@@ -5269,6 +5527,7 @@
         },
         "p2": {
             "ckb_trg": ["comp", "none"],
+            "cmp_avl": [0.5, "none"],
             "cmp_ech_df": [6000, "none"],
             "cmp_ech_dg": [-9, "none"],
             "cmp_ech_dly": [0.3, "none"],
@@ -5278,6 +5537,8 @@
             "cmp_ech_st": ["on", "none"],
             "cmp_ech_w": [0.375, "none"],
             "cmp_ech_wet": [0.2, "none"],
+            "cmp_fvl": [5, "none"],
+            "cmp_md": ["m1", "none"],
             "cmp_o1_dt": [0, "none"],
             "cmp_o1_ea": [0.001, "none"],
             "cmp_o1_ed": [1.024, "none"],
@@ -5318,6 +5579,7 @@
             "cmp_o1_pn": [0, "none"],
             "cmp_o1_prd": [0, "none"],
             "cmp_o1_prt": [0, "none"],
+            "cmp_o1_v": [1, "none"],
             "cmp_o1_vl": [0.5, "none"],
             "cmp_o1_vs": [0, "none"],
             "cmp_o1_wd": [0.2, "none"],
@@ -5362,6 +5624,7 @@
             "cmp_o2_pn": [0, "none"],
             "cmp_o2_prd": [0, "none"],
             "cmp_o2_prt": [0, "none"],
+            "cmp_o2_v": [1, "none"],
             "cmp_o2_vl": [0.5, "none"],
             "cmp_o2_vs": [0, "none"],
             "cmp_o2_wd": [0.2, "none"],
@@ -5503,6 +5766,7 @@
             "mcs9_ma": [1, "none"],
             "mcs9_mi": [0, "none"],
             "mcs9_rn": [0, "none"],
+            "midi_avl": [0.5, "none"],
             "midi_ech_df": [6000, "none"],
             "midi_ech_dg": [-9, "none"],
             "midi_ech_dly": [0.6, "none"],
@@ -5512,6 +5776,8 @@
             "midi_ech_st": ["off", "none"],
             "midi_ech_w": [0.5, "none"],
             "midi_ech_wet": [0.2, "none"],
+            "midi_fvl": [5, "none"],
+            "midi_md": ["m1", "none"],
             "midi_o1_dt": [0, "none"],
             "midi_o1_ea": [0.12, "none"],
             "midi_o1_ed": [0.6, "none"],
@@ -5552,6 +5818,7 @@
             "midi_o1_pn": [0.6, "none"],
             "midi_o1_prd": [0, "none"],
             "midi_o1_prt": [0.02, "none"],
+            "midi_o1_v": [1, "none"],
             "midi_o1_vl": [0.5, "none"],
             "midi_o1_vs": [0, "none"],
             "midi_o1_wd": [0.2, "none"],
@@ -5596,6 +5863,7 @@
             "midi_o2_pn": [-0.6, "none"],
             "midi_o2_prd": [0, "none"],
             "midi_o2_prt": [0.02, "none"],
+            "midi_o2_v": [1, "none"],
             "midi_o2_vl": [0.5, "none"],
             "midi_o2_vs": [0, "none"],
             "midi_o2_wd": [0.2, "none"],
@@ -6060,6 +6328,7 @@
         },
         "p3": {
             "ckb_trg": ["comp", "none"],
+            "cmp_avl": [0.5, "none"],
             "cmp_ech_df": [6000, "none"],
             "cmp_ech_dg": [-9, "none"],
             "cmp_ech_dly": [0.6, "none"],
@@ -6069,6 +6338,8 @@
             "cmp_ech_st": ["off", "none"],
             "cmp_ech_w": [0.5, "none"],
             "cmp_ech_wet": [0.2, "none"],
+            "cmp_fvl": [5, "none"],
+            "cmp_md": ["m1", "none"],
             "cmp_o1_dt": [0, "none"],
             "cmp_o1_ea": [0.12, "none"],
             "cmp_o1_ed": [0.6, "none"],
@@ -6109,6 +6380,7 @@
             "cmp_o1_pn": [0.6, "none"],
             "cmp_o1_prd": [0, "none"],
             "cmp_o1_prt": [0.02, "none"],
+            "cmp_o1_v": [1, "none"],
             "cmp_o1_vl": [0.5, "none"],
             "cmp_o1_vs": [0, "none"],
             "cmp_o1_wd": [0.2, "none"],
@@ -6153,6 +6425,7 @@
             "cmp_o2_pn": [-0.6, "none"],
             "cmp_o2_prd": [0, "none"],
             "cmp_o2_prt": [0.02, "none"],
+            "cmp_o2_v": [1, "none"],
             "cmp_o2_vl": [0.5, "none"],
             "cmp_o2_vs": [0, "none"],
             "cmp_o2_wd": [0.2, "none"],
@@ -6294,6 +6567,7 @@
             "mcs9_ma": [1, "none"],
             "mcs9_mi": [0, "none"],
             "mcs9_rn": [0, "none"],
+            "midi_avl": [0.5, "none"],
             "midi_ech_df": [6000, "none"],
             "midi_ech_dg": [-9, "none"],
             "midi_ech_dly": [0.3, "none"],
@@ -6303,6 +6577,8 @@
             "midi_ech_st": ["on", "none"],
             "midi_ech_w": [0.375, "none"],
             "midi_ech_wet": [0.2, "none"],
+            "midi_fvl": [5, "none"],
+            "midi_md": ["m1", "none"],
             "midi_o1_dt": [0, "none"],
             "midi_o1_ea": [0.001, "none"],
             "midi_o1_ed": [1.024, "none"],
@@ -6343,6 +6619,7 @@
             "midi_o1_pn": [0, "none"],
             "midi_o1_prd": [0, "none"],
             "midi_o1_prt": [0, "none"],
+            "midi_o1_v": [1, "none"],
             "midi_o1_vl": [0.5, "none"],
             "midi_o1_vs": [0, "none"],
             "midi_o1_wd": [0.2, "none"],
@@ -6387,6 +6664,7 @@
             "midi_o2_pn": [0, "none"],
             "midi_o2_prd": [0, "none"],
             "midi_o2_prt": [0, "none"],
+            "midi_o2_v": [1, "none"],
             "midi_o2_vl": [0.5, "none"],
             "midi_o2_vs": [0, "none"],
             "midi_o2_wd": [0.2, "none"],
@@ -6851,6 +7129,7 @@
         },
         "p4": {
             "ckb_trg": ["comp", "none"],
+            "cmp_avl": [0.5, "none"],
             "cmp_ech_df": [6000, "none"],
             "cmp_ech_dg": [-6, "none"],
             "cmp_ech_dly": [0.4, "none"],
@@ -6860,6 +7139,8 @@
             "cmp_ech_st": ["off", "none"],
             "cmp_ech_w": [0.5, "none"],
             "cmp_ech_wet": [0.5, "none"],
+            "cmp_fvl": [5, "none"],
+            "cmp_md": ["m1", "none"],
             "cmp_o1_dt": [0, "none"],
             "cmp_o1_ea": [0.002, "none"],
             "cmp_o1_ed": [3.9160933070866144, "mcs1"],
@@ -6900,6 +7181,7 @@
             "cmp_o1_pn": [0, "none"],
             "cmp_o1_prd": [0, "none"],
             "cmp_o1_prt": [0, "none"],
+            "cmp_o1_v": [1, "none"],
             "cmp_o1_vl": [0.7, "none"],
             "cmp_o1_vs": [0, "none"],
             "cmp_o1_wd": [0.3, "none"],
@@ -6944,6 +7226,7 @@
             "cmp_o2_pn": [0, "none"],
             "cmp_o2_prd": [0, "none"],
             "cmp_o2_prt": [0, "none"],
+            "cmp_o2_v": [1, "none"],
             "cmp_o2_vl": [0.3, "none"],
             "cmp_o2_vs": [0, "none"],
             "cmp_o2_wd": [0.3, "none"],
@@ -7085,6 +7368,7 @@
             "mcs9_ma": [1, "none"],
             "mcs9_mi": [0, "none"],
             "mcs9_rn": [0, "none"],
+            "midi_avl": [0.5, "none"],
             "midi_ech_df": [6000, "none"],
             "midi_ech_dg": [-6, "none"],
             "midi_ech_dly": [0.4, "none"],
@@ -7094,6 +7378,8 @@
             "midi_ech_st": ["off", "none"],
             "midi_ech_w": [0.5, "none"],
             "midi_ech_wet": [0.5, "none"],
+            "midi_fvl": [5, "none"],
+            "midi_md": ["m1", "none"],
             "midi_o1_dt": [0, "none"],
             "midi_o1_ea": [0.035, "none"],
             "midi_o1_ed": [0.6, "none"],
@@ -7134,6 +7420,7 @@
             "midi_o1_pn": [0, "none"],
             "midi_o1_prd": [0, "none"],
             "midi_o1_prt": [0, "none"],
+            "midi_o1_v": [1, "none"],
             "midi_o1_vl": [0.4, "none"],
             "midi_o1_vs": [0, "none"],
             "midi_o1_wd": [0.32, "none"],
@@ -7178,6 +7465,7 @@
             "midi_o2_pn": [0, "none"],
             "midi_o2_prd": [0, "none"],
             "midi_o2_prt": [0, "none"],
+            "midi_o2_v": [1, "none"],
             "midi_o2_vl": [0.3, "none"],
             "midi_o2_vs": [0, "none"],
             "midi_o2_wd": [0.32, "none"],
@@ -7642,6 +7930,7 @@
         },
         "p5": {
             "ckb_trg": ["comp", "none"],
+            "cmp_avl": [0.5, "none"],
             "cmp_ech_df": [6000, "none"],
             "cmp_ech_dg": [-6, "none"],
             "cmp_ech_dly": [0.4, "none"],
@@ -7651,6 +7940,8 @@
             "cmp_ech_st": ["off", "none"],
             "cmp_ech_w": [0.5, "none"],
             "cmp_ech_wet": [0.5, "none"],
+            "cmp_fvl": [5, "none"],
+            "cmp_md": ["m1", "none"],
             "cmp_o1_dt": [0, "none"],
             "cmp_o1_ea": [0.035, "none"],
             "cmp_o1_ed": [0.6, "none"],
@@ -7691,6 +7982,7 @@
             "cmp_o1_pn": [0, "none"],
             "cmp_o1_prd": [0, "none"],
             "cmp_o1_prt": [0, "none"],
+            "cmp_o1_v": [1, "none"],
             "cmp_o1_vl": [0.4, "none"],
             "cmp_o1_vs": [0, "none"],
             "cmp_o1_wd": [0.32, "none"],
@@ -7735,6 +8027,7 @@
             "cmp_o2_pn": [0, "none"],
             "cmp_o2_prd": [0, "none"],
             "cmp_o2_prt": [0, "none"],
+            "cmp_o2_v": [1, "none"],
             "cmp_o2_vl": [0.3, "none"],
             "cmp_o2_vs": [0, "none"],
             "cmp_o2_wd": [0.32, "none"],
@@ -7876,6 +8169,7 @@
             "mcs9_ma": [1, "none"],
             "mcs9_mi": [0, "none"],
             "mcs9_rn": [0, "none"],
+            "midi_avl": [0.5, "none"],
             "midi_ech_df": [6000, "none"],
             "midi_ech_dg": [-6, "none"],
             "midi_ech_dly": [0.4, "none"],
@@ -7885,6 +8179,8 @@
             "midi_ech_st": ["off", "none"],
             "midi_ech_w": [0.5, "none"],
             "midi_ech_wet": [0.5, "none"],
+            "midi_fvl": [5, "none"],
+            "midi_md": ["m1", "none"],
             "midi_o1_dt": [0, "none"],
             "midi_o1_ea": [0.002, "none"],
             "midi_o1_ed": [3.9160933070866144, "mcs1"],
@@ -7925,6 +8221,7 @@
             "midi_o1_pn": [0, "none"],
             "midi_o1_prd": [0, "none"],
             "midi_o1_prt": [0, "none"],
+            "midi_o1_v": [1, "none"],
             "midi_o1_vl": [0.7, "none"],
             "midi_o1_vs": [0, "none"],
             "midi_o1_wd": [0.3, "none"],
@@ -7969,6 +8266,7 @@
             "midi_o2_pn": [0, "none"],
             "midi_o2_prd": [0, "none"],
             "midi_o2_prt": [0, "none"],
+            "midi_o2_v": [1, "none"],
             "midi_o2_vl": [0.3, "none"],
             "midi_o2_vs": [0, "none"],
             "midi_o2_wd": [0.3, "none"],
@@ -8433,6 +8731,7 @@
         },
         "p6": {
             "ckb_trg": ["comp", "none"],
+            "cmp_avl": [0.5, "none"],
             "cmp_ech_df": [6000, "none"],
             "cmp_ech_dg": [-6, "none"],
             "cmp_ech_dly": [0.416, "none"],
@@ -8442,6 +8741,8 @@
             "cmp_ech_st": ["on", "none"],
             "cmp_ech_w": [0.5, "none"],
             "cmp_ech_wet": [0.2, "none"],
+            "cmp_fvl": [5, "none"],
+            "cmp_md": ["m1", "none"],
             "cmp_o1_dt": [0, "none"],
             "cmp_o1_ea": [0.001, "none"],
             "cmp_o1_ed": [2.455, "none"],
@@ -8482,6 +8783,7 @@
             "cmp_o1_pn": [0, "none"],
             "cmp_o1_prd": [0, "none"],
             "cmp_o1_prt": [0.01, "none"],
+            "cmp_o1_v": [1, "none"],
             "cmp_o1_vl": [0.6, "none"],
             "cmp_o1_vs": [0, "none"],
             "cmp_o1_wd": [1, "none"],
@@ -8526,6 +8828,7 @@
             "cmp_o2_pn": [0, "none"],
             "cmp_o2_prd": [0, "none"],
             "cmp_o2_prt": [0.01, "none"],
+            "cmp_o2_v": [1, "none"],
             "cmp_o2_vl": [0.3, "none"],
             "cmp_o2_vs": [0, "none"],
             "cmp_o2_wd": [1, "none"],
@@ -8667,6 +8970,7 @@
             "mcs9_ma": [1, "none"],
             "mcs9_mi": [0, "none"],
             "mcs9_rn": [0, "none"],
+            "midi_avl": [0.5, "none"],
             "midi_ech_df": [6000, "none"],
             "midi_ech_dg": [-9, "none"],
             "midi_ech_dly": [0.208, "none"],
@@ -8676,6 +8980,8 @@
             "midi_ech_st": ["on", "none"],
             "midi_ech_w": [0.5, "none"],
             "midi_ech_wet": [0.2, "none"],
+            "midi_fvl": [5, "none"],
+            "midi_md": ["m1", "none"],
             "midi_o1_dt": [12, "none"],
             "midi_o1_ea": [0.18, "none"],
             "midi_o1_ed": [2.045, "none"],
@@ -8716,6 +9022,7 @@
             "midi_o1_pn": [0, "none"],
             "midi_o1_prd": [0, "none"],
             "midi_o1_prt": [0.05, "none"],
+            "midi_o1_v": [1, "none"],
             "midi_o1_vl": [0.5, "none"],
             "midi_o1_vs": [0, "none"],
             "midi_o1_wd": [0.35, "none"],
@@ -8760,6 +9067,7 @@
             "midi_o2_pn": [0, "none"],
             "midi_o2_prd": [0, "none"],
             "midi_o2_prt": [0, "none"],
+            "midi_o2_v": [1, "none"],
             "midi_o2_vl": [0.5, "none"],
             "midi_o2_vs": [0.6, "none"],
             "midi_o2_wd": [0.35, "none"],
@@ -9224,6 +9532,7 @@
         },
         "p7": {
             "ckb_trg": ["comp", "none"],
+            "cmp_avl": [0.5, "none"],
             "cmp_ech_df": [6000, "none"],
             "cmp_ech_dg": [-9, "none"],
             "cmp_ech_dly": [0.208, "none"],
@@ -9233,6 +9542,8 @@
             "cmp_ech_st": ["on", "none"],
             "cmp_ech_w": [0.5, "none"],
             "cmp_ech_wet": [0.2, "none"],
+            "cmp_fvl": [5, "none"],
+            "cmp_md": ["m1", "none"],
             "cmp_o1_dt": [12, "none"],
             "cmp_o1_ea": [0.18, "none"],
             "cmp_o1_ed": [2.045, "none"],
@@ -9273,6 +9584,7 @@
             "cmp_o1_pn": [0, "none"],
             "cmp_o1_prd": [0, "none"],
             "cmp_o1_prt": [0.05, "none"],
+            "cmp_o1_v": [1, "none"],
             "cmp_o1_vl": [0.5, "none"],
             "cmp_o1_vs": [0, "none"],
             "cmp_o1_wd": [0.35, "none"],
@@ -9317,6 +9629,7 @@
             "cmp_o2_pn": [0, "none"],
             "cmp_o2_prd": [0, "none"],
             "cmp_o2_prt": [0, "none"],
+            "cmp_o2_v": [1, "none"],
             "cmp_o2_vl": [0.5, "none"],
             "cmp_o2_vs": [0.6, "none"],
             "cmp_o2_wd": [0.35, "none"],
@@ -9458,6 +9771,7 @@
             "mcs9_ma": [1, "none"],
             "mcs9_mi": [0, "none"],
             "mcs9_rn": [0, "none"],
+            "midi_avl": [0.5, "none"],
             "midi_ech_df": [6000, "none"],
             "midi_ech_dg": [-6, "none"],
             "midi_ech_dly": [0.416, "none"],
@@ -9467,6 +9781,8 @@
             "midi_ech_st": ["on", "none"],
             "midi_ech_w": [0.5, "none"],
             "midi_ech_wet": [0.2, "none"],
+            "midi_fvl": [5, "none"],
+            "midi_md": ["m1", "none"],
             "midi_o1_dt": [0, "none"],
             "midi_o1_ea": [0.001, "none"],
             "midi_o1_ed": [2.455, "none"],
@@ -9507,6 +9823,7 @@
             "midi_o1_pn": [0, "none"],
             "midi_o1_prd": [0, "none"],
             "midi_o1_prt": [0.01, "none"],
+            "midi_o1_v": [1, "none"],
             "midi_o1_vl": [0.6, "none"],
             "midi_o1_vs": [0, "none"],
             "midi_o1_wd": [1, "none"],
@@ -9551,6 +9868,7 @@
             "midi_o2_pn": [0, "none"],
             "midi_o2_prd": [0, "none"],
             "midi_o2_prt": [0.01, "none"],
+            "midi_o2_v": [1, "none"],
             "midi_o2_vl": [0.3, "none"],
             "midi_o2_vs": [0, "none"],
             "midi_o2_wd": [1, "none"],
