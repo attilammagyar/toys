@@ -1595,10 +1595,10 @@
         this.am_volume = new LFOControllableParam(synth, key + "_avl", am_vol.offset, 0.0, 3.0, 0.5);
         this.fm_volume = new LFOControllableParam(synth, key + "_fvl", fm_vol.offset, 0.0, 300.0, 5.0);
 
-        this.osc_2 = new MIDINoteBasedOscillator(
+        this.osc_2 = new MIDINoteBasedCarrier(
             synth, key + "_o2", poliphony, frequencies, effects.input, null, null, null
         );
-        this.osc_1 = new MIDINoteBasedOscillator(
+        this.osc_1 = new MIDINoteBasedModulator(
             synth, key + "_o1", poliphony, frequencies, effects.input, this.osc_2, am_vol, fm_vol
         );
 
@@ -1758,21 +1758,21 @@
         this.output = reverb.output;
     }
 
-    function Effect(synth, key, input, output, onoff)
+    function Effect(synth, key, output)
     {
-        input = input || new GainNode(synth.audio_ctx, {"gain": 1.0}),
-        onoff = onoff || new OnOffParam(synth, key + "_st");
+        var input = new GainNode(synth.audio_ctx, {"gain": 1.0}),
+            onoff = new OnOffParam(synth, key + "_st");
 
         Observer.call(this);
 
         this._input_connections = [];
         this._output_connections = [];
 
-        onoff.observers.push(this);
-
         this.onoff = onoff;
         this.input = input;
         this.output = output;
+
+        onoff.observers.push(this);
     }
 
     Effect.prototype.update = function (state_param, new_state)
@@ -1816,6 +1816,24 @@
         }
     };
 
+    function LFOCompatibleBiquadFilter(synth, key, filter_type, default_freq, output)
+    {
+        var filter = new BiquadFilterNode(synth.audio_ctx, {"type": filter_type, "Q": FILTER_Q_DEF, "frequency": default_freq});
+
+        Effect.call(this, synth, key, output);
+
+        this._filter = filter;
+        this._input_connections = this._output_connections = [filter];
+
+        this.freq = new LFOControllableParam(synth, key + "f", filter.frequency, SND_FREQ_MIN, SND_FREQ_MAX, default_freq);
+        this.q = new LFOControllableParam(synth, key + "q", filter.Q, FILTER_Q_MIN, FILTER_Q_MAX, FILTER_Q_DEF);
+
+    }
+
+    LFOCompatibleBiquadFilter.prototype.update = Effect.prototype.update;
+    LFOCompatibleBiquadFilter.prototype.bypass = Effect.prototype.bypass;
+    LFOCompatibleBiquadFilter.prototype.engage = Effect.prototype.engage;
+
     function Reverb(synth, key, output)
     {
         /*
@@ -1853,7 +1871,7 @@
             prev_filter_left, prev_filter_right,
             i, l, t;
 
-        Effect.call(this, synth, key, null, output, null);
+        Effect.call(this, synth, key, output);
 
         dry_gain.gain.value = 0.7;
         wet_gain.gain.valeu = 0.3;
@@ -2061,7 +2079,7 @@
             ),
             ct = synth.audio_ctx.currentTime;
 
-        Effect.call(this, synth, key, null, output, null);
+        Effect.call(this, synth, key, output);
 
         dry_gain.gain.value = 0.9;
         wet_gain.gain.valeu = 0.5;
@@ -2138,11 +2156,11 @@
     Echo.prototype.bypass = Effect.prototype.bypass;
     Echo.prototype.engage = Effect.prototype.engage;
 
-    function ComplexOscillator(synth, key, output)
-    {
-        var pan, vol_cns,
-            lhp_onoff_key, lfo_highpass_onoff, lfo_highpass_freq, lfo_highpass_q,
-            llp_onoff_key, lfo_lowpass_onoff, lfo_lowpass_freq, lfo_lowpass_q,
+    function ComplexOscillator(
+            synth, key, output, volume_param_target,
+            lfo_highpass_params, lfo_lowpass_params
+    ) {
+        var pan, volume,
             waveform_key, ehp_onoff_key, elp_onoff_key,
             env_highpass_onoff, env_lowpass_onoff,
             i;
@@ -2150,21 +2168,26 @@
         Observable.call(this);
         Observer.call(this);
 
-        vol_cns = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1});
-        vol_cns.offset.value = 0.0;
-
         pan = new StereoPannerNode(synth.audio_ctx);
         pan.connect(output);
 
+        volume = null;
+
+        if (volume_param_target === null) {
+            volume = new GainNode(synth.audio_ctx, {"gain": 1.0});
+            volume_param_target = volume.gain;
+            volume.connect(pan);
+        }
+
         this._key = key;
-        this._vol_cns = vol_cns;
+        this._vol = volume;
         this._pan = pan;
 
         this._waveform_key = waveform_key = key + "_wf";
         this.waveform = new EnumParam(synth, waveform_key, WAVEFORMS, "sine");
         this.waveform.observers.push(this);
 
-        this.volume = new LFOControllableParam(synth, key + "_vl", vol_cns.offset, 0.0, 1.0, 0.5);
+        this.volume = new LFOControllableParam(synth, key + "_vl", volume_param_target, 0.0, 1.0, 0.5);
         this.pan = new LFOControllableParam(synth, key + "_pn", pan.pan, -1.0, 1.0, 0.0);
         this.width = new MIDIControllableParam(synth, key + "_wd", -1.0, 1.0, 0.2);
 
@@ -2210,42 +2233,15 @@
             new MIDIControllableParam(synth, key + "_elq", FILTER_Q_MIN, FILTER_Q_MAX, FILTER_Q_DEF)
         ];
 
-        lfo_highpass_freq = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1});
-        lfo_highpass_q = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1});
-
-        lfo_lowpass_freq = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1});
-        lfo_lowpass_q = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1});
-
-        this._lfo_hp_freq_cns = lfo_highpass_freq;
-        this._lfo_hp_q_cns = lfo_highpass_q;
-
-        this._lfo_lp_freq_cns = lfo_lowpass_freq;
-        this._lfo_lp_q_cns = lfo_lowpass_q;
-
-        lhp_onoff_key = key + "_h_st";
-        this.lfo_highpass_params = [
-            lfo_highpass_onoff = new OnOffParam(synth, lhp_onoff_key),
-            new LFOControllableParam(synth, key + "_hf", lfo_highpass_freq.offset, SND_FREQ_MIN, SND_FREQ_MAX, SND_FREQ_MIN),
-            new LFOControllableParam(synth, key + "_hq", lfo_highpass_q.offset, FILTER_Q_MIN, FILTER_Q_MAX, FILTER_Q_DEF),
-        ];
-
-        llp_onoff_key = key + "_l_st";
-        this.lfo_lowpass_params = [
-            lfo_lowpass_onoff = new OnOffParam(synth, llp_onoff_key),
-            new LFOControllableParam(synth, key + "_lf", lfo_lowpass_freq.offset, SND_FREQ_MIN, SND_FREQ_MAX, SND_FREQ_MAX),
-            new LFOControllableParam(synth, key + "_lq", lfo_lowpass_q.offset, FILTER_Q_MIN, FILTER_Q_MAX, FILTER_Q_DEF)
-        ];
+        env_highpass_onoff.observers.push(this);
+        env_lowpass_onoff.observers.push(this);
 
         this._filter_flags = {};
         this._filter_flags[ehp_onoff_key] = ENV_HP_FLAG;
         this._filter_flags[elp_onoff_key] = ENV_LP_FLAG;
-        this._filter_flags[lhp_onoff_key] = LFO_HP_FLAG;
-        this._filter_flags[llp_onoff_key] = LFO_LP_FLAG;
 
-        env_highpass_onoff.observers.push(this);
-        env_lowpass_onoff.observers.push(this);
-        lfo_highpass_onoff.observers.push(this);
-        lfo_lowpass_onoff.observers.push(this);
+        this.lfo_highpass_params = lfo_highpass_params;
+        this.lfo_lowpass_params = lfo_lowpass_params;
     }
 
     ComplexOscillator.prototype.notify_observers = Observable.prototype.notify_observers;
@@ -2253,63 +2249,30 @@
 
     ComplexOscillator.prototype.start = function (when)
     {
-        this._vol_cns.start(when);
-        this._lfo_hp_freq_cns.start(when);
-        this._lfo_hp_q_cns.start(when);
-        this._lfo_lp_freq_cns.start(when);
-        this._lfo_lp_q_cns.start(when);
     };
 
-    function MIDINoteBasedOscillator(synth, key, poliphony, frequencies, output, carrier_osc, am_vol_cns, fm_vol_cns)
-    {
+    function MIDINoteBasedOscillator(
+            synth, key, poliphony, frequencies, output, volume_param_target,
+            lfo_highpass_params, lfo_lowpass_params
+    ) {
         var notes = [],
             fine_detune,
             i, note;
 
-        if (carrier_osc && carrier_osc._notes.length !== poliphony) {
-            throw (
-                "MIDINoteBasedOscillator error: carrier must have the same poliphony as modulator: "
-                + String(carrier_osc._notes.length) + " != " + String(poliphony)
-            );
-        }
-
-        ComplexOscillator.call(this, synth, key, output);
+        ComplexOscillator.call(
+            this,
+            synth, key, output, volume_param_target,
+            lfo_highpass_params, lfo_lowpass_params
+        );
 
         fine_detune = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1});
         fine_detune.offset.value = 0;
+        this._fine_detune_cns = fine_detune;
 
-        for (i = 0; i < poliphony; ++i) {
-            notes.push(
-                note = new Note(
-                    synth.audio_ctx,
-                    this._vol_cns,
-                    fine_detune,
-                    this._lfo_hp_freq_cns,
-                    this._lfo_hp_q_cns,
-                    this.lfo_highpass_params,
-                    this._lfo_lp_freq_cns,
-                    this._lfo_lp_q_cns,
-                    this.lfo_lowpass_params
-                )
-            );
-            note.output.connect(this._pan);
-
-            if (am_vol_cns !== null) {
-                am_vol_cns.connect(note.am_out.gain);
-            }
-
-            if (fm_vol_cns !== null) {
-                fm_vol_cns.connect(note.fm_out.gain);
-            }
-        }
-
-        this._notes = notes;
         this._frequencies = frequencies;
-        this._last_freq = null;
-        this._mod_mask = 1;
-        this._carrier_osc = carrier_osc;
 
-        this._fine_detune = fine_detune;
+        this._notes = [];
+        this._last_freq = null;
 
         this.velocity_sensitivity = new MIDIControllableParam(synth, key + "_v", 0.0, 1.0, 1.0);
         this.vel_ovsens = new MIDIControllableParam(synth, key + "_vs", 0.0, 1.0, 0.0);
@@ -2355,68 +2318,11 @@
             i, l;
 
         ComplexOscillator.prototype.start.call(this, when);
-        this._fine_detune.start(when);
+
+        this._fine_detune_cns.start(when);
 
         for (i = 0, l = notes.length; i < l; ++i) {
             notes[i].start(when);
-        }
-    };
-
-    /**
-     * 1 = add
-     * 2 = amplitude modulation
-     * 4 = frequency modulation
-     */
-    MIDINoteBasedOscillator.prototype.modulate = function (mask)
-    {
-        var mod_notes = this._notes,
-            old_mask = this._mod_mask,
-            need_add, need_am, need_fm,
-            had_add, had_am, had_fm,
-            carr_notes, mod_note, carr_note,
-            i, l;
-
-        if (this._carrier_osc === null) {
-            throw "No carrier set for this MIDINoteBasedOscillator: " + this._key;
-        }
-
-        this._mod_mask = mask;
-        carr_notes = this._carrier_osc._notes;
-
-        need_add = (0 < (mask & 1));
-        need_am = (0 < (mask & 2));
-        need_fm = (0 < (mask & 4));
-        had_add = (0 < (old_mask & 1));
-        had_am = (0 < (old_mask & 2));
-        had_fm = (0 < (old_mask & 4));
-
-        for (i = 0, l = mod_notes.length; i < l; ++i) {
-            mod_note = mod_notes[i];
-            carr_note = carr_notes[i];
-
-            if (need_add) {
-                if (!had_add) {
-                    mod_note.output.connect(this._pan);
-                }
-            } else if (had_add) {
-                mod_note.output.disconnect();
-            }
-
-            if (need_am) {
-                if (!had_am) {
-                    mod_note.am_out.connect(carr_note.am_in);
-                }
-            } else if (had_am) {
-                mod_note.am_out.disconnect();
-            }
-
-            if (need_fm) {
-                if (!had_fm) {
-                    mod_note.fm_out.connect(carr_note.frequency);
-                }
-            } else if (had_fm) {
-                mod_note.fm_out.disconnect();
-            }
         }
     };
 
@@ -2475,32 +2381,220 @@
         this._notes[note_idx].cancel(when, this.amp_env_params, this.env_highpass_params, this.env_lowpass_params);
     };
 
+    function MIDINoteBasedCarrier(synth, key, poliphony, frequencies, output)
+    {
+        var notes = [],
+            lfo_highpass, lfo_lowpass,
+            note, i;
+
+        lfo_lowpass = new LFOCompatibleBiquadFilter(synth, key + "_l", "lowpass", SND_FREQ_MAX, null);
+        lfo_highpass = new LFOCompatibleBiquadFilter(synth, key + "_h", "highpass", SND_FREQ_MIN, lfo_lowpass.input);
+
+        MIDINoteBasedOscillator.call(
+            this,
+            synth, key, poliphony, frequencies, output, null,
+            [lfo_highpass.onoff, lfo_highpass.freq, lfo_highpass.q],
+            [lfo_lowpass.onoff, lfo_lowpass.freq, lfo_lowpass.q]
+        );
+
+        lfo_lowpass.output = this._vol;
+
+        for (i = 0; i < poliphony; ++i) {
+            notes.push(
+                note = new CarrierNote(synth.audio_ctx, lfo_highpass.input, this._fine_detune_cns)
+            );
+        }
+
+        this._notes = notes;
+    }
+
+    MIDINoteBasedCarrier.prototype.notify_observers = MIDINoteBasedOscillator.prototype.notify_observers;
+    MIDINoteBasedCarrier.prototype.update = MIDINoteBasedOscillator.prototype.update;
+    MIDINoteBasedCarrier.prototype.start = MIDINoteBasedOscillator.prototype.start;
+    MIDINoteBasedCarrier.prototype.trigger_note = MIDINoteBasedOscillator.prototype.trigger_note;
+    MIDINoteBasedCarrier.prototype.stop_note = MIDINoteBasedOscillator.prototype.stop_note;
+    MIDINoteBasedCarrier.prototype.cancel_note = MIDINoteBasedOscillator.prototype.cancel_note;
+
+    function MIDINoteBasedModulator(synth, key, poliphony, frequencies, output, carrier_osc, am_vol_cns, fm_vol_cns)
+    {
+        var notes = [],
+            vol_cns,
+            lfo_highpass_onoff, lfo_highpass_freq, lfo_highpass_q,
+            lfo_lowpass_onoff, lfo_lowpass_freq, lfo_lowpass_q,
+            note, i;
+
+        if (carrier_osc && carrier_osc._notes.length !== poliphony) {
+            throw (
+                "MIDINoteBasedModulator error: carrier must have the same poliphony as modulator: "
+                + String(carrier_osc._notes.length) + " != " + String(poliphony)
+            );
+        }
+
+        vol_cns = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1});
+        vol_cns.offset.value = 0.0;
+        this._vol_cns = vol_cns;
+
+        lfo_highpass_onoff = new OnOffParam(synth, key + "_h_st");
+        lfo_highpass_freq = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1});
+        lfo_highpass_q = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1});
+
+        lfo_lowpass_onoff = new OnOffParam(synth, key + "_l_st");
+        lfo_lowpass_freq = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1});
+        lfo_lowpass_q = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1});
+
+        this._lfo_hp_freq_cns = lfo_highpass_freq;
+        this._lfo_hp_q_cns = lfo_highpass_q;
+
+        this._lfo_lp_freq_cns = lfo_lowpass_freq;
+        this._lfo_lp_q_cns = lfo_lowpass_q;
+
+        lfo_highpass_onoff.observers.push(this);
+        lfo_lowpass_onoff.observers.push(this);
+
+        MIDINoteBasedOscillator.call(
+            this,
+            synth, key, poliphony, frequencies, output, vol_cns.offset,
+            [
+                lfo_highpass_onoff,
+                new LFOControllableParam(synth, key + "_hf", lfo_highpass_freq.offset, SND_FREQ_MIN, SND_FREQ_MAX, SND_FREQ_MIN),
+                new LFOControllableParam(synth, key + "_hq", lfo_highpass_q.offset, FILTER_Q_MIN, FILTER_Q_MAX, FILTER_Q_DEF)
+            ],
+            [
+                lfo_lowpass_onoff,
+                new LFOControllableParam(synth, key + "_lf", lfo_lowpass_freq.offset, SND_FREQ_MIN, SND_FREQ_MAX, SND_FREQ_MAX),
+                new LFOControllableParam(synth, key + "_lq", lfo_lowpass_q.offset, FILTER_Q_MIN, FILTER_Q_MAX, FILTER_Q_DEF)
+            ]
+        );
+
+        this._filter_flags[lfo_highpass_onoff.key] = LFO_HP_FLAG;
+        this._filter_flags[lfo_lowpass_onoff.key] = LFO_LP_FLAG;
+
+        this._mod_mask = 1;
+        this._carrier_osc = carrier_osc;
+
+        for (i = 0; i < poliphony; ++i) {
+            notes.push(
+                note = new ModulatorNote(
+                    synth.audio_ctx,
+                    this._vol_cns,
+                    this._fine_detune_cns,
+                    this._lfo_hp_freq_cns,
+                    this._lfo_hp_q_cns,
+                    this._lfo_lp_freq_cns,
+                    this._lfo_lp_q_cns
+                )
+            );
+            note.output.connect(this._pan);
+
+            am_vol_cns.connect(note.am_out.gain);
+            fm_vol_cns.connect(note.fm_out.gain);
+        }
+
+        this._notes = notes;
+    }
+
+    MIDINoteBasedModulator.prototype.notify_observers = MIDINoteBasedOscillator.prototype.notify_observers;
+    MIDINoteBasedModulator.prototype.update = MIDINoteBasedOscillator.prototype.update;
+    MIDINoteBasedModulator.prototype.trigger_note = MIDINoteBasedOscillator.prototype.trigger_note;
+    MIDINoteBasedModulator.prototype.stop_note = MIDINoteBasedOscillator.prototype.stop_note;
+    MIDINoteBasedModulator.prototype.cancel_note = MIDINoteBasedOscillator.prototype.cancel_note;
+
+    MIDINoteBasedModulator.prototype.start = function (when)
+    {
+        MIDINoteBasedOscillator.prototype.start.call(this, when);
+
+        this._lfo_hp_freq_cns.start(when);
+        this._lfo_hp_q_cns.start(when);
+        this._lfo_lp_freq_cns.start(when);
+        this._lfo_lp_q_cns.start(when);
+        this._vol_cns.start(when);
+    };
+
+    /**
+     * 1 = add
+     * 2 = amplitude modulation
+     * 4 = frequency modulation
+     */
+    MIDINoteBasedModulator.prototype.modulate = function (mask)
+    {
+        var mod_notes = this._notes,
+            old_mask = this._mod_mask,
+            need_add, need_am, need_fm,
+            had_add, had_am, had_fm,
+            carr_notes, mod_note, carr_note,
+            i, l;
+
+        if (this._carrier_osc === null) {
+            throw "No carrier set for this MIDINoteBasedModulator: " + this._key;
+        }
+
+        this._mod_mask = mask;
+        carr_notes = this._carrier_osc._notes;
+
+        need_add = (0 < (mask & 1));
+        need_am = (0 < (mask & 2));
+        need_fm = (0 < (mask & 4));
+        had_add = (0 < (old_mask & 1));
+        had_am = (0 < (old_mask & 2));
+        had_fm = (0 < (old_mask & 4));
+
+        for (i = 0, l = mod_notes.length; i < l; ++i) {
+            mod_note = mod_notes[i];
+            carr_note = carr_notes[i];
+
+            if (need_add) {
+                if (!had_add) {
+                    mod_note.output.connect(this._pan);
+                }
+            } else if (had_add) {
+                mod_note.output.disconnect();
+            }
+
+            if (need_am) {
+                if (!had_am) {
+                    mod_note.am_out.connect(carr_note.am_in);
+                }
+            } else if (had_am) {
+                mod_note.am_out.disconnect();
+            }
+
+            if (need_fm) {
+                if (!had_fm) {
+                    mod_note.fm_out.connect(carr_note.frequency);
+                }
+            } else if (had_fm) {
+                mod_note.fm_out.disconnect();
+            }
+        }
+    };
+
     function Theremin(synth, output)
     {
         var effects = new Effects(synth, "th", output),
-            vol = new GainNode(synth.audio_ctx, {"gain": 1.0}),
+            vol = new GainNode(synth.audio_ctx, {"gain": 0.0}),
+            lfo_lowpass, lfo_highpass,
             note;
 
-        ComplexOscillator.call(this, synth, "th", effects.input);
+        lfo_lowpass = new LFOCompatibleBiquadFilter(synth, "th_l", "lowpass", SND_FREQ_MAX, effects.input);
+        lfo_highpass = new LFOCompatibleBiquadFilter(synth, "th_h", "highpass", SND_FREQ_MIN, lfo_lowpass.input);
 
-        note = new Note(
-            synth.audio_ctx,
-            this._vol_cns,
-            null,
-            this._lfo_hp_freq_cns,
-            this._lfo_hp_q_cns,
-            this.lfo_highpass_params,
-            this._lfo_lp_freq_cns,
-            this._lfo_lp_q_cns,
-            this.lfo_lowpass_params
+        ComplexOscillator.call(
+            this,
+            synth, "th", lfo_highpass.input, null,
+            [lfo_highpass.onoff, lfo_highpass.freq, lfo_highpass.q],
+            [lfo_lowpass.onoff, lfo_lowpass.freq, lfo_lowpass.q]
         );
 
-        note.output.connect(vol);
-        vol.connect(this._pan);
+        note = new Note(synth.audio_ctx, vol);
+
+        vol.gain.value = 0.0;
+        vol.connect(this._vol);
 
         this._audio_ctx = synth.audio_ctx;
         this._note = note;
         this._note_vol = vol;
+        this._lfo_highpass = lfo_highpass;
+        this._lfo_lowpass = lfo_lowpass;
 
         this.effects = effects;
         this.min_freq = new MIDIControllableParam(synth, "th_min", SND_FREQ_MIN, SND_FREQ_MAX, 110);
@@ -2602,21 +2696,10 @@
         );
     };
 
-    function Note(
-            audio_ctx,
-            vol_cns,
-            fine_detune,
-            lfo_hp_freq_cns, lfo_hp_q_cns, lfo_hp_params,
-            lfo_lp_freq_cns, lfo_lp_q_cns, lfo_lp_params
-    ) {
-        var freq_cns = new ConstantSourceNode(audio_ctx, {"channelCount": 1}),
-            osc = new OscillatorNode(audio_ctx, {"channelCount": 1}),
+    function Note(audio_ctx, output)
+    {
+        var osc = new OscillatorNode(audio_ctx, {"channelCount": 1}),
             vel_vol = new GainNode(audio_ctx, {"channelCount": 1}),
-            vol = new GainNode(audio_ctx, {"channelCount": 1}),
-            am_in = new GainNode(audio_ctx, {"channelCount": 1}),
-            am_out = new GainNode(audio_ctx, {"channelCount": 1}),
-            fm_freq = new GainNode(audio_ctx, {"channelCount": 1}),
-            fm_out = new GainNode(audio_ctx, {"channelCount": 1}),
             pan = new StereoPannerNode(audio_ctx, {"channelCount": 2}),
             env_highpass = new BiquadFilterNode(
                 audio_ctx,
@@ -2635,108 +2718,39 @@
                     "frequency": SND_FREQ_MAX,
                     "channelCount": 1
                 }
-            ),
-            lfo_highpass = new BiquadFilterNode(
-                audio_ctx,
-                {
-                    "type": "highpass",
-                    "Q": 0.0,
-                    "frequency": 0.0,
-                    "channelCount": 1
-                }
-            ),
-            lfo_lowpass = new BiquadFilterNode(
-                audio_ctx,
-                {
-                    "type": "lowpass",
-                    "Q": 0.0,
-                    "frequency": 0.0,
-                    "channelCount": 1
-                }
             );
 
-        vol.gain.value = 0.0;
         vel_vol.gain.value = 0.0;
-        am_in.gain.value = 1.0;
-        am_out.gain.value = 0.0;
-        fm_out.gain.value = 0.0;
-        freq_cns.offset.value = 0.0;
         osc.frequency.value = 0.0;
 
-        if (fine_detune !== null) {
-            fine_detune.connect(osc.detune);
+        vel_vol.connect(pan);
+
+        if (output !== null) {
+            pan.connect(output);
         }
 
-        osc.connect(am_in);
-
-        vol_cns.connect(vol.gain);
-
-        vel_vol.connect(vol);
-        vol.connect(pan);
-        vol.connect(am_out);
-        vol.connect(fm_freq);
-
-        freq_cns.connect(osc.frequency);
-        freq_cns.connect(fm_freq.gain);
-        fm_freq.connect(fm_out);
-
-        lfo_highpass.frequency.value = 0.0;
-        lfo_highpass.Q.value = 0.0;
-        lfo_lowpass.frequency.value = 0.0;
-        lfo_lowpass.Q.value = 0.0;
-
-        lfo_hp_freq_cns.connect(lfo_highpass.frequency);
-        lfo_hp_q_cns.connect(lfo_highpass.Q);
-        lfo_lp_freq_cns.connect(lfo_lowpass.frequency);
-        lfo_lp_q_cns.connect(lfo_lowpass.Q);
-
-        this._chains = [
-            [am_in, vel_vol],
-            [am_in, env_highpass, vel_vol],
-            [am_in, env_lowpass, vel_vol],
-            [am_in, env_highpass, env_lowpass, vel_vol],
-
-            [am_in, lfo_highpass, vel_vol],
-            [am_in, env_highpass, lfo_highpass, vel_vol],
-            [am_in, env_lowpass, lfo_highpass, vel_vol],
-            [am_in, env_highpass, env_lowpass, lfo_highpass, vel_vol],
-
-            [am_in, lfo_lowpass, vel_vol],
-            [am_in, env_highpass, lfo_lowpass, vel_vol],
-            [am_in, env_lowpass, lfo_lowpass, vel_vol],
-            [am_in, env_highpass, env_lowpass, lfo_lowpass, vel_vol],
-
-            [am_in, lfo_highpass, lfo_lowpass, vel_vol],
-            [am_in, env_highpass, lfo_highpass, lfo_lowpass, vel_vol],
-            [am_in, env_lowpass, lfo_highpass, lfo_lowpass, vel_vol],
-            [am_in, env_highpass, env_lowpass, lfo_highpass, lfo_lowpass, vel_vol]
-        ];
-        this._chain = 0;
-
-        this._rewire(0);
-
         this._osc = osc;
-        this._vol = vol;
         this._vel_vol = vel_vol;
         this._env_highpass = env_highpass;
         this._env_lowpass = env_lowpass;
-        this._lfo_highpass = lfo_highpass;
-        this._lfo_lowpass = lfo_lowpass;
-        this._am_in = am_in;
-        this._freq_cns = freq_cns;
-        this._fm_freq = fm_freq;
 
         this._amp_sustain_start = null;
         this._amp_sustain_level = null;
         this._ehp_sustain_start = null;
         this._elp_sustain_start = null;
 
-        this.am_in = am_in.gain;
-        this.frequency = freq_cns.offset;
+        this.frequency = osc.frequency;
         this.pan = pan;
-        this.fm_out = fm_out;
-        this.am_out = am_out;
-        this.output = pan;
+
+        this._chains = [
+            [osc, vel_vol],
+            [osc, env_highpass, vel_vol],
+            [osc, env_lowpass, vel_vol],
+            [osc, env_highpass, env_lowpass, vel_vol]
+        ];
+
+        this._chain = 0;
+        this._rewire(0);
     }
 
     Note.prototype._rewire = function (new_chain_idx)
@@ -2761,7 +2775,6 @@
     Note.prototype.start = function (when)
     {
         this._osc.start(when);
-        this._freq_cns.start(when);
     };
 
     Note.prototype.trigger = function (
@@ -2968,6 +2981,170 @@
         }
 
         this._rewire(chain & (0xffff & ~flag));
+    };
+
+    function CarrierNote(audio_ctx, output, fine_detune)
+    {
+        var am_in = new GainNode(audio_ctx, {"channelCount": 1}),
+            vel_vol, env_highpass, env_lowpass;
+
+        Note.call(this, audio_ctx, output, fine_detune);
+
+        am_in.gain.value = 1.0;
+
+        fine_detune.connect(this._osc.detune);
+
+        this._osc.disconnect();
+        this._osc.connect(am_in);
+
+        this._am_in = am_in;
+        this.am_in = am_in.gain;
+
+        vel_vol = this._vel_vol;
+        env_highpass = this._env_highpass;
+        env_lowpass = this._env_lowpass;
+
+        this._chains = [
+            [am_in, vel_vol],
+            [am_in, env_highpass, vel_vol],
+            [am_in, env_lowpass, vel_vol],
+            [am_in, env_highpass, env_lowpass, vel_vol]
+        ];
+        this._rewire(0);
+    }
+
+    CarrierNote.prototype._rewire = Note.prototype._rewire;
+    CarrierNote.prototype.start = Note.prototype.start;
+    CarrierNote.prototype.trigger = Note.prototype.trigger;
+    CarrierNote.prototype._apply_envelope_dahds = Note.prototype._apply_envelope_dahds;
+    CarrierNote.prototype.stop = Note.prototype.stop;
+    CarrierNote.prototype._apply_envelope_r = Note.prototype._apply_envelope_r;
+    CarrierNote.prototype.cancel = Note.prototype.cancel;
+    CarrierNote.prototype.set_waveform = Note.prototype.set_waveform;
+    CarrierNote.prototype.engage_filter = Note.prototype.engage_filter;
+    CarrierNote.prototype.bypass_filter = Note.prototype.bypass_filter;
+
+    function ModulatorNote(
+            audio_ctx, vol_cns, fine_detune,
+            lfo_hp_freq_cns, lfo_hp_q_cns,
+            lfo_lp_freq_cns, lfo_lp_q_cns
+    ) {
+        var vol = new GainNode(audio_ctx, {"channelCount": 1}),
+            freq_cns = new ConstantSourceNode(audio_ctx, {"channelCount": 1}),
+            fm_freq = new GainNode(audio_ctx, {"channelCount": 1}),
+            am_out = new GainNode(audio_ctx, {"channelCount": 1}),
+            fm_out = new GainNode(audio_ctx, {"channelCount": 1}),
+            lfo_highpass = new BiquadFilterNode(
+                audio_ctx,
+                {
+                    "type": "highpass",
+                    "Q": 0.0,
+                    "frequency": 0.0,
+                    "channelCount": 1
+                }
+            ),
+            lfo_lowpass = new BiquadFilterNode(
+                audio_ctx,
+                {
+                    "type": "lowpass",
+                    "Q": 0.0,
+                    "frequency": 0.0,
+                    "channelCount": 1
+                }
+            ),
+            osc, vel_vol, env_highpass, env_lowpass;
+
+        vol.gain.value = 0.0;
+
+        this._vol = vol;
+
+        lfo_highpass.frequency.value = 0.0;
+        lfo_highpass.Q.value = 0.0;
+        lfo_lowpass.frequency.value = 0.0;
+        lfo_lowpass.Q.value = 0.0;
+
+        lfo_hp_freq_cns.connect(lfo_highpass.frequency);
+        lfo_hp_q_cns.connect(lfo_highpass.Q);
+        lfo_lp_freq_cns.connect(lfo_lowpass.frequency);
+        lfo_lp_q_cns.connect(lfo_lowpass.Q);
+
+        Note.call(this, audio_ctx, null, fine_detune);
+
+        fine_detune.connect(this._osc.detune);
+
+        this._lfo_highpass = lfo_highpass;
+        this._lfo_lowpass = lfo_lowpass;
+        this._freq_cns = freq_cns;
+        this._fm_freq = fm_freq;
+
+        this.fm_out = fm_out;
+        this.am_out = am_out;
+        this.output = this.pan;
+
+        am_out.gain.value = 0.0;
+        fm_out.gain.value = 0.0;
+        freq_cns.offset.value = 0.0;
+
+        this.frequency = freq_cns.offset;
+
+        freq_cns.connect(this._osc.frequency);
+        freq_cns.connect(fm_freq.gain);
+        fm_freq.connect(fm_out);
+
+        osc = this._osc;
+        vel_vol = this._vel_vol;
+        env_highpass = this._env_highpass;
+        env_lowpass = this._env_lowpass;
+
+        vol_cns.connect(vol.gain);
+
+        vol.connect(am_out);
+        vol.connect(fm_freq);
+
+        vel_vol.disconnect();
+        vel_vol.connect(vol);
+        vol.connect(this.pan);
+
+        this._chains = [
+            [osc, vel_vol],
+            [osc, env_highpass, vel_vol],
+            [osc, env_lowpass, vel_vol],
+            [osc, env_highpass, env_lowpass, vel_vol],
+
+            [osc, lfo_highpass, vel_vol],
+            [osc, env_highpass, lfo_highpass, vel_vol],
+            [osc, env_lowpass, lfo_highpass, vel_vol],
+            [osc, env_highpass, env_lowpass, lfo_highpass, vel_vol],
+
+            [osc, lfo_lowpass, vel_vol],
+            [osc, env_highpass, lfo_lowpass, vel_vol],
+            [osc, env_lowpass, lfo_lowpass, vel_vol],
+            [osc, env_highpass, env_lowpass, lfo_lowpass, vel_vol],
+
+            [osc, lfo_highpass, lfo_lowpass, vel_vol],
+            [osc, env_highpass, lfo_highpass, lfo_lowpass, vel_vol],
+            [osc, env_lowpass, lfo_highpass, lfo_lowpass, vel_vol],
+            [osc, env_highpass, env_lowpass, lfo_highpass, lfo_lowpass, vel_vol]
+        ];
+        this._chain = 0;
+        this._rewire(0);
+    }
+
+    ModulatorNote.prototype._rewire = Note.prototype._rewire;
+    ModulatorNote.prototype.trigger = Note.prototype.trigger;
+    ModulatorNote.prototype._apply_envelope_dahds = Note.prototype._apply_envelope_dahds;
+    ModulatorNote.prototype.stop = Note.prototype.stop;
+    ModulatorNote.prototype._apply_envelope_r = Note.prototype._apply_envelope_r;
+    ModulatorNote.prototype.cancel = Note.prototype.cancel;
+    ModulatorNote.prototype.set_waveform = Note.prototype.set_waveform;
+    ModulatorNote.prototype.engage_filter = Note.prototype.engage_filter;
+    ModulatorNote.prototype.bypass_filter = Note.prototype.bypass_filter;
+
+    ModulatorNote.prototype.start = function (when)
+    {
+        Note.prototype.start.call(this, when);
+
+        this._freq_cns.start(when);
     };
 
     function Param(synth, key, default_value)
