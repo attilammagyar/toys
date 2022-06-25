@@ -1592,8 +1592,8 @@
 
         this.volume = new LFOControllableParam(synth, key + "_vl", volume.gain, 0.0, 1.0, 0.5);
         this.modulation = new EnumParam(synth, key + "_md", MOD_NAMES, "m1");
-        this.am_volume = new LFOControllableParam(synth, key + "_avl", am_vol.offset, 0.0, 1.0, 0.5);
-        this.fm_volume = new LFOControllableParam(synth, key + "_fvl", fm_vol.offset, 0.0, 100.0, 5.0);
+        this.am_volume = new LFOControllableParam(synth, key + "_avl", am_vol.offset, 0.0, 3.0, 0.5);
+        this.fm_volume = new LFOControllableParam(synth, key + "_fvl", fm_vol.offset, 0.0, 300.0, 5.0);
 
         this.osc_2 = new MIDINoteBasedOscillator(
             synth, key + "_o2", poliphony, frequencies, effects.input, null, null, null
