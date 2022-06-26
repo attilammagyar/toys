@@ -185,15 +185,12 @@ div.param {
   width: 302px;
 }
 
-div.name {
-  width: 290px;
-}
-
 div.virt-controls div.param {
   width: 600px;
 }
 
 div.name {
+  width: 290px;
   font-weight: bold;
   padding-left: 3px;
   cursor: default;
@@ -224,6 +221,7 @@ div.controllers > div.group > div.group {
   width: 310px;
 }
 
+div.custom-waveform > div.name,
 div.seq-scale-container > div.name,
 div.controllers > div.name {
   width: 98%;
