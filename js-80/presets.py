@@ -31,6 +31,7 @@ def main(argv):
                 .replace(".json", "")
                 .replace("_", " ")
                 .title()
+                .replace("Add Am Fm ", "Add + AM + FM ")
         )
 
         with open(preset_file, "r") as f:
@@ -41,12 +42,12 @@ def main(argv):
 
         if " - " in preset_name:
             c += 1
-            switched_preset_id = f"p{c}"
+            swapped_preset_id = f"p{c}"
 
             p1, p2 = preset_name.split(" - ", 1)
-            switched_preset_name = f"{p2} - {p1}"
+            swapped_preset_name = f"{p2} - {p1}"
 
-            switched_preset = {}
+            swapped_preset = {}
 
             for key, (val, ctl) in preset.items():
                 if key.startswith("cmp_"):
@@ -55,10 +56,10 @@ def main(argv):
                     key = "cmp_" + key[5:]
 
                 ctl = ctls.get(ctl, ctl)
-                switched_preset[key] = [val, ctl]
+                swapped_preset[key] = [val, ctl]
 
-            presets[switched_preset_id] = switched_preset
-            preset_names[switched_preset_id] = switched_preset_name
+            presets[swapped_preset_id] = swapped_preset
+            preset_names[swapped_preset_id] = swapped_preset_name
 
     print("preset_names = " + json.dumps(preset_names, indent=4, sort_keys=True) + ";")
     print(
