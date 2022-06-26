@@ -1897,7 +1897,7 @@
         for (i = 0, l = allpass_freqs.length; i < l; ++i) {
             t = allpass_freqs[i];
 
-            if (i & 1) {
+            if (0 < (i & 1)) {
                 filter_left = new BiquadFilterNode(
                     synth.audio_ctx,
                     {"type": "allpass", "Q": 1.0, "frequency": t, "channelCount": 1}
@@ -1933,7 +1933,7 @@
         for (i = 0, l = comb_tunings.length; i < l; ++i) {
             t = comb_tunings[i] / 44100.0;
 
-            if (i & 2) {
+            if (0 < (i & 2)) {
                 filter_left = new LowpassCombFilter(synth, t, damping_freq_cns, damping_gain_cns, feedback_cns);
                 splitter.connect(filter_left.input, 0);
                 filter_left.output.connect(aps_left[0]);
@@ -2402,6 +2402,9 @@
 
         lfo_lowpass.output = this._vol;
 
+        lfo_highpass.bypass();
+        lfo_lowpass.bypass();
+
         for (i = 0; i < poliphony; ++i) {
             notes.push(
                 note = new CarrierNote(synth.audio_ctx, lfo_highpass.input, this._fine_detune_cns)
@@ -2580,6 +2583,9 @@
 
         lfo_lowpass = new LFOCompatibleBiquadFilter(synth, "th_l", "lowpass", SND_FREQ_MAX, effects.input);
         lfo_highpass = new LFOCompatibleBiquadFilter(synth, "th_h", "highpass", SND_FREQ_MIN, lfo_lowpass.input);
+
+        lfo_highpass.bypass();
+        lfo_lowpass.bypass();
 
         ComplexOscillator.call(
             this,
