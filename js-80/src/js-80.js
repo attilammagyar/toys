@@ -516,7 +516,11 @@
                 patch_audio_param(audio_ctx);
             }
 
-            synth_obj = new Synth(audio_ctx);
+            synth_obj = new Synth(
+                audio_ctx,
+                Number($("comp-poliphony").value),
+                Number($("midi-poliphony").value)
+            );
             synth_obj.output.connect(audio_ctx.destination);
 
             restore_patch_from_local_storage();
@@ -733,7 +737,7 @@
     {
     }
 
-    function Synth(audio_ctx)
+    function Synth(audio_ctx, comp_poliphony, midi_poliphony)
     {
         var freqs = [],
             output = new GainNode(audio_ctx, {"gain": 1.0}),
@@ -822,10 +826,10 @@
             ctl.start(ct);
         }
 
-        this.midi_voice = new MIDIVoice(this, freqs, output);
+        this.midi_voice = new Voice(this, "midi", midi_poliphony, freqs, output);
         this.midi_voice.start(ct);
 
-        this.comp_voice = new ComputerVoice(this, freqs, output);
+        this.comp_voice = new Voice(this, "cmp", comp_poliphony, freqs, output);
         this.comp_voice.start(ct);
 
         this.sequencer = new Sequencer(
@@ -1195,6 +1199,7 @@
         this._note_idx = 0;
         this._scheduled_until = 0.0;
         this._beat_idx = 0;
+        this._reserved_notes = 5;
 
         this.update();
         this._reload_next_bank_scale(this.banks["b0"]);
@@ -1224,7 +1229,7 @@
                 this._target_voice = target_voice = (
                     (target_name === "comp") ? this._comp_voice : this._midi_voice
                 );
-                target_voice.start_scheduling();
+                this._reserved_notes = target_voice.start_scheduling();
             }
 
             if (!this._is_active) {
@@ -1291,7 +1296,7 @@
             beats, beat, beat_idx, beat_idx_p1, next_beat_idx, next_beat,
             non_empty_beats, velocity, target_voice, next_beat_non_rests,
             midi_note, base_note_idx, base_note_offset, next_active_bank_key,
-            steps, beat_end, gap_inv, offset, last_note, last_vel, i;
+            steps, beat_end, gap_inv, offset, last_note, last_vel, reserved, i;
 
         if (!this._is_active) {
             return;
@@ -1364,6 +1369,7 @@
         beat_len_with_gap = beat_len * gap_inv;
         arpeggio = beat_len * (Math.round(active_bank.arpeggio.value) / 256.0);
 
+        reserved = this._reserved_notes;
         note_idx = this._note_idx;
         base_note_idx = this._base_note_idx_in_scale;
         base_note_offset = this._base_note_offset;
@@ -1397,7 +1403,7 @@
                 last_note = midi_note;
                 last_vel = velocity;
 
-                if (++note_idx > 4) {
+                if (++note_idx >= reserved) {
                     note_idx = 0;
                 }
             }
@@ -1548,6 +1554,7 @@
         this._am_vol = am_vol;
         this._fm_vol = fm_vol;
         this._mod = MOD_MASKS["m1"];
+        this._poliphony = poliphony;
         this.effects = effects;
 
         this.volume = new LFOControllableParam(synth, key + "_vl", volume.gain, 0.0, 1.0, 0.5);
@@ -1639,16 +1646,17 @@
             sn = 0,
             osc_1 = this.osc_1,
             osc_2 = this.osc_2,
+            reserved = Math.min(5, this._poliphony),
             i, l, n, ct;
 
-        while ((0 < available_notes.length) && (sn < 5)) {
+        while ((0 < available_notes.length) && (sn < reserved)) {
             scheduled_notes.push(available_notes.shift());
             ++sn;
         }
 
         ct = this._audio_ctx.currentTime;
 
-        for (i = 0, l = active_notes.length; (i < l) && (sn < 5); ++i) {
+        for (i = 0, l = active_notes.length; (i < l) && (sn < reserved); ++i) {
             if (active_notes[i] !== null) {
                 n = active_notes[i];
                 osc_1.cancel_note(ct, n);
@@ -1658,6 +1666,8 @@
                 ++sn;
             }
         }
+
+        return sn;
     };
 
     Voice.prototype.stop_scheduling = function ()
@@ -1675,34 +1685,6 @@
             available_notes.push(n);
         }
     };
-
-    function MIDIVoice(synth, frequencies, output)
-    {
-        Voice.call(this, synth, "midi", 8, frequencies, output);
-    }
-
-    MIDIVoice.prototype.update = Voice.prototype.update;
-    MIDIVoice.prototype.start = Voice.prototype.start;
-    MIDIVoice.prototype.trigger_note = Voice.prototype.trigger_note;
-    MIDIVoice.prototype.stop_note = Voice.prototype.stop_note;
-    MIDIVoice.prototype.start_scheduling = Voice.prototype.start_scheduling;
-    MIDIVoice.prototype.stop_scheduling = Voice.prototype.stop_scheduling;
-    MIDIVoice.prototype.schedule_note = Voice.prototype.schedule_note;
-    MIDIVoice.prototype.schedule_stop = Voice.prototype.schedule_stop;
-
-    function ComputerVoice(synth, frequencies, output)
-    {
-        Voice.call(this, synth, "cmp", 6, frequencies, output);
-    }
-
-    ComputerVoice.prototype.update = Voice.prototype.update;
-    ComputerVoice.prototype.start = Voice.prototype.start;
-    ComputerVoice.prototype.trigger_note = Voice.prototype.trigger_note;
-    ComputerVoice.prototype.stop_note = Voice.prototype.stop_note;
-    ComputerVoice.prototype.start_scheduling = Voice.prototype.start_scheduling;
-    ComputerVoice.prototype.stop_scheduling = Voice.prototype.stop_scheduling;
-    ComputerVoice.prototype.schedule_note = Voice.prototype.schedule_note;
-    ComputerVoice.prototype.schedule_stop = Voice.prototype.schedule_stop;
 
     function Effects(synth, key, output)
     {
@@ -3718,8 +3700,8 @@
 
     function SynthUI(synth)
     {
-        var midi_module = new MIDIModuleUI(synth.midi_voice, synth),
-            comp_module = new ComputerModuleUI(synth.comp_voice, synth),
+        var midi_module = new VoiceUI("MIDI module", "color-2 midi-module", synth.midi_voice, synth),
+            comp_module = new VoiceUI("Computer module", "color-1", synth.comp_voice, synth),
             virtual_modules = new UIWidgetGroup("color-7 horizontal"),
             inputs = new UIWidgetGroup("color-7 vertical"),
             voice_modules = new UIWidgetGroup("color-7 horizontal"),
@@ -3811,43 +3793,15 @@
         effects.add(new EchoUI(synth, voice.effects.echo));
         effects.add(new ReverbUI(synth, voice.effects.reverb));
 
-        this.settings = settings;
-        this.osc1 = osc1;
-        this.osc2 = osc2;
-        this.effects = effects;
+        this.add(settings);
+        this.add(osc1);
+        this.add(osc2);
+        this.add(effects);
     }
 
     VoiceUI.prototype.update = NamedUIWidgetGroup.prototype.update;
     VoiceUI.prototype.add = NamedUIWidgetGroup.prototype.add;
     VoiceUI.prototype.set_description = NamedUIWidgetGroup.prototype.set_description;
-
-    function MIDIModuleUI(voice, synth)
-    {
-        VoiceUI.call(this, "MIDI module", "color-2 midi-module", voice, synth);
-
-        this.add(this.settings);
-        this.add(this.osc1);
-        this.add(this.osc2);
-        this.add(this.effects);
-    }
-
-    MIDIModuleUI.prototype.update = VoiceUI.prototype.update;
-    MIDIModuleUI.prototype.add = VoiceUI.prototype.add;
-    MIDIModuleUI.prototype.set_description = VoiceUI.prototype.set_description;
-
-    function ComputerModuleUI(voice, synth)
-    {
-        VoiceUI.call(this, "Computer module", "color-1", voice, synth);
-
-        this.add(this.settings);
-        this.add(this.osc1);
-        this.add(this.osc2);
-        this.add(this.effects);
-    }
-
-    ComputerModuleUI.prototype.update = VoiceUI.prototype.update;
-    ComputerModuleUI.prototype.add = VoiceUI.prototype.add;
-    ComputerModuleUI.prototype.set_description = VoiceUI.prototype.set_description;
 
     function OscillatorUI(name, class_names, complex_osc, synth)
     {

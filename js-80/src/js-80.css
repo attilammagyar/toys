@@ -20,6 +20,12 @@ html, body {
   max-width: 960px;
 }
 
+#intro select {
+  font-size: 18px;
+  width: 60px;
+  text-align: center;
+}
+
 #intro p {
   margin: 12px;
   padding: 6px;

@@ -25,14 +25,52 @@
         Play two flexible, polyphonic, 80's style synthesizers and a sequencer
         with a MIDI keyboard and your computer keyboard, all in a single
         browser window. (Or produce distorted, disconnected clicks and noises if
-        your device doesn't have enough CPU capacity for this app.)
+        your device doesn't have enough CPU capacity for this app. If this
+        happens, try reloading the page and select lower poliphony for the
+        synth modules.)
       </p>
       <p>
         Connect your MIDI keyboard, then hit the button below:
       </p>
-      <p>
+      <div>
+        <label for="comp-poliphony">Computer module poliphony:</label>
+        <select id="comp-poliphony" name="comp-poliphony">
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6" selected="selected">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+          <option value="11">11</option>
+          <option value="12">12</option>
+          <option value="13">13</option>
+          <option value="14">14</option>
+          <option value="15">15</option>
+          <option value="16">16</option>
+        </select>
+      </div>
+      <div>
+        <label for="midi-poliphony">MIDI module poliphony:</label>
+        <select id="midi-poliphony" name="midi-poliphony">
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8" selected="selected">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+          <option value="11">11</option>
+          <option value="12">12</option>
+          <option value="13">13</option>
+          <option value="14">14</option>
+          <option value="15">15</option>
+          <option value="16">16</option>
+        </select>
+      </div>
+      <div>
         <button id="start">Start</button>
-      </p>
+      </div>
       <h2>Known problems and quirks</h2>
       <ul>
         <li>
@@ -148,10 +186,10 @@
           sound on its own.
         </li>
         <li>
-          The <em>MIDI module</em> has 8 notes polyphony and the
-          <em>Computer module</em> has 6. The <em>Sequencer</em> reserves 5
-          notes from the module to which it is assigned, reducing the polyphonic
-          notes of the module that can be played manually while the
+          By default, the <em>MIDI module</em> has 8 notes polyphony and the
+          <em>Computer module</em> has 6. The <em>Sequencer</em> reserves up to
+          5 notes from the module to which it is assigned, reducing the
+          polyphonic notes of the module that can be played manually while the
           <em>Sequencer</em> is turned on.
         </li>
       </ul>
