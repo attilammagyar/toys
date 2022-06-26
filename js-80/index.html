@@ -2581,8 +2581,11 @@ div.color-8 { background-color: #421; }
         /*
         Based on Freeverb: https://ccrma.stanford.edu/~jos/pasp/Freeverb.html
 
-        Changes: only half of the comb filters and allpass filters are used for
-        each channel in order to reduce CPU usage.
+        Changes:
+         * Only half of the comb filters and allpass filters are used for
+           each channel in order to reduce CPU usage.
+         * A high-shelf filter is used instead of a low-pass in order to have
+           more control over damping.
         */
 
         var comb_tunings = [1557.0, 1617.0, 1491.0, 1422.0, 1277.0, 1356.0, 1188.0, 1116.0],
