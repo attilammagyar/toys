@@ -1624,7 +1624,11 @@ div.color-9 { background-color: #410; }
             this.midi_voice,
             this._seq_note_ctl,
             this._seq_vel_ctl,
-            this._seq_prog_ctl
+            this._seq_prog_ctl,
+            this._note_ctl,
+            this._velocity_ctl,
+            this._virt_note_ctl,
+            this._virt_vel_ctl
         );
 
         this.theremin = new Theremin(this, output);
@@ -1926,8 +1930,12 @@ div.color-9 { background-color: #410; }
     {
     };
 
-    function Sequencer(synth, comp_voice, midi_voice, note_ctl, vel_ctl, prog_ctl)
-    {
+    function Sequencer(
+        synth, comp_voice, midi_voice,
+        note_ctl, vel_ctl, prog_ctl,
+        midi_note_ctl, midi_vel_ctl,
+        virt_note_ctl, virt_vel_ctl
+    ) {
         var target = new EnumParam(synth, "sq_trg", {"comp": "Computer module", "midi": "MIDI module"}, "comp"),
             active_bank = new EnumParam(synth, "sq_ab", SEQ_BANKS, "b0"),
             onoff = new OnOffParam(synth, SEQ_ON_OFF_KEY),
@@ -1954,11 +1962,18 @@ div.color-9 { background-color: #410; }
         this._vel_ctl = vel_ctl;
         this._prog_ctl = prog_ctl;
 
+        this._midi_note_ctl = midi_note_ctl;
+        this._midi_vel_ctl = midi_vel_ctl;
+        this._virt_note_ctl = virt_note_ctl;
+        this._virt_vel_ctl = virt_vel_ctl;
+
         this._active_bank = banks["b0"];
         this._active_bank_key = "b0";
         this._next_bank_key = "b0";
         this._target_name = "comp";
         this._target_voice = null;
+        this._target_note_ctl = null;
+        this._target_vel_ctl = null;
         this._stop = false;
         this._is_active = false;
         this._events = [];
@@ -1988,7 +2003,7 @@ div.color-9 { background-color: #410; }
         this._beat_idx = 0;
         this._reserved_notes = 5;
 
-        this.update();
+        this.update(null, null);
         this._reload_next_bank_scale(this.banks["b0"]);
 
         this._interval_length = SEQ_INTERVAL / 1000.0;
@@ -2013,9 +2028,16 @@ div.color-9 { background-color: #410; }
             this._stop = false;
 
             if (target_voice === null) {
-                this._target_voice = target_voice = (
-                    (target_name === "comp") ? this._comp_voice : this._midi_voice
-                );
+                if (target_name === "comp") {
+                    this._target_voice = target_voice = this._comp_voice;
+                    this._target_note_ctl = this._virt_note_ctl;
+                    this._target_vel_ctl = this._virt_vel_ctl;
+                } else {
+                    this._target_voice = target_voice = this._midi_voice;
+                    this._target_note_ctl = this._midi_note_ctl;
+                    this._target_vel_ctl = this._midi_vel_ctl;
+                }
+
                 this._reserved_notes = target_voice.start_scheduling();
             }
 
@@ -2084,6 +2106,7 @@ div.color-9 { background-color: #410; }
             non_empty_beats, velocity, target_voice, next_beat_non_rests,
             midi_note, base_note_idx, base_note_offset, next_active_bank_key,
             steps, beat_end, gap_inv, offset, events, new_events, is_inactive,
+            target_note_ctl, target_vel_ctl,
             note_start, note_ctl, vel_ctl, reserved, i, l, e;
 
         events = this._events;
@@ -2116,6 +2139,8 @@ div.color-9 { background-color: #410; }
         beat_idx = this._beat_idx;
         non_empty_beats = this._non_empty_beats;
         target_voice = this._target_voice;
+        target_note_ctl = this._target_note_ctl;
+        target_vel_ctl = this._target_vel_ctl;
 
         if ((beat_idx < 1) || (non_empty_beats < 1)) {
             if (this._stop) {
@@ -2207,8 +2232,13 @@ div.color-9 { background-color: #410; }
                 target_voice.schedule_note(note_start = scheduled_until + offset, note_idx, midi_note, velocity);
                 target_voice.schedule_stop(beat_end + offset, note_idx);
 
-                new_events.push([note_start, note_ctl, midi_note / 127.0]);
+                midi_note /= 127.0;
+
+                new_events.push([note_start, note_ctl, midi_note]);
                 new_events.push([note_start, vel_ctl, velocity]);
+
+                new_events.push([note_start, target_note_ctl, midi_note]);
+                new_events.push([note_start, target_vel_ctl, velocity]);
 
                 if (++note_idx >= reserved) {
                     note_idx = 0;
@@ -9541,7 +9571,7 @@ div.color-9 { background-color: #410; }
             "cmp_o1_cwf_i9": [0, "none"],
             "cmp_o1_dt": [0, "none"],
             "cmp_o1_ea": [0.001, "none"],
-            "cmp_o1_ed": [2.2845091732283467, "mcs1"],
+            "cmp_o1_ed": [2.187074724409449, "mcs1"],
             "cmp_o1_edl": [0, "none"],
             "cmp_o1_eh": [0, "none"],
             "cmp_o1_ehat": [0.02, "none"],
@@ -9557,11 +9587,11 @@ div.color-9 { background-color: #410; }
             "cmp_o1_ehsf": [20, "none"],
             "cmp_o1_elat": [0.006, "none"],
             "cmp_o1_eldlt": [0, "none"],
-            "cmp_o1_eldt": [2.2845091732283467, "mcs1"],
+            "cmp_o1_eldt": [2.187074724409449, "mcs1"],
             "cmp_o1_elht": [0.2, "none"],
             "cmp_o1_elif": [7405, "none"],
             "cmp_o1_elo": ["on", "none"],
-            "cmp_o1_elpf": [5057.411023622047, "mcs3"],
+            "cmp_o1_elpf": [5223.937007874017, "mcs3"],
             "cmp_o1_elq": [1, "none"],
             "cmp_o1_elrf": [2400, "none"],
             "cmp_o1_elrt": [0.16, "none"],
@@ -9597,7 +9627,7 @@ div.color-9 { background-color: #410; }
             "cmp_o2_cwf_i9": [0, "none"],
             "cmp_o2_dt": [12, "none"],
             "cmp_o2_ea": [0.001, "none"],
-            "cmp_o2_ed": [2.2007155472440942, "mcs2"],
+            "cmp_o2_ed": [2.1066470157480315, "mcs2"],
             "cmp_o2_edl": [0, "none"],
             "cmp_o2_eh": [0, "none"],
             "cmp_o2_ehat": [0.02, "none"],
@@ -9613,11 +9643,11 @@ div.color-9 { background-color: #410; }
             "cmp_o2_ehsf": [20, "none"],
             "cmp_o2_elat": [0.006, "none"],
             "cmp_o2_eldlt": [0, "none"],
-            "cmp_o2_eldt": [2.2007155472440942, "mcs2"],
+            "cmp_o2_eldt": [2.1066470157480315, "mcs2"],
             "cmp_o2_elht": [0.2, "none"],
             "cmp_o2_elif": [7405, "none"],
             "cmp_o2_elo": ["on", "none"],
-            "cmp_o2_elpf": [5057.411023622047, "mcs3"],
+            "cmp_o2_elpf": [5223.937007874017, "mcs3"],
             "cmp_o2_elq": [1, "none"],
             "cmp_o2_elrf": [2400, "none"],
             "cmp_o2_elrt": [0.15, "none"],
@@ -9652,7 +9682,7 @@ div.color-9 { background-color: #410; }
             "cmp_rev_wet": [0.16, "none"],
             "cmp_vl": [0.5, "vrt1"],
             "lfo1_am": [0.07125000000000001, "mcs10"],
-            "lfo1_f": [5.030649212598425, "mcs11"],
+            "lfo1_f": [5.1339749999999995, "mcs11"],
             "lfo1_ma": [1, "none"],
             "lfo1_mi": [0.5, "pitch"],
             "lfo1_rn": [0, "none"],
@@ -9705,7 +9735,7 @@ div.color-9 { background-color: #410; }
             "mcs10_mi": [0.035, "none"],
             "mcs10_rn": [0, "none"],
             "mcs11_am": [1, "none"],
-            "mcs11_in": [0.4881889763779528, "note"],
+            "mcs11_in": [0.5, "note"],
             "mcs11_ma": [0.19, "none"],
             "mcs11_mi": [0.015, "none"],
             "mcs11_rn": [0, "none"],
@@ -9735,47 +9765,47 @@ div.color-9 { background-color: #410; }
             "mcs16_mi": [0, "none"],
             "mcs16_rn": [0, "none"],
             "mcs1_am": [1, "none"],
-            "mcs1_in": [0.4645669291338583, "seqnote"],
+            "mcs1_in": [0.4881889763779528, "vrtnote"],
             "mcs1_ma": [0.005, "none"],
             "mcs1_mi": [0.28, "none"],
             "mcs1_rn": [0, "none"],
             "mcs2_am": [1, "none"],
-            "mcs2_in": [0.4645669291338583, "seqnote"],
+            "mcs2_in": [0.4881889763779528, "vrtnote"],
             "mcs2_ma": [0.0045, "none"],
             "mcs2_mi": [0.27, "none"],
             "mcs2_rn": [0, "none"],
             "mcs3_am": [1, "none"],
-            "mcs3_in": [0.4645669291338583, "seqnote"],
+            "mcs3_in": [0.4881889763779528, "vrtnote"],
             "mcs3_ma": [0.4, "none"],
             "mcs3_mi": [0.08, "none"],
             "mcs3_rn": [0, "none"],
             "mcs4_am": [1, "none"],
-            "mcs4_in": [0.4881889763779528, "note"],
-            "mcs4_ma": [0.13724409448818897, "mcs6"],
-            "mcs4_mi": [0.006905511811023623, "mcs5"],
+            "mcs4_in": [0.5, "note"],
+            "mcs4_ma": [0.1395, "mcs6"],
+            "mcs4_mi": [0.007, "mcs5"],
             "mcs4_rn": [0, "none"],
             "mcs5_am": [1, "none"],
-            "mcs5_in": [0.4881889763779528, "note"],
+            "mcs5_in": [0.5, "note"],
             "mcs5_ma": [0.011, "none"],
             "mcs5_mi": [0.003, "none"],
             "mcs5_rn": [0, "none"],
             "mcs6_am": [1, "none"],
-            "mcs6_in": [0.4881889763779528, "note"],
+            "mcs6_in": [0.5, "note"],
             "mcs6_ma": [0.235, "none"],
             "mcs6_mi": [0.044, "none"],
             "mcs6_rn": [0, "none"],
             "mcs7_am": [1, "none"],
-            "mcs7_in": [0.4881889763779528, "note"],
+            "mcs7_in": [0.5, "note"],
             "mcs7_ma": [0.242, "none"],
             "mcs7_mi": [0.01, "none"],
             "mcs7_rn": [0, "none"],
             "mcs8_am": [1, "none"],
-            "mcs8_in": [0.7007874015748031, "vel"],
+            "mcs8_in": [0.6, "vel"],
             "mcs8_ma": [0.8, "none"],
             "mcs8_mi": [0.55, "none"],
             "mcs8_rn": [0, "none"],
             "mcs9_am": [1, "none"],
-            "mcs9_in": [0.7007874015748031, "vel"],
+            "mcs9_in": [0.6, "vel"],
             "mcs9_ma": [0.6, "none"],
             "mcs9_mi": [0.35, "none"],
             "mcs9_rn": [0, "none"],
@@ -9832,14 +9862,14 @@ div.color-9 { background-color: #410; }
             "midi_o1_elht": [0.3, "none"],
             "midi_o1_elif": [2148, "none"],
             "midi_o1_elo": ["on", "none"],
-            "midi_o1_elpf": [2735.414330708661, "mcs7"],
+            "midi_o1_elpf": [2795.78, "mcs7"],
             "midi_o1_elq": [1, "none"],
             "midi_o1_elrf": [1147, "none"],
             "midi_o1_elrt": [0.1, "none"],
-            "midi_o1_elsf": [1573.8942246884494, "mcs4"],
+            "midi_o1_elsf": [1633.6975000000002, "mcs4"],
             "midi_o1_ep": [1, "none"],
             "midi_o1_er": [0.1, "none"],
-            "midi_o1_es": [0.7251968503937009, "mcs8"],
+            "midi_o1_es": [0.7000000000000001, "mcs8"],
             "midi_o1_fd": [0, "lfo1"],
             "midi_o1_h_st": ["off", "none"],
             "midi_o1_hf": [20, "none"],
@@ -9888,14 +9918,14 @@ div.color-9 { background-color: #410; }
             "midi_o2_elht": [0.3, "none"],
             "midi_o2_elif": [2148, "none"],
             "midi_o2_elo": ["on", "none"],
-            "midi_o2_elpf": [2735.414330708661, "mcs7"],
+            "midi_o2_elpf": [2795.78, "mcs7"],
             "midi_o2_elq": [1, "none"],
             "midi_o2_elrf": [1898, "none"],
             "midi_o2_elrt": [0.1, "none"],
-            "midi_o2_elsf": [1573.8942246884494, "mcs4"],
+            "midi_o2_elsf": [1633.6975000000002, "mcs4"],
             "midi_o2_ep": [1, "none"],
             "midi_o2_er": [0.1, "none"],
-            "midi_o2_es": [0.5251968503937008, "mcs9"],
+            "midi_o2_es": [0.5, "mcs9"],
             "midi_o2_fd": [0, "lfo1"],
             "midi_o2_h_st": ["off", "none"],
             "midi_o2_hf": [20, "none"],
