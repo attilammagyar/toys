@@ -68,7 +68,7 @@
         SEQ_ON_OFF_KEY = "sq_st",
         SEQ_BEATS = 12,
         SEQ_VOICES = 4,
-        SEQ_INTERVAL = 250,
+        SEQ_INTERVAL = 200,
         SEQ_BANKS = {
             "b0": "Bank 1 [1]",
             "b1": "Bank 2 [2]",
@@ -1175,6 +1175,7 @@
         this._target_voice = null;
         this._stop = false;
         this._is_active = false;
+        this._events = [];
 
         this.target = target;
         this.active_bank = active_bank;
@@ -1296,14 +1297,35 @@
             beats, beat, beat_idx, beat_idx_p1, next_beat_idx, next_beat,
             non_empty_beats, velocity, target_voice, next_beat_non_rests,
             midi_note, base_note_idx, base_note_offset, next_active_bank_key,
-            steps, beat_end, gap_inv, offset, last_note, last_vel, reserved, i;
+            steps, beat_end, gap_inv, offset, events, new_events, is_inactive,
+            note_start, note_ctl, vel_ctl, reserved, i, l, e;
 
-        if (!this._is_active) {
+        events = this._events;
+        l = events.length;
+
+        if ((is_inactive = !this._is_active) && (l < 1)) {
             return;
         }
 
-        last_vel = null;
-        last_note = null;
+        ct = this._audio_ctx.currentTime + 0.01;
+        new_events = [];
+
+        for (i = 0; i < l; ++i) {
+            e = events[i];
+
+            if (e[0] <= ct) {
+                e[1].set_value(e[2]);
+            } else {
+                new_events.push(e);
+            }
+        }
+
+        this._events = new_events;
+
+        if (is_inactive) {
+            return;
+        }
+
         active_bank = this._active_bank;
         beat_idx = this._beat_idx;
         non_empty_beats = this._non_empty_beats;
@@ -1343,10 +1365,7 @@
             return;
         }
 
-        scheduled_until = Math.max(
-            ct = (this._audio_ctx.currentTime + 0.01),
-            this._scheduled_until
-        );
+        scheduled_until = Math.max(ct, this._scheduled_until);
         schedule_until = ct + 1.5 * this._interval_length;
         beat_len = 60.0 / (bpm = Math.round(active_bank.tempo.value));
 
@@ -1374,6 +1393,8 @@
         base_note_idx = this._base_note_idx_in_scale;
         base_note_offset = this._base_note_offset;
         beats = this._beats;
+        note_ctl = this._note_ctl;
+        vel_ctl = this._vel_ctl;
 
         beat = beats[beat_idx];
         next_beat = beats[next_beat_idx = (beat_idx_p1 % non_empty_beats)];
@@ -1397,11 +1418,11 @@
 
                 offset = (3 - i) * arpeggio;
 
-                target_voice.schedule_note(scheduled_until + offset, note_idx, midi_note, velocity);
+                target_voice.schedule_note(note_start = scheduled_until + offset, note_idx, midi_note, velocity);
                 target_voice.schedule_stop(beat_end + offset, note_idx);
 
-                last_note = midi_note;
-                last_vel = velocity;
+                new_events.push([note_start, note_ctl, midi_note / 127.0]);
+                new_events.push([note_start, vel_ctl, velocity]);
 
                 if (++note_idx >= reserved) {
                     note_idx = 0;
@@ -1419,14 +1440,6 @@
         this._note_idx = note_idx;
         this._scheduled_until = scheduled_until;
         this._beat_idx = beat_idx;
-
-        if (last_note !== null) {
-            this._note_ctl.set_value(last_note / 127);
-        }
-
-        if (last_vel !== null) {
-            this._vel_ctl.set_value(last_vel);
-        }
     };
 
     Sequencer.prototype._reload = function (active_bank)
@@ -8742,7 +8755,7 @@
             "cmp_o1_cwf_i9": [0, "none"],
             "cmp_o1_dt": [0, "none"],
             "cmp_o1_ea": [0.001, "none"],
-            "cmp_o1_ed": [2.187074724409449, "mcs1"],
+            "cmp_o1_ed": [2.2845091732283467, "mcs1"],
             "cmp_o1_edl": [0, "none"],
             "cmp_o1_eh": [0, "none"],
             "cmp_o1_ehat": [0.02, "none"],
@@ -8758,11 +8771,11 @@
             "cmp_o1_ehsf": [20, "none"],
             "cmp_o1_elat": [0.006, "none"],
             "cmp_o1_eldlt": [0, "none"],
-            "cmp_o1_eldt": [2.187074724409449, "mcs1"],
+            "cmp_o1_eldt": [2.2845091732283467, "mcs1"],
             "cmp_o1_elht": [0.2, "none"],
             "cmp_o1_elif": [7405, "none"],
             "cmp_o1_elo": ["on", "none"],
-            "cmp_o1_elpf": [5223.937007874017, "mcs3"],
+            "cmp_o1_elpf": [5057.411023622047, "mcs3"],
             "cmp_o1_elq": [1, "none"],
             "cmp_o1_elrf": [2400, "none"],
             "cmp_o1_elrt": [0.16, "none"],
@@ -8798,7 +8811,7 @@
             "cmp_o2_cwf_i9": [0, "none"],
             "cmp_o2_dt": [12, "none"],
             "cmp_o2_ea": [0.001, "none"],
-            "cmp_o2_ed": [2.1066470157480315, "mcs2"],
+            "cmp_o2_ed": [2.2007155472440942, "mcs2"],
             "cmp_o2_edl": [0, "none"],
             "cmp_o2_eh": [0, "none"],
             "cmp_o2_ehat": [0.02, "none"],
@@ -8814,11 +8827,11 @@
             "cmp_o2_ehsf": [20, "none"],
             "cmp_o2_elat": [0.006, "none"],
             "cmp_o2_eldlt": [0, "none"],
-            "cmp_o2_eldt": [2.1066470157480315, "mcs2"],
+            "cmp_o2_eldt": [2.2007155472440942, "mcs2"],
             "cmp_o2_elht": [0.2, "none"],
             "cmp_o2_elif": [7405, "none"],
             "cmp_o2_elo": ["on", "none"],
-            "cmp_o2_elpf": [5223.937007874017, "mcs3"],
+            "cmp_o2_elpf": [5057.411023622047, "mcs3"],
             "cmp_o2_elq": [1, "none"],
             "cmp_o2_elrf": [2400, "none"],
             "cmp_o2_elrt": [0.15, "none"],
@@ -8936,17 +8949,17 @@
             "mcs16_mi": [0, "none"],
             "mcs16_rn": [0, "none"],
             "mcs1_am": [1, "none"],
-            "mcs1_in": [0.4881889763779528, "vrtnote"],
+            "mcs1_in": [0.4645669291338583, "seqnote"],
             "mcs1_ma": [0.005, "none"],
             "mcs1_mi": [0.28, "none"],
             "mcs1_rn": [0, "none"],
             "mcs2_am": [1, "none"],
-            "mcs2_in": [0.4881889763779528, "vrtnote"],
+            "mcs2_in": [0.4645669291338583, "seqnote"],
             "mcs2_ma": [0.0045, "none"],
             "mcs2_mi": [0.27, "none"],
             "mcs2_rn": [0, "none"],
             "mcs3_am": [1, "none"],
-            "mcs3_in": [0.4881889763779528, "vrtnote"],
+            "mcs3_in": [0.4645669291338583, "seqnote"],
             "mcs3_ma": [0.4, "none"],
             "mcs3_mi": [0.08, "none"],
             "mcs3_rn": [0, "none"],
@@ -8971,12 +8984,12 @@
             "mcs7_mi": [0.01, "none"],
             "mcs7_rn": [0, "none"],
             "mcs8_am": [1, "none"],
-            "mcs8_in": [0.8031496062992126, "vel"],
+            "mcs8_in": [0.7007874015748031, "vel"],
             "mcs8_ma": [0.8, "none"],
             "mcs8_mi": [0.55, "none"],
             "mcs8_rn": [0, "none"],
             "mcs9_am": [1, "none"],
-            "mcs9_in": [0.8031496062992126, "vel"],
+            "mcs9_in": [0.7007874015748031, "vel"],
             "mcs9_ma": [0.6, "none"],
             "mcs9_mi": [0.35, "none"],
             "mcs9_rn": [0, "none"],
@@ -9040,7 +9053,7 @@
             "midi_o1_elsf": [1573.8942246884494, "mcs4"],
             "midi_o1_ep": [1, "none"],
             "midi_o1_er": [0.1, "none"],
-            "midi_o1_es": [0.7507874015748032, "mcs8"],
+            "midi_o1_es": [0.7251968503937009, "mcs8"],
             "midi_o1_fd": [0, "lfo1"],
             "midi_o1_h_st": ["off", "none"],
             "midi_o1_hf": [20, "none"],
@@ -9096,7 +9109,7 @@
             "midi_o2_elsf": [1573.8942246884494, "mcs4"],
             "midi_o2_ep": [1, "none"],
             "midi_o2_er": [0.1, "none"],
-            "midi_o2_es": [0.5507874015748031, "mcs9"],
+            "midi_o2_es": [0.5251968503937008, "mcs9"],
             "midi_o2_fd": [0, "lfo1"],
             "midi_o2_h_st": ["off", "none"],
             "midi_o2_hf": [20, "none"],
