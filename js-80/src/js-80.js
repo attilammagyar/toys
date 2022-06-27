@@ -3948,6 +3948,7 @@
         var params = new UIWidgetGroup("vertical"),
             amp_env = new NamedUIWidgetGroup("Amplitude envelope", "vertical"),
             custom_waveform = new CustomWaveParamsUI("", complex_osc.custom_waveform),
+            filters = new NamedUIWidgetGroup("Filters", "filters horizontal"),
             env_highpass = new EnvelopeHighpassUI(complex_osc, synth),
             env_lowpass = new EnvelopeLowpassUI(complex_osc, synth),
             lfo_highpass = new LFOCompatibleHighpassUI("", complex_osc.lfo_highpass_params, synth),
@@ -3974,14 +3975,16 @@
         amp_env.add(new FaderUI("SUS", "Sustain level", "%", 1000, 10, MIDI_CONTROLS, complex_osc.amp_env_params[5], synth));
         amp_env.add(new FaderUI("REL", "Release time", "s", 1000, 1000, MIDI_CONTROLS, complex_osc.amp_env_params[6], synth));
 
+        filters.add(env_highpass);
+        filters.add(env_lowpass);
+        filters.add(lfo_highpass);
+        filters.add(lfo_lowpass);
+
         this.add(wav);
         this.add(params);
         this.add(amp_env);
         this.add(custom_waveform)
-        this.add(env_highpass);
-        this.add(env_lowpass);
-        this.add(lfo_highpass);
-        this.add(lfo_lowpass);
+        this.add(filters);
     }
 
     OscillatorUI.prototype.update = NamedUIWidgetGroup.prototype.update;
@@ -4825,6 +4828,7 @@
     {
         var touch_area = document.createElement("div"),
             params = new UIWidgetGroup("horizontal"),
+            filters = new NamedUIWidgetGroup("Filters", "filters horizontal"),
             custom_waveform = new CustomWaveParamsUI("", theremin.custom_waveform),
             env_highpass = new EnvelopeHighpassUI(theremin, synth),
             env_lowpass = new EnvelopeLowpassUI(theremin, synth),
@@ -4860,6 +4864,11 @@
         params.add(new FaderUI("ATK", "Attack time", "s", 1000, 1000, MIDI_CONTROLS, theremin.amp_env_params[1], synth));
         params.add(new FaderUI("REL", "Release time", "s", 1000, 1000, MIDI_CONTROLS, theremin.amp_env_params[6], synth));
 
+        filters.add(env_highpass);
+        filters.add(env_lowpass);
+        filters.add(lfo_highpass);
+        filters.add(lfo_lowpass);
+
         effects.add(new DistortionUI("Overdrive", "vertical color-8", theremin.effects.overdrive, synth));
         effects.add(new DistortionUI("Distortion", "vertical color-9", theremin.effects.distortion, synth));
         effects.add(new ShelfFilterUI("Low shelf", "vertical color-4", theremin.effects.low_shelf, synth));
@@ -4873,10 +4882,7 @@
 
         this.add(params);
         this.add(custom_waveform);
-        this.add(env_highpass);
-        this.add(env_lowpass);
-        this.add(lfo_highpass);
-        this.add(lfo_lowpass);
+        this.add(filters);
         this.add(effects);
     }
 

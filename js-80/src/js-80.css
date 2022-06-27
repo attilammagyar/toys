@@ -227,6 +227,7 @@ div.controllers > div.group > div.group {
   width: 310px;
 }
 
+div.filters > div.name,
 div.custom-waveform > div.name,
 div.seq-scale-container > div.name,
 div.controllers > div.name {
