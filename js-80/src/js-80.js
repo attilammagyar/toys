@@ -746,7 +746,9 @@
         Observable.call(this);
         Observer.call(this);
 
-        this.params = [];
+        this._params = [];
+        this._param_keys = {};
+
         this.audio_ctx = audio_ctx;
         this.virt_detune = new NumParam(this, "vrt_dt", -48, 48, 0);
         this.virt_ctl_params = [
@@ -861,6 +863,18 @@
         this.midi_inputs = [];
     }
 
+    Synth.prototype.register_param = function (param)
+    {
+        var key;
+
+        if (this._param_keys.hasOwnProperty(key = param.key)) {
+            throw "Programming error: duplicate parameter key: " + param.key;
+        }
+
+        this._params.push(param);
+        this._param_keys[key] = true;
+    };
+
     Synth.prototype.update = function (observable, arg)
     {
         this._comp_keyboard_target = this.comp_keyboard_target.value;
@@ -889,7 +903,7 @@
     Synth.prototype.export_patch = function ()
     {
         var result = {},
-            params = this.params,
+            params = this._params,
             i, l, param;
 
         for (i = 0, l = params.length; i < l; ++i) {
@@ -902,7 +916,7 @@
 
     Synth.prototype.import_patch = function (exported)
     {
-        var params = this.params,
+        var params = this._params,
             i, l, param, key, t, v, c, m;
 
         for (i = 0, l = params.length; i < l; ++i) {
@@ -3320,7 +3334,7 @@
         this.value = default_value;
         this.controller = "none";
 
-        synth.params.push(this);
+        synth.register_param(this);
     }
 
     Param.prototype.notify_observers = Observable.prototype.notify_observers;
