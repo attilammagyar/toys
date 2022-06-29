@@ -146,11 +146,10 @@ div.group {
   align-content: center;
   align-self: flex-start;
   font-size: 14px;
-  border: solid 3px black;
+  border: solid 1px black;
   border-radius: 5px;
   padding: 2px;
   margin: 1px auto;
-  box-shadow: inset 0 0 3px 3px #123;
 }
 
 div.group.horizontal {
@@ -163,20 +162,6 @@ div.group.vertical {
 
 div.module {
   width: 640px;
-}
-
-div.group > div.group,
-div.group > div.group > div.group{
-  border: solid 2px black;
-  box-shadow: inset 0 0 2px 2px #123;
-}
-
-div.group > div.group > div.group > div.group {
-  border: solid 1px black;
-  box-shadow: inset 0 0 1px 1px #123;
-}
-
-div.module > div.group {
   margin: 1px;
 }
 
@@ -196,14 +181,15 @@ div.virt-controls div.param {
 }
 
 div.name {
-  width: 290px;
   font-weight: bold;
   padding-left: 3px;
   cursor: default;
+  min-width: 60%;
 }
 
-div.oscillator > div.name {
-  width: 220px;
+div.lfo div.name {
+  width: 70px;
+  min-width: auto;
 }
 
 div.description {
@@ -225,22 +211,6 @@ div.waveform-selector {
 
 div.controllers > div.group > div.group {
   width: 310px;
-}
-
-div.filters > div.name,
-div.custom-waveform > div.name,
-div.seq-scale-container > div.name,
-div.controllers > div.name {
-  width: 98%;
-}
-
-div.controllers div.lfo div.name {
-  width: 70px;
-}
-
-div.sequencer > div.name,
-div.effects > div.name {
-  width: 600px;
 }
 
 input.fader {
@@ -346,10 +316,6 @@ div.onoff span {
   font-weight: normal;
 }
 
-div.virt-controls div.name {
-  width: 99%;
-}
-
 div.virt-keyboard {
   display: flex;
   flex-wrap: wrap;
@@ -404,6 +370,10 @@ div.param.wide label {
   width: 160px;
   text-align: left;
   padding-left: 8px;
+}
+
+div.seq-scale-container > div.name {
+  width: 98%;
 }
 
 div.seq-bank {
