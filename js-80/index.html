@@ -3342,7 +3342,7 @@ div.color-9 { background-color: #410; }
 
         for (i = 0; i < poliphony; ++i) {
             notes.push(
-                note = new CarrierNote(synth.audio_ctx, lfo_highpass.input, this._fine_detune_cns)
+                note = new CarrierNote(synth, lfo_highpass.input, this._fine_detune_cns)
             );
         }
 
@@ -3416,7 +3416,7 @@ div.color-9 { background-color: #410; }
         for (i = 0; i < poliphony; ++i) {
             notes.push(
                 note = new ModulatorNote(
-                    synth.audio_ctx,
+                    synth,
                     this._vol_cns,
                     this._fine_detune_cns,
                     this._lfo_hp_freq_cns,
@@ -3529,7 +3529,7 @@ div.color-9 { background-color: #410; }
             [lfo_lowpass.onoff, lfo_lowpass.freq, lfo_lowpass.q]
         );
 
-        note = new Note(synth.audio_ctx, vol);
+        note = new Note(synth, vol);
 
         vol.gain.value = 0.0;
         vol.connect(this._vol);
@@ -3649,13 +3649,13 @@ div.color-9 { background-color: #410; }
         );
     };
 
-    function Note(audio_ctx, output)
+    function Note(synth, output)
     {
-        var osc = new OscillatorNode(audio_ctx, {"channelCount": 1}),
-            vel_vol = new GainNode(audio_ctx, {"channelCount": 1}),
-            pan = new StereoPannerNode(audio_ctx, {"channelCount": 2}),
+        var osc = new OscillatorNode(synth.audio_ctx, {"channelCount": 1}),
+            vel_vol = new GainNode(synth.audio_ctx, {"channelCount": 1}),
+            pan = new StereoPannerNode(synth.audio_ctx, {"channelCount": 2}),
             env_highpass = new BiquadFilterNode(
-                audio_ctx,
+                synth.audio_ctx,
                 {
                     "type": "highpass",
                     "Q": FILTER_Q_DEF,
@@ -3665,7 +3665,7 @@ div.color-9 { background-color: #410; }
                 }
             ),
             env_lowpass = new BiquadFilterNode(
-                audio_ctx,
+                synth.audio_ctx,
                 {
                     "type": "lowpass",
                     "Q": FILTER_Q_DEF,
@@ -3689,9 +3689,6 @@ div.color-9 { background-color: #410; }
         this._env_highpass = env_highpass;
         this._env_lowpass = env_lowpass;
 
-        this._waveform = null;
-        this._periodic_wave = null;
-
         this._amp_sustain_start = null;
         this._amp_sustain_level = null;
         this._ehp_sustain_start = null;
@@ -3700,34 +3697,42 @@ div.color-9 { background-color: #410; }
         this.frequency = osc.frequency;
         this.pan = pan;
 
+        this._chain_mask = 0;
+        this._chain_in = osc;
         this._chains = [
-            [osc, vel_vol],
-            [osc, env_highpass, vel_vol],
-            [osc, env_lowpass, vel_vol],
-            [osc, env_highpass, env_lowpass, vel_vol]
+            [vel_vol],
+            [env_highpass, vel_vol],
+            [env_lowpass, vel_vol],
+            [env_highpass, env_lowpass, vel_vol]
         ];
+        this._chain = this._chains[0];
 
-        this._chain = 0;
         this._rewire(0);
     }
 
-    Note.prototype._rewire = function (new_chain_idx)
+    Note.prototype._rewire = function (new_chain_mask)
     {
         var chains = this._chains,
-            old_chain, new_chain, i, l, e;
+            chain_in = this._chain_in,
+            old_chain = this._chain,
+            new_chain, i, l, e;
 
-        old_chain = chains[this._chain];
-        new_chain = chains[new_chain_idx];
+        new_chain = chains[new_chain_mask];
+
+        chain_in.disconnect();
 
         for (i = 0, l = old_chain.length - 1; i < l; ++i) {
             old_chain[i].disconnect();
         }
 
+        chain_in.connect(new_chain[0]);
+
         for (i = 0, l = new_chain.length - 1; i < l; ++i) {
             new_chain[i].connect(new_chain[i + 1]);
         }
 
-        this._chain = new_chain_idx;
+        this._chain_mask = new_chain_mask;
+        this._chain = new_chain;
     };
 
     Note.prototype.start = function (when)
@@ -3745,7 +3750,7 @@ div.color-9 { background-color: #410; }
             lq = this._env_lowpass.Q,
             f = this.frequency,
             p = this.pan.pan,
-            chain = this._chain;
+            chain_mask = this._chain_mask;
 
         f.cancelAndHoldAtTime(when);
 
@@ -3778,7 +3783,7 @@ div.color-9 { background-color: #410; }
             this._amp_sustain_level = amp_env_params[5].value * velocity
         );
 
-        if (0 < (chain & 1)) {
+        if (0 < (chain_mask & 1)) {
             this._ehp_sustain_start = this._apply_envelope_dahds(
                 this._env_highpass.frequency,
                 now,
@@ -3793,7 +3798,7 @@ div.color-9 { background-color: #410; }
             );
         }
 
-        if (0 < (chain & 2)) {
+        if (0 < (chain_mask & 2)) {
             this._elp_sustain_start = this._apply_envelope_dahds(
                 this._env_lowpass.frequency,
                 now,
@@ -3832,7 +3837,7 @@ div.color-9 { background-color: #410; }
 
     Note.prototype.stop = function (when, amp_env_params, env_highpass_params, env_lowpass_params)
     {
-        var chain = this._chain;
+        var chain_mask = this._chain_mask;
 
         this._apply_envelope_r(
             this._vel_vol.gain,
@@ -3843,7 +3848,7 @@ div.color-9 { background-color: #410; }
             0.0
         );
 
-        if (0 < (chain & 1)) {
+        if (0 < (chain_mask & 1)) {
             this._apply_envelope_r(
                 this._env_highpass.frequency,
                 when,
@@ -3854,7 +3859,7 @@ div.color-9 { background-color: #410; }
             );
         }
 
-        if (0 < (chain & 2)) {
+        if (0 < (chain_mask & 2)) {
             this._apply_envelope_r(
                 this._env_lowpass.frequency,
                 when,
@@ -3880,7 +3885,7 @@ div.color-9 { background-color: #410; }
 
     Note.prototype.cancel = function (when, amp_env_params, env_highpass_params, env_lowpass_params)
     {
-        var chain = this._chain;
+        var chain_mask = this._chain_mask;
 
         this._apply_envelope_r(
             this._vel_vol.gain,
@@ -3891,7 +3896,7 @@ div.color-9 { background-color: #410; }
             0.0
         );
 
-        if (0 < (chain & 1)) {
+        if (0 < (chain_mask & 1)) {
             this._apply_envelope_r(
                 this._env_highpass.frequency,
                 when,
@@ -3902,7 +3907,7 @@ div.color-9 { background-color: #410; }
             );
         }
 
-        if (0 < (chain & 2)) {
+        if (0 < (chain_mask & 2)) {
             this._apply_envelope_r(
                 this._env_lowpass.frequency,
                 when,
@@ -3917,96 +3922,120 @@ div.color-9 { background-color: #410; }
     Note.prototype.set_waveform = function (new_waveform)
     {
         this._osc.type = this._waveform = new_waveform;
-        this._periodic_wave = null;
     };
 
     Note.prototype.set_custom_waveform = function (periodic_wave)
     {
         this._osc.setPeriodicWave(this._periodic_wave = periodic_wave);
-        this._waveform = null;
     };
 
     Note.prototype.engage_filter = function (flag)
     {
-        var chain = this._chain;
+        var chain_mask = this._chain_mask;
 
-        if (0 < (chain & flag)) {
+        if (0 < (chain_mask & flag)) {
             return;
         }
 
-        this._rewire(chain | flag);
+        this._rewire(chain_mask | flag);
     };
 
     Note.prototype.bypass_filter = function (flag)
     {
-        var chain = this._chain;
+        var chain_mask = this._chain_mask;
 
-        if (1 > (chain & flag)) {
+        if (1 > (chain_mask & flag)) {
             return;
         }
 
-        this._rewire(chain & (0xffff & ~flag));
+        this._rewire(chain_mask & (0xffff & ~flag));
     };
 
-    function CarrierNote(audio_ctx, output, fine_detune)
+    function ZeroPhaseNote(synth, output, fine_detune)
     {
-        var am_in = new GainNode(audio_ctx, {"channelCount": 1}),
-            freq_cns = new ConstantSourceNode(audio_ctx, {"channelCount": 1}),
-            vel_vol, env_highpass, env_lowpass;
+        var freq_cns = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1});
 
-        Note.call(this, audio_ctx, output);
-
-        this._audio_ctx = audio_ctx;
+        Note.call(this, synth, output);
 
         freq_cns.offset.value = 0.0;
-        freq_cns.connect(this._osc.frequency);
-
-        this._freq_cns = freq_cns;
-        this.frequency = freq_cns.offset;
-
-        am_in.gain.value = 1.0;
-
-        fine_detune.connect(this._osc.detune);
-        this._fine_detune = fine_detune;
 
         this._osc.disconnect();
-        this._osc.connect(am_in);
+        this._osc = null;
 
-        this._am_in = am_in;
-        this.am_in = am_in.gain;
+        this._audio_ctx = synth.audio_ctx;
+        this._synth = synth;
+        this._fine_detune = fine_detune;
+        this._freq_cns = freq_cns;
 
-        vel_vol = this._vel_vol;
-        env_highpass = this._env_highpass;
-        env_lowpass = this._env_lowpass;
+        this._waveform = null;
+        this._periodic_wave = null;
 
-        this._chains = [
-            [am_in, vel_vol],
-            [am_in, env_highpass, vel_vol],
-            [am_in, env_lowpass, vel_vol],
-            [am_in, env_highpass, env_lowpass, vel_vol]
-        ];
-        this._rewire(0);
+        this.frequency = freq_cns.offset;
     }
 
-    CarrierNote.prototype.start = function (when)
-    {
-        Note.prototype.start.call(this, when);
+    ZeroPhaseNote.prototype._rewire = Note.prototype._rewire;
+    ZeroPhaseNote.prototype._apply_envelope_dahds = Note.prototype._apply_envelope_dahds;
+    ZeroPhaseNote.prototype._apply_envelope_r = Note.prototype._apply_envelope_r;
+    ZeroPhaseNote.prototype.engage_filter = Note.prototype.engage_filter;
+    ZeroPhaseNote.prototype.bypass_filter = Note.prototype.bypass_filter;
+    ZeroPhaseNote.prototype.trigger = Note.prototype.trigger;
 
+    ZeroPhaseNote.prototype.set_waveform = function (new_waveform)
+    {
+        var osc = this._osc;
+
+        if (osc !== null) {
+            osc.type = new_waveform;
+        }
+
+        this._waveform = new_waveform;
+        this._periodic_wave = null;
+    };
+
+    ZeroPhaseNote.prototype.set_custom_waveform = function (periodic_wave)
+    {
+        var osc = this._osc;
+
+        if (osc !== null) {
+            osc.setPeriodicWave(periodic_wave);
+        }
+
+        this._periodic_wave = periodic_wave;
+        this._waveform = null;
+    };
+
+    ZeroPhaseNote.prototype.start = function (when)
+    {
         this._freq_cns.start(when);
     };
 
-    CarrierNote.prototype.trigger = function (
-            now, when, freq, velocity, pan,
-            prt_start_freq, prt_time,
-            amp_env_params, env_highpass_params, env_lowpass_params
-    ) {
+    ZeroPhaseNote.prototype.stop = function (when, amp_env_params, env_highpass_params, env_lowpass_params)
+    {
+        Note.prototype.stop.call(this, when, amp_env_params, env_highpass_params, env_lowpass_params);
+
+        this._osc.stop(when + amp_env_params[6].value);
+    };
+
+    Note.prototype.cancel = function (when, amp_env_params, env_highpass_params, env_lowpass_params)
+    {
+        Note.prototype.cancel.call(this, when, amp_env_params, env_highpass_params, env_lowpass_params);
+
+        this._osc.stop(when);
+    };
+
+    ZeroPhaseNote.prototype._replace_oscillator = function (when, osc_connection)
+    {
         var osc = this._osc,
             fine_detune = this._fine_detune,
+            freq_cns = this._freq_cns,
             waveform = this._waveform;
 
-        fine_detune.disconnect(osc.detune);
-        osc.disconnect();
-        osc.stop(when);
+        if (osc !== null) {
+            freq_cns.disconnect(osc.frequency);
+            fine_detune.disconnect(osc.detune);
+            osc.disconnect();
+            osc.stop(when);
+        }
 
         this._osc = osc = new OscillatorNode(this._audio_ctx, {"channelCount": 1});
 
@@ -4017,14 +4046,50 @@ div.color-9 { background-color: #410; }
         }
 
         osc.frequency.value = 0.0;
-        osc.connect(this._am_in);
+        osc.connect(osc_connection);
 
+        freq_cns.connect(osc.frequency);
         fine_detune.connect(osc.detune);
-        this._freq_cns.connect(osc.frequency);
 
         osc.start(when);
+    };
 
-        Note.prototype.trigger.call(
+    function CarrierNote(synth, output, fine_detune)
+    {
+        var am_in = new GainNode(synth.audio_ctx, {"channelCount": 1});
+
+        ZeroPhaseNote.call(this, synth, output, fine_detune);
+
+        am_in.gain.value = 1.0;
+
+        this._am_in = am_in;
+        this._chain_in = am_in;
+
+        this._rewire(0);
+
+        this.am_in = am_in.gain;
+    }
+
+    CarrierNote.prototype._rewire = ZeroPhaseNote.prototype._rewire;
+    CarrierNote.prototype._apply_envelope_dahds = ZeroPhaseNote.prototype._apply_envelope_dahds;
+    CarrierNote.prototype.stop = ZeroPhaseNote.prototype.stop;
+    CarrierNote.prototype._apply_envelope_r = ZeroPhaseNote.prototype._apply_envelope_r;
+    CarrierNote.prototype.cancel = ZeroPhaseNote.prototype.cancel;
+    CarrierNote.prototype.set_waveform = ZeroPhaseNote.prototype.set_waveform;
+    CarrierNote.prototype.set_custom_waveform = ZeroPhaseNote.prototype.set_custom_waveform;
+    CarrierNote.prototype.engage_filter = ZeroPhaseNote.prototype.engage_filter;
+    CarrierNote.prototype.bypass_filter = ZeroPhaseNote.prototype.bypass_filter;
+    CarrierNote.prototype.start = ZeroPhaseNote.prototype.start;
+    CarrierNote.prototype._replace_oscillator = ZeroPhaseNote.prototype._replace_oscillator;
+
+    CarrierNote.prototype.trigger = function (
+            now, when, freq, velocity, pan,
+            prt_start_freq, prt_time,
+            amp_env_params, env_highpass_params, env_lowpass_params
+    ) {
+        this._replace_oscillator(when, this._am_in);
+
+        ZeroPhaseNote.prototype.trigger.call(
             this,
             now, when, freq, velocity, pan,
             prt_start_freq, prt_time,
@@ -4032,27 +4097,17 @@ div.color-9 { background-color: #410; }
         );
     };
 
-    CarrierNote.prototype._rewire = Note.prototype._rewire;
-    CarrierNote.prototype._apply_envelope_dahds = Note.prototype._apply_envelope_dahds;
-    CarrierNote.prototype.stop = Note.prototype.stop;
-    CarrierNote.prototype._apply_envelope_r = Note.prototype._apply_envelope_r;
-    CarrierNote.prototype.cancel = Note.prototype.cancel;
-    CarrierNote.prototype.set_waveform = Note.prototype.set_waveform;
-    CarrierNote.prototype.set_custom_waveform = Note.prototype.set_custom_waveform;
-    CarrierNote.prototype.engage_filter = Note.prototype.engage_filter;
-    CarrierNote.prototype.bypass_filter = Note.prototype.bypass_filter;
-
     function ModulatorNote(
-            audio_ctx, vol_cns, fine_detune,
+            synth, vol_cns, fine_detune,
             lfo_hp_freq_cns, lfo_hp_q_cns,
             lfo_lp_freq_cns, lfo_lp_q_cns
     ) {
-        var vol = new GainNode(audio_ctx, {"channelCount": 1}),
-            fm_freq = new GainNode(audio_ctx, {"channelCount": 1}),
-            am_out = new GainNode(audio_ctx, {"channelCount": 1}),
-            fm_out = new GainNode(audio_ctx, {"channelCount": 1}),
+        var vol = new GainNode(synth.audio_ctx, {"channelCount": 1}),
+            fm_freq = new GainNode(synth.audio_ctx, {"channelCount": 1}),
+            am_out = new GainNode(synth.audio_ctx, {"channelCount": 1}),
+            fm_out = new GainNode(synth.audio_ctx, {"channelCount": 1}),
             lfo_highpass = new BiquadFilterNode(
-                audio_ctx,
+                synth.audio_ctx,
                 {
                     "type": "highpass",
                     "Q": 0.0,
@@ -4062,7 +4117,7 @@ div.color-9 { background-color: #410; }
                 }
             ),
             lfo_lowpass = new BiquadFilterNode(
-                audio_ctx,
+                synth.audio_ctx,
                 {
                     "type": "lowpass",
                     "Q": 0.0,
@@ -4071,11 +4126,9 @@ div.color-9 { background-color: #410; }
                     "channelCount": 1
                 }
             ),
-            am_in, vel_vol, env_highpass, env_lowpass;
+            vel_vol, env_highpass, env_lowpass;
 
         vol.gain.value = 0.0;
-
-        this._vol = vol;
 
         lfo_highpass.frequency.value = 0.0;
         lfo_highpass.Q.value = 0.0;
@@ -4087,7 +4140,9 @@ div.color-9 { background-color: #410; }
         lfo_lp_freq_cns.connect(lfo_lowpass.frequency);
         lfo_lp_q_cns.connect(lfo_lowpass.Q);
 
-        CarrierNote.call(this, audio_ctx, null, fine_detune);
+        ZeroPhaseNote.call(this, synth, null, fine_detune);
+
+        this._vol = vol;
 
         this._lfo_highpass = lfo_highpass;
         this._lfo_lowpass = lfo_lowpass;
@@ -4116,44 +4171,55 @@ div.color-9 { background-color: #410; }
         vel_vol.connect(vol);
         vol.connect(this.pan);
 
-        am_in = this._am_in;
-
         this._chains = [
-            [am_in, vel_vol],
-            [am_in, env_highpass, vel_vol],
-            [am_in, env_lowpass, vel_vol],
-            [am_in, env_highpass, env_lowpass, vel_vol],
+            [vel_vol],
+            [env_highpass, vel_vol],
+            [env_lowpass, vel_vol],
+            [env_highpass, env_lowpass, vel_vol],
 
-            [am_in, lfo_highpass, vel_vol],
-            [am_in, env_highpass, lfo_highpass, vel_vol],
-            [am_in, env_lowpass, lfo_highpass, vel_vol],
-            [am_in, env_highpass, env_lowpass, lfo_highpass, vel_vol],
+            [lfo_highpass, vel_vol],
+            [env_highpass, lfo_highpass, vel_vol],
+            [env_lowpass, lfo_highpass, vel_vol],
+            [env_highpass, env_lowpass, lfo_highpass, vel_vol],
 
-            [am_in, lfo_lowpass, vel_vol],
-            [am_in, env_highpass, lfo_lowpass, vel_vol],
-            [am_in, env_lowpass, lfo_lowpass, vel_vol],
-            [am_in, env_highpass, env_lowpass, lfo_lowpass, vel_vol],
+            [lfo_lowpass, vel_vol],
+            [env_highpass, lfo_lowpass, vel_vol],
+            [env_lowpass, lfo_lowpass, vel_vol],
+            [env_highpass, env_lowpass, lfo_lowpass, vel_vol],
 
-            [am_in, lfo_highpass, lfo_lowpass, vel_vol],
-            [am_in, env_highpass, lfo_highpass, lfo_lowpass, vel_vol],
-            [am_in, env_lowpass, lfo_highpass, lfo_lowpass, vel_vol],
-            [am_in, env_highpass, env_lowpass, lfo_highpass, lfo_lowpass, vel_vol]
+            [lfo_highpass, lfo_lowpass, vel_vol],
+            [env_highpass, lfo_highpass, lfo_lowpass, vel_vol],
+            [env_lowpass, lfo_highpass, lfo_lowpass, vel_vol],
+            [env_highpass, env_lowpass, lfo_highpass, lfo_lowpass, vel_vol]
         ];
-        this._chain = 0;
-        this._rewire(0);
     }
 
-    ModulatorNote.prototype._rewire = CarrierNote.prototype._rewire;
-    ModulatorNote.prototype.trigger = CarrierNote.prototype.trigger;
-    ModulatorNote.prototype._apply_envelope_dahds = CarrierNote.prototype._apply_envelope_dahds;
-    ModulatorNote.prototype.stop = CarrierNote.prototype.stop;
-    ModulatorNote.prototype._apply_envelope_r = CarrierNote.prototype._apply_envelope_r;
-    ModulatorNote.prototype.cancel = CarrierNote.prototype.cancel;
-    ModulatorNote.prototype.set_waveform = CarrierNote.prototype.set_waveform;
-    ModulatorNote.prototype.set_custom_waveform = CarrierNote.prototype.set_custom_waveform;
-    ModulatorNote.prototype.engage_filter = CarrierNote.prototype.engage_filter;
-    ModulatorNote.prototype.bypass_filter = CarrierNote.prototype.bypass_filter;
-    ModulatorNote.prototype.start = CarrierNote.prototype.start;
+    ModulatorNote.prototype._rewire = ZeroPhaseNote.prototype._rewire;
+    ModulatorNote.prototype._apply_envelope_dahds = ZeroPhaseNote.prototype._apply_envelope_dahds;
+    ModulatorNote.prototype.stop = ZeroPhaseNote.prototype.stop;
+    ModulatorNote.prototype._apply_envelope_r = ZeroPhaseNote.prototype._apply_envelope_r;
+    ModulatorNote.prototype.cancel = ZeroPhaseNote.prototype.cancel;
+    ModulatorNote.prototype.set_waveform = ZeroPhaseNote.prototype.set_waveform;
+    ModulatorNote.prototype.set_custom_waveform = ZeroPhaseNote.prototype.set_custom_waveform;
+    ModulatorNote.prototype.engage_filter = ZeroPhaseNote.prototype.engage_filter;
+    ModulatorNote.prototype.bypass_filter = ZeroPhaseNote.prototype.bypass_filter;
+    ModulatorNote.prototype.start = ZeroPhaseNote.prototype.start;
+    ModulatorNote.prototype._replace_oscillator = ZeroPhaseNote.prototype._replace_oscillator;
+
+    ModulatorNote.prototype.trigger = function (
+            now, when, freq, velocity, pan,
+            prt_start_freq, prt_time,
+            amp_env_params, env_highpass_params, env_lowpass_params
+    ) {
+        this._replace_oscillator(when, this._chain[0]);
+
+        ZeroPhaseNote.prototype.trigger.call(
+            this,
+            now, when, freq, velocity, pan,
+            prt_start_freq, prt_time,
+            amp_env_params, env_highpass_params, env_lowpass_params
+        );
+    };
 
     function Param(synth, key, default_value)
     {
