@@ -750,6 +750,7 @@
         this._param_keys = {};
 
         this.audio_ctx = audio_ctx;
+        this.garbage = [];
         this.virt_detune = new NumParam(this, "vrt_dt", -48, 48, 0);
         this.virt_ctl_params = [
             new NumParam(this, "vcp1", 0.0, 1.0, 0.5),
@@ -862,6 +863,29 @@
         this.output = output;
         this.midi_inputs = [];
     }
+
+    Synth.prototype.clear_garbage = function (when)
+    {
+        var old_garbage = this.garbage,
+            new_garbage = [],
+            i, l, j, ll, g;
+
+        for (i = 0, l = old_garbage.length; i < l; ++i) {
+            g = old_garbage[i];
+
+            if (g[0] > when) {
+                new_garbage.push(g);
+            } else {
+                g[1].disconnect();
+
+                for (j = 2, ll = g.length; j < ll; j += 2) {
+                    g[j].disconnect(g[j + 1]);
+                }
+            }
+        }
+
+        this.garbage = new_garbage;
+    };
 
     Synth.prototype.register_param = function (param)
     {
@@ -1184,6 +1208,7 @@
         active_bank.observers.push(this);
 
         this._audio_ctx = synth.audio_ctx;
+        this._synth = synth;
         this._comp_voice = comp_voice;
         this._midi_voice = midi_voice;
         this._note_ctl = note_ctl;
@@ -1337,6 +1362,9 @@
             target_note_ctl, target_vel_ctl,
             note_start, note_ctl, vel_ctl, reserved, i, l, e;
 
+        ct = this._audio_ctx.currentTime + 0.01;
+        this._synth.clear_garbage(ct);
+
         events = this._events;
         l = events.length;
 
@@ -1344,7 +1372,6 @@
             return;
         }
 
-        ct = this._audio_ctx.currentTime + 0.01;
         new_events = [];
 
         for (i = 0; i < l; ++i) {
@@ -3245,10 +3272,8 @@
             waveform = this._waveform;
 
         if (osc !== null) {
-            freq_cns.disconnect(osc.frequency);
-            fine_detune.disconnect(osc.detune);
-            osc.disconnect();
             osc.stop(when);
+            this._synth.garbage.push([when, osc, freq_cns, osc.frequency, fine_detune, osc.detune]);
         }
 
         this._osc = osc = new OscillatorNode(this._audio_ctx, {"channelCount": 1});
