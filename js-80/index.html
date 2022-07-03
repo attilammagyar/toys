@@ -1507,7 +1507,7 @@ div.color-9 { background-color: #410; }
 
         this.audio_ctx = audio_ctx;
         this.garbage = [];
-        this.virt_detune = new NumParam(this, "vrt_dt", -48, 48, 0);
+        this.virt_detune = new DetuneParam(this, "vrt_dt", null, 1, -48, 48, 0);
         this.virt_ctl_params = [
             new NumParam(this, "vcp1", 0.0, 1.0, 0.5),
             new NumParam(this, "vcp2", 0.0, 1.0, 0.5),
@@ -2206,7 +2206,7 @@ div.color-9 { background-color: #410; }
         }
 
         gap_inv = 1.0 - Math.round(active_bank.gap.value) / 256.0;
-        detune = Math.round(active_bank.detune.value);
+        detune = active_bank.detune.value;
         beat_len_with_gap = beat_len * gap_inv;
         arpeggio = beat_len * (Math.round(active_bank.arpeggio.value) / 256.0);
 
@@ -2354,7 +2354,7 @@ div.color-9 { background-color: #410; }
         this.tempo = new MIDIControllableParam(synth, key + "_bpm", 3, 999, 144);
         this.arpeggio = new MIDIControllableParam(synth, key + "_arp", 0, 256, 0);
         this.gap = new MIDIControllableParam(synth, key + "_gap", 0, 255, 8);
-        this.detune = new MIDIControllableParam(synth, key + "_dt", -48, 48, 0);
+        this.detune = new DetuneParam(synth, key + "_dt", null, 1, -48, 48, 0);
         this.scale = scale;
         this.beats = beats;
         this.velocities = velocities;
@@ -3177,7 +3177,8 @@ div.color-9 { background-color: #410; }
             lfo_highpass_params, lfo_lowpass_params
     ) {
         var notes = [],
-            fine_detune,
+            fine_detune_cns,
+            detune_cns,
             i, note;
 
         ComplexOscillator.call(
@@ -3186,9 +3187,13 @@ div.color-9 { background-color: #410; }
             lfo_highpass_params, lfo_lowpass_params
         );
 
-        fine_detune = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1});
-        fine_detune.offset.value = 0;
-        this._fine_detune_cns = fine_detune;
+        fine_detune_cns = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1});
+        fine_detune_cns.offset.value = 0.0;
+        this._fine_detune_cns = fine_detune_cns;
+
+        detune_cns = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1});
+        detune_cns.offset.value = 0.0;
+        this._detune_cns = detune_cns;
 
         this._frequencies = frequencies;
 
@@ -3199,8 +3204,8 @@ div.color-9 { background-color: #410; }
         this.vel_ovsens = new MIDIControllableParam(synth, key + "_vs", 0.0, 1.0, 0.0);
         this.prt_time = new MIDIControllableParam(synth, key + "_prt", PRT_TIME_MIN, PRT_TIME_MAX, PRT_TIME_DEF);
         this.prt_depth = new MIDIControllableParam(synth, key + "_prd", -2400.0, 2400.0, 0.0);
-        this.detune = new NumParam(synth, key + "_dt", -48, 48, 0);
-        this.fine_detune = new LFOControllableParam(synth, key + "_fd", fine_detune.offset, -400.0, 400.0, 0.0);
+        this.detune = new DetuneParam(synth, key + "_dt", detune_cns.offset, 100, -48, 48, 0);
+        this.fine_detune = new LFOControllableParam(synth, key + "_fd", fine_detune_cns.offset, -400.0, 400.0, 0.0);
     }
 
     MIDINoteBasedOscillator.prototype.notify_observers = Observable.prototype.notify_observers;
@@ -3255,6 +3260,7 @@ div.color-9 { background-color: #410; }
         ComplexOscillator.prototype.start.call(this, when);
 
         this._fine_detune_cns.start(when);
+        this._detune_cns.start(when);
 
         for (i = 0, l = notes.length; i < l; ++i) {
             notes[i].start(when);
@@ -3266,7 +3272,7 @@ div.color-9 { background-color: #410; }
         var vs = this.velocity_sensitivity.value,
             prt_depth, prt_start_freq, vos, freq, v;
 
-        midi_note += this.detune.value + 48;
+        midi_note += 48;
 
         if ((0 > midi_note) || (227 < midi_note)) {
             return;
@@ -3339,7 +3345,7 @@ div.color-9 { background-color: #410; }
 
         for (i = 0; i < poliphony; ++i) {
             notes.push(
-                note = new CarrierNote(synth, lfo_highpass.input, this._fine_detune_cns)
+                note = new CarrierNote(synth, lfo_highpass.input, this._detune_cns, this._fine_detune_cns)
             );
         }
 
@@ -3415,6 +3421,7 @@ div.color-9 { background-color: #410; }
                 note = new ModulatorNote(
                     synth,
                     this._vol_cns,
+                    this._detune_cns,
                     this._fine_detune_cns,
                     this._lfo_hp_freq_cns,
                     this._lfo_hp_q_cns,
@@ -3948,7 +3955,7 @@ div.color-9 { background-color: #410; }
         this._rewire(chain_mask & (0xffff & ~flag));
     };
 
-    function ZeroPhaseNote(synth, output, fine_detune)
+    function ZeroPhaseNote(synth, output, detune, fine_detune)
     {
         var freq_cns = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1});
 
@@ -3961,6 +3968,7 @@ div.color-9 { background-color: #410; }
 
         this._audio_ctx = synth.audio_ctx;
         this._synth = synth;
+        this._detune = detune;
         this._fine_detune = fine_detune;
         this._freq_cns = freq_cns;
 
@@ -4023,13 +4031,14 @@ div.color-9 { background-color: #410; }
     ZeroPhaseNote.prototype._replace_oscillator = function (when, osc_connection)
     {
         var osc = this._osc,
+            detune = this._detune,
             fine_detune = this._fine_detune,
             freq_cns = this._freq_cns,
             waveform = this._waveform;
 
         if (osc !== null) {
             osc.stop(when);
-            this._synth.garbage.push([when, osc, freq_cns, osc.frequency, fine_detune, osc.detune]);
+            this._synth.garbage.push([when, osc, freq_cns, osc.frequency, detune, osc.detune, fine_detune, osc.detune]);
         }
 
         this._osc = osc = new OscillatorNode(this._audio_ctx, {"channelCount": 1});
@@ -4044,16 +4053,17 @@ div.color-9 { background-color: #410; }
         osc.connect(osc_connection);
 
         freq_cns.connect(osc.frequency);
+        detune.connect(osc.detune);
         fine_detune.connect(osc.detune);
 
         osc.start(when);
     };
 
-    function CarrierNote(synth, output, fine_detune)
+    function CarrierNote(synth, output, detune, fine_detune)
     {
         var am_in = new GainNode(synth.audio_ctx, {"channelCount": 1});
 
-        ZeroPhaseNote.call(this, synth, output, fine_detune);
+        ZeroPhaseNote.call(this, synth, output, detune, fine_detune);
 
         am_in.gain.value = 1.0;
 
@@ -4093,7 +4103,7 @@ div.color-9 { background-color: #410; }
     };
 
     function ModulatorNote(
-            synth, vol_cns, fine_detune,
+            synth, vol_cns, detune, fine_detune,
             lfo_hp_freq_cns, lfo_hp_q_cns,
             lfo_lp_freq_cns, lfo_lp_q_cns
     ) {
@@ -4135,7 +4145,7 @@ div.color-9 { background-color: #410; }
         lfo_lp_freq_cns.connect(lfo_lowpass.frequency);
         lfo_lp_q_cns.connect(lfo_lowpass.Q);
 
-        ZeroPhaseNote.call(this, synth, null, fine_detune);
+        ZeroPhaseNote.call(this, synth, null, detune, fine_detune);
 
         this._vol = vol;
 
@@ -4350,6 +4360,31 @@ div.color-9 { background-color: #410; }
         this._midi_ctl.release(this._midi_conn);
         this._midi_ctl = null;
         this._midi_conn = null;
+    };
+
+    function DetuneParam(synth, key, target_param, scale, min, max, default_value)
+    {
+        MIDIControllableParam.call(this, synth, key, min, max, default_value);
+
+        this._target_param = target_param;
+        this._scale = scale;
+    }
+
+    DetuneParam.prototype.notify_observers = MIDIControllableParam.prototype.notify_observers;
+    DetuneParam.prototype.validate = MIDIControllableParam.prototype.validate;
+    DetuneParam.prototype.control_value = MIDIControllableParam.prototype.control_value;
+    DetuneParam.prototype.connect_midi_ctl = MIDIControllableParam.prototype.connect_midi_ctl;
+    DetuneParam.prototype.disconnect = MIDIControllableParam.prototype.disconnect;
+
+    DetuneParam.prototype.set_value = function (new_value)
+    {
+        var t = this._target_param;
+
+        MIDIControllableParam.prototype.set_value.call(this, new_value = Math.round(new_value) | 0);
+
+        if (t !== null) {
+            this._target_param.value = new_value * this._scale;
+        }
     };
 
     function LFOControllableParam(synth, key, target_param, min, max, default_value)
@@ -4934,7 +4969,7 @@ div.color-9 { background-color: #410; }
         params.add(new FaderUI("WID", "Width", "%", 100, 1, MIDI_CONTROLS, complex_osc.width, synth));
         params.add(new FaderUI("PRT", "Portamento time", "s", 100, 100, MIDI_CONTROLS, complex_osc.prt_time, synth));
         params.add(new FaderUI("PRD", "Portamento depth (cents; 0 = start from latest note)", "c", 1, 1, MIDI_CONTROLS, complex_osc.prt_depth, synth));
-        params.add(new FaderUI("DTN", "Detune (semitones)", "st", 1, 1, null, complex_osc.detune, synth));
+        params.add(new FaderUI("DTN", "Detune (semitones)", "st", 1, 1, MIDI_CONTROLS, complex_osc.detune, synth));
         params.add(new FaderUI("FIN", "Fine detune (cents)", "c", 10, 10, ALL_CONTROLS, complex_osc.fine_detune, synth));
 
         amp_env.add(new FaderUI("DEL", "Delay time", "s", 1000, 1000, MIDI_CONTROLS, complex_osc.amp_env_params[0], synth));
