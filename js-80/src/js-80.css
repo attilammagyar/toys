@@ -160,6 +160,7 @@ div.group.vertical {
   flex-direction: column;
 }
 
+div.theremin,
 div.module {
   width: 640px;
   margin: 1px;
@@ -196,9 +197,9 @@ div.description {
   font-size: 12px;
 }
 
-div.virt-controls > div.description,
-div.midi-module > div.description {
+div.module > div.description {
   padding-left: 8px;
+  min-width: 90%;
 }
 
 div.controllers div.description {

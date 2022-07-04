@@ -4085,7 +4085,7 @@
 
     function SynthUI(synth)
     {
-        var midi_module = new VoiceUI("MIDI module", "color-2 midi-module", synth.midi_voice, synth),
+        var midi_module = new VoiceUI("MIDI module", "color-2", synth.midi_voice, synth),
             comp_module = new VoiceUI("Computer module", "color-1", synth.comp_voice, synth),
             virtual_modules = new UIWidgetGroup("color-7 horizontal"),
             inputs = new UIWidgetGroup("color-7 vertical"),
@@ -4101,6 +4101,8 @@
         UIWidgetGroup.call(this, "color-0 horizontal");
 
         synth.observers.push(this);
+        synth.comp_keyboard_target.observers.push(this);
+        synth.sequencer.target.observers.push(this);
 
         for (i = 0; i < LFOS; ++i) {
             si = String(i + 1);
@@ -4131,7 +4133,10 @@
         this.add(voice_modules);
         this.add(ctls);
 
+        this._synth = synth;
         this._midi_module = midi_module;
+        this._comp_module = comp_module;
+        this._sequencer = sequencer;
 
         this.virt_ctls = virt_ctls;
         this.theremin = theremin;
@@ -4141,16 +4146,49 @@
 
     SynthUI.prototype.update = function (observable, arg)
     {
-        var d = [],
-            inputs = observable.midi_inputs,
-            i, l, input;
+        var midi_desc = [],
+            comp_desc = [],
+            seq_desc = [],
+            synth = this._synth,
+            midi_inputs, i, l;
 
-        for (i = 0, l = inputs.length; i < l; ++i) {
-            input = inputs[i];
-            d.push(String(input.name));
+        if (synth.sequencer.target.value === "comp") {
+            comp_desc.push("Sequencer");
+        } else {
+            midi_desc.push("Sequencer");
         }
 
-        this._midi_module.set_description("Inputs: " + d.join(", "));
+        if (synth.comp_keyboard_target.value === "seq") {
+            seq_desc.push("Virtual Keyboard");
+        } else {
+            comp_desc.push("Virtual Keyboard");
+        }
+
+        midi_inputs = this._synth.midi_inputs;
+
+        for (i = 0, l = midi_inputs.length; i < l; ++i) {
+            midi_desc.push(String(midi_inputs[i].name));
+        }
+
+        if (midi_desc.length < 1) {
+            midi_desc.push("-");
+        } else {
+            midi_desc.sort();
+        }
+
+        if (comp_desc.length < 1) {
+            comp_desc.push("-");
+        } else {
+            comp_desc.sort();
+        }
+
+        if (seq_desc.length < 1) {
+            seq_desc.push("-");
+        }
+
+        this._midi_module.set_description("Inputs: " + midi_desc.join(", "));
+        this._comp_module.set_description("Inputs: " + comp_desc.join(", "));
+        this._sequencer.set_description("Inputs: " + seq_desc.join(", "));
     };
 
     SynthUI.prototype.handle_document_mouse_up = function (evt)
@@ -5090,7 +5128,7 @@
             wav = new SelectUI("WAV", "Waveform", "waveform-selector", theremin.waveform, synth),
             effects = new NamedUIWidgetGroup("Effects", "effects color-0", synth);
 
-        NamedUIWidgetGroup.call(this, "Theremin", "module color-8");
+        NamedUIWidgetGroup.call(this, "Theremin", "theremin color-8");
 
         this._theremin = theremin;
         this._touch_area = touch_area;
