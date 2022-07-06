@@ -178,7 +178,26 @@ div.group.vertical {
   flex-direction: column;
 }
 
-div.theremin,
+div.group.closed {
+  height: 24px;
+  overflow: hidden;
+  display: block;
+  min-width: 630px;
+}
+
+div.group.closable > div.name {
+  cursor: pointer;
+}
+
+div.group.closable.closed > div.name:before {
+  content: "+ ";
+}
+
+div.group.closable > div.name:before {
+  content: "- ";
+}
+
+#theremin,
 div.module {
   width: 640px;
   margin: 1px;
@@ -195,7 +214,7 @@ div.param {
   width: 302px;
 }
 
-div.virt-controls div.param {
+#virt-inputs div.param {
   width: 600px;
 }
 
@@ -220,7 +239,7 @@ div.module > div.description {
   min-width: 90%;
 }
 
-div.controllers div.description {
+#controllers div.description {
   padding-left: 0;
 }
 
@@ -228,7 +247,7 @@ div.waveform-selector {
   width: 160px;
 }
 
-div.controllers > div.group > div.group {
+#controllers > div.group > div.group {
   width: 310px;
 }
 
@@ -241,7 +260,7 @@ input.fader {
   outline: none;
 }
 
-div.virt-controls input.fader {
+#virt-inputs input.fader {
   width: 400px;
 }
 
@@ -252,7 +271,7 @@ div.param label:nth-child(1) {
   padding-right: 1px;
 }
 
-div.virt-controls div.param label:nth-child(1) {
+#virt-inputs div.param label:nth-child(1) {
   width: 120px;
 }
 
@@ -4809,13 +4828,17 @@ div.color-9 { background-color: #410; }
         this.dom_node.appendChild(widget.dom_node);
     };
 
-    function NamedUIWidgetGroup(name, class_names)
+    function NamedUIWidgetGroup(name, class_names, id_attr)
     {
         var div1 = document.createElement("div"),
             span = document.createElement("span"),
             div2 = document.createElement("div");
 
         UIWidgetGroup.call(this, class_names);
+
+        if (id_attr) {
+            this.dom_node.setAttribute("id", id_attr);
+        }
 
         span.innerText = name;
 
@@ -4840,17 +4863,47 @@ div.color-9 { background-color: #410; }
         this._description.innerText = description;
     };
 
+    function ClosableNamedUIWidgetGroup(name, class_names, id_attr)
+    {
+        class_names = (class_names || "") + " closable";
+
+        this._open_class_names = class_names;
+        this._closed_class_names = class_names + " closed";
+        this._is_closed = true;
+
+        NamedUIWidgetGroup.call(this, name, this._closed_class_names, id_attr);
+
+        this._name.onclick = bind(this, this.toggle);
+    }
+
+    ClosableNamedUIWidgetGroup.prototype.update = NamedUIWidgetGroup.prototype.update;
+    ClosableNamedUIWidgetGroup.prototype.add = NamedUIWidgetGroup.prototype.add;
+    ClosableNamedUIWidgetGroup.prototype.set_description = NamedUIWidgetGroup.prototype.set_description;
+
+    ClosableNamedUIWidgetGroup.prototype.toggle = function (evt)
+    {
+        var is_closed = !this._is_closed,
+            class_names;
+
+        this._is_closed = is_closed;
+        class_names = is_closed ? this._closed_class_names : this._open_class_names;
+
+        this.dom_node.setAttribute("class", "group " + class_names);
+
+        return true;
+    };
+
     function SynthUI(synth)
     {
-        var midi_module = new VoiceUI("MIDI module", "color-2", synth.midi_voice, synth),
-            comp_module = new VoiceUI("Computer module", "color-1", synth.comp_voice, synth),
+        var midi_module = new VoiceUI("MIDI module", "color-2", "midi-", synth.midi_voice, synth),
+            comp_module = new VoiceUI("Computer module", "color-1", "comp-", synth.comp_voice, synth),
             virtual_modules = new UIWidgetGroup("color-7 horizontal"),
             inputs = new UIWidgetGroup("color-7 vertical"),
             voice_modules = new UIWidgetGroup("color-7 horizontal"),
             virt_ctls = new VirtualControlsUI(synth),
             sequencer = new SequencerUI(synth),
             theremin = new ThereminUI(synth.theremin, synth),
-            ctls = new NamedUIWidgetGroup("Controllers", "controllers color-7"),
+            ctls = new NamedUIWidgetGroup("Controllers", "color-7", "controllers"),
             lfos = new UIWidgetGroup("color-7"),
             midi_ctl_shapers = new UIWidgetGroup("color-7"),
             i, l, si, k;
@@ -4956,14 +5009,14 @@ div.color-9 { background-color: #410; }
         return true;
     };
 
-    function VoiceUI(name, class_names, voice, synth)
+    function VoiceUI(name, class_names, id_prefix, voice, synth)
     {
         var settings = new UIWidgetGroup(),
-            osc1 = new OscillatorUI("Oscillator 1 (modulator)", "color-4", voice.osc_1, synth),
-            osc2 = new OscillatorUI("Oscillator 2 (carrier)", "color-3", voice.osc_2, synth),
-            effects = new NamedUIWidgetGroup("Effects", "effects color-0", synth);
+            osc1 = new OscillatorUI("Oscillator 1 (modulator)", "color-4", id_prefix + "osc-1", voice.osc_1, synth),
+            osc2 = new OscillatorUI("Oscillator 2 (carrier)", "color-3", id_prefix + "osc-2", voice.osc_2, synth),
+            effects = new ClosableNamedUIWidgetGroup("Effects", "effects color-0", id_prefix + "fx");
 
-        NamedUIWidgetGroup.call(this, name, "module vertical " + class_names);
+        NamedUIWidgetGroup.call(this, name, "module vertical " + class_names, id_prefix + "module");
 
         settings.add(new FaderUI("VOL", "Volume", "%", 1000, 10, ALL_CONTROLS, voice.volume, synth));
         settings.add(new FaderUI("AM", "Amplitude modulation volume", "%", 1000, 10, ALL_CONTROLS, voice.am_volume, synth));
@@ -4987,19 +5040,19 @@ div.color-9 { background-color: #410; }
     VoiceUI.prototype.add = NamedUIWidgetGroup.prototype.add;
     VoiceUI.prototype.set_description = NamedUIWidgetGroup.prototype.set_description;
 
-    function OscillatorUI(name, class_names, complex_osc, synth)
+    function OscillatorUI(name, class_names, id_attr, complex_osc, synth)
     {
         var params = new UIWidgetGroup("vertical"),
             amp_env = new NamedUIWidgetGroup("Amplitude envelope", "vertical"),
             custom_waveform = new CustomWaveParamsUI("", complex_osc.custom_waveform),
-            filters = new NamedUIWidgetGroup("Filters", "filters horizontal"),
+            filters = new ClosableNamedUIWidgetGroup("Filters", "filters horizontal"),
             env_highpass = new EnvelopeHighpassUI(complex_osc, synth),
             env_lowpass = new EnvelopeLowpassUI(complex_osc, synth),
             lfo_highpass = new LFOCompatibleHighpassUI("", complex_osc.lfo_highpass_params, synth),
             lfo_lowpass = new LFOCompatibleLowpassUI("", complex_osc.lfo_lowpass_params, synth),
             wav = new SelectUI("WAV", "Waveform", "waveform-selector", complex_osc.waveform, synth);
 
-        NamedUIWidgetGroup.call(this, name, "horizontal oscillator " + class_names);
+        NamedUIWidgetGroup.call(this, name, "horizontal oscillator " + class_names, id_attr);
 
         params.add(new FaderUI("VOL", "Volume", "%", 1000, 10, ALL_CONTROLS, complex_osc.volume, synth));
         params.add(new FaderUI("VS", "Velocity sensitivity", "%", 100, 1, MIDI_CONTROLS, complex_osc.velocity_sensitivity, synth));
@@ -5042,7 +5095,7 @@ div.color-9 { background-color: #410; }
             group_2 = new UIWidgetGroup("vertical"),
             i, l, n, o, f;
 
-        NamedUIWidgetGroup.call(this, "Custom waveform", "custom-waveform horizontal " + (class_names || ""));
+        ClosableNamedUIWidgetGroup.call(this, "Custom waveform", "custom-waveform horizontal " + (class_names || ""));
 
         for (i = 0, l = params.length; i < l; ++i) {
             n = String(i + 1);
@@ -5059,6 +5112,7 @@ div.color-9 { background-color: #410; }
     CustomWaveParamsUI.prototype.update = NamedUIWidgetGroup.prototype.update;
     CustomWaveParamsUI.prototype.add = NamedUIWidgetGroup.prototype.add;
     CustomWaveParamsUI.prototype.set_description = NamedUIWidgetGroup.prototype.set_description;
+    CustomWaveParamsUI.prototype.toggle = ClosableNamedUIWidgetGroup.prototype.toggle;
 
     function EnvelopeBiquadFilterUI(name, onoff_param, params, synth)
     {
@@ -5554,11 +5608,11 @@ div.color-9 { background-color: #410; }
     function VirtualControlsUI(synth)
     {
         var keyboard = document.createElement("div"),
-            virt_ctls = new NamedUIWidgetGroup("Virtual controllers"),
+            virt_ctls = new ClosableNamedUIWidgetGroup("Virtual controllers"),
             virt_keys = {},
             i, l, virt_key, key_desc, dom_node;
 
-        NamedUIWidgetGroup.call(this, "Virtual inputs", "module virt-controls color-1");
+        NamedUIWidgetGroup.call(this, "Virtual inputs", "module color-1", "virt-inputs");
 
         this.set_description("Octave up/down: [left] and [right], more velocity: [shift]");
 
@@ -5747,7 +5801,7 @@ div.color-9 { background-color: #410; }
             beats_table, beats_row, beats_cell, beats_section, step_ui,
             i, j, k, n, c;
 
-        NamedUIWidgetGroup.call(this, "Sequencer [space]", "module sequencer color-7"),
+        NamedUIWidgetGroup.call(this, "Sequencer [space]", "module color-7", "sequencer"),
 
         this._name.appendChild(onoff.dom_node);
         this._onoff = onoff;
@@ -5876,16 +5930,16 @@ div.color-9 { background-color: #410; }
     {
         var touch_area = document.createElement("div"),
             params = new UIWidgetGroup("horizontal"),
-            filters = new NamedUIWidgetGroup("Filters", "filters horizontal"),
+            filters = new ClosableNamedUIWidgetGroup("Filters", "filters horizontal"),
             custom_waveform = new CustomWaveParamsUI("", theremin.custom_waveform),
             env_highpass = new EnvelopeHighpassUI(theremin, synth),
             env_lowpass = new EnvelopeLowpassUI(theremin, synth),
             lfo_highpass = new LFOCompatibleHighpassUI("", theremin.lfo_highpass_params, synth),
             lfo_lowpass = new LFOCompatibleLowpassUI("", theremin.lfo_lowpass_params, synth),
             wav = new SelectUI("WAV", "Waveform", "waveform-selector", theremin.waveform, synth),
-            effects = new NamedUIWidgetGroup("Effects", "effects color-0", synth);
+            effects = new ClosableNamedUIWidgetGroup("Effects", "effects color-0", synth);
 
-        NamedUIWidgetGroup.call(this, "Theremin", "theremin color-8");
+        NamedUIWidgetGroup.call(this, "Theremin", "color-8", "theremin");
 
         this._theremin = theremin;
         this._touch_area = touch_area;
@@ -5932,6 +5986,8 @@ div.color-9 { background-color: #410; }
         this.add(custom_waveform);
         this.add(filters);
         this.add(effects);
+
+        effects.toggle();
     }
 
     ThereminUI.prototype.update = NamedUIWidgetGroup.prototype.update;

@@ -160,7 +160,26 @@ div.group.vertical {
   flex-direction: column;
 }
 
-div.theremin,
+div.group.closed {
+  height: 24px;
+  overflow: hidden;
+  display: block;
+  min-width: 630px;
+}
+
+div.group.closable > div.name {
+  cursor: pointer;
+}
+
+div.group.closable.closed > div.name:before {
+  content: "+ ";
+}
+
+div.group.closable > div.name:before {
+  content: "- ";
+}
+
+#theremin,
 div.module {
   width: 640px;
   margin: 1px;
@@ -177,7 +196,7 @@ div.param {
   width: 302px;
 }
 
-div.virt-controls div.param {
+#virt-inputs div.param {
   width: 600px;
 }
 
@@ -202,7 +221,7 @@ div.module > div.description {
   min-width: 90%;
 }
 
-div.controllers div.description {
+#controllers div.description {
   padding-left: 0;
 }
 
@@ -210,7 +229,7 @@ div.waveform-selector {
   width: 160px;
 }
 
-div.controllers > div.group > div.group {
+#controllers > div.group > div.group {
   width: 310px;
 }
 
@@ -223,7 +242,7 @@ input.fader {
   outline: none;
 }
 
-div.virt-controls input.fader {
+#virt-inputs input.fader {
   width: 400px;
 }
 
@@ -234,7 +253,7 @@ div.param label:nth-child(1) {
   padding-right: 1px;
 }
 
-div.virt-controls div.param label:nth-child(1) {
+#virt-inputs div.param label:nth-child(1) {
   width: 120px;
 }
 
