@@ -161,7 +161,7 @@ div.group.vertical {
 }
 
 div.group.closed {
-  height: 24px;
+  height: 22px;
   overflow: hidden;
   display: block;
   min-width: 630px;
@@ -182,7 +182,6 @@ div.group.closable > div.name:before {
 #theremin,
 div.module {
   width: 640px;
-  margin: 1px;
 }
 
 div.name,
@@ -207,6 +206,18 @@ div.name {
   min-width: 60%;
 }
 
+#controllers {
+  min-width: 98%;
+}
+
+#controllers > div.group > div.name {
+  width: 99%;
+}
+
+#controllers > div.group.closed {
+  min-width: 99%;
+}
+
 div.lfo div.name {
   width: 70px;
   min-width: auto;
@@ -229,7 +240,8 @@ div.waveform-selector {
   width: 160px;
 }
 
-#controllers > div.group > div.group {
+div.lfo,
+div.mcs {
   width: 310px;
 }
 

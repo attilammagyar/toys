@@ -855,7 +855,7 @@
         this.comp_keyboard_target = new EnumParam(
             this,
             "ckb_trg",
-            {"comp": "Computer module", "seq": "Sequencer root note"},
+            {"comp": "Computer Module", "seq": "Sequencer root note"},
             "comp"
         );
         this.comp_keyboard_target.observers.push(this);
@@ -1188,7 +1188,7 @@
         midi_note_ctl, midi_vel_ctl,
         virt_note_ctl, virt_vel_ctl
     ) {
-        var target = new EnumParam(synth, "sq_trg", {"comp": "Computer module", "midi": "MIDI module"}, "comp"),
+        var target = new EnumParam(synth, "sq_trg", {"comp": "Computer Module", "midi": "MIDI Module"}, "comp"),
             active_bank = new EnumParam(synth, "sq_ab", SEQ_BANKS, "b0"),
             onoff = new OnOffParam(synth, SEQ_ON_OFF_KEY),
             banks = {
@@ -4119,8 +4119,8 @@
 
     function SynthUI(synth)
     {
-        var midi_module = new VoiceUI("MIDI module", "color-2", "midi-", synth.midi_voice, synth),
-            comp_module = new VoiceUI("Computer module", "color-1", "comp-", synth.comp_voice, synth),
+        var midi_module = new VoiceUI("MIDI Module", "color-2", "midi-", synth.midi_voice, synth),
+            comp_module = new VoiceUI("Computer Module", "color-1", "comp-", synth.comp_voice, synth),
             virtual_modules = new UIWidgetGroup("color-7 horizontal"),
             inputs = new UIWidgetGroup("color-7 vertical"),
             voice_modules = new UIWidgetGroup("color-7 horizontal"),
@@ -4128,11 +4128,14 @@
             sequencer = new SequencerUI(synth),
             theremin = new ThereminUI(synth.theremin, synth),
             ctls = new NamedUIWidgetGroup("Controllers", "color-7", "controllers"),
-            lfos = new UIWidgetGroup("color-7"),
-            midi_ctl_shapers = new UIWidgetGroup("color-7"),
+            lfos = new ClosableNamedUIWidgetGroup("Low Frequency Oscillators", "color-7", "lfos"),
+            midi_ctl_shapers = new ClosableNamedUIWidgetGroup("MIDI Controller Shapers", "color-7", "mcss"),
             i, l, si, k;
 
         UIWidgetGroup.call(this, "color-0 horizontal");
+
+        lfos.toggle();
+        midi_ctl_shapers.toggle();
 
         synth.observers.push(this);
         synth.comp_keyboard_target.observers.push(this);
@@ -4276,7 +4279,7 @@
             lfo_lowpass = new LFOCompatibleLowpassUI("", complex_osc.lfo_lowpass_params, synth),
             wav = new SelectUI("WAV", "Waveform", "waveform-selector", complex_osc.waveform, synth);
 
-        NamedUIWidgetGroup.call(this, name, "horizontal oscillator " + class_names, id_attr);
+        ClosableNamedUIWidgetGroup.call(this, name, "horizontal oscillator " + class_names, id_attr);
 
         params.add(new FaderUI("VOL", "Volume", "%", 1000, 10, ALL_CONTROLS, complex_osc.volume, synth));
         params.add(new FaderUI("VS", "Velocity sensitivity", "%", 100, 1, MIDI_CONTROLS, complex_osc.velocity_sensitivity, synth));
@@ -4306,11 +4309,14 @@
         this.add(amp_env);
         this.add(custom_waveform)
         this.add(filters);
+
+        this.toggle();
     }
 
-    OscillatorUI.prototype.update = NamedUIWidgetGroup.prototype.update;
-    OscillatorUI.prototype.add = NamedUIWidgetGroup.prototype.add;
-    OscillatorUI.prototype.set_description = NamedUIWidgetGroup.prototype.set_description;
+    OscillatorUI.prototype.update = ClosableNamedUIWidgetGroup.prototype.update;
+    OscillatorUI.prototype.add = ClosableNamedUIWidgetGroup.prototype.add;
+    OscillatorUI.prototype.set_description = ClosableNamedUIWidgetGroup.prototype.set_description;
+    OscillatorUI.prototype.toggle = ClosableNamedUIWidgetGroup.prototype.toggle;
 
     function CustomWaveParamsUI(class_names, custom_waveform, synth)
     {
@@ -4319,7 +4325,7 @@
             group_2 = new UIWidgetGroup("vertical"),
             i, l, n, o, f;
 
-        ClosableNamedUIWidgetGroup.call(this, "Custom waveform", "custom-waveform horizontal " + (class_names || ""));
+        ClosableNamedUIWidgetGroup.call(this, "Custom Waveform", "custom-waveform horizontal " + (class_names || ""));
 
         for (i = 0, l = params.length; i < l; ++i) {
             n = String(i + 1);
@@ -4486,7 +4492,7 @@
             max = new FaderUI("MAX", "Maximum value", "%", 10000, 100, MIDI_CONTROLS, midi_ctl_shaper_ctl.max, synth),
             rnd = new FaderUI("RND", "Randomness", "%", 10000, 100, MIDI_CONTROLS, midi_ctl_shaper_ctl.rnd, synth);
 
-        NamedUIWidgetGroup.call(this, name, "horizontal color-6");
+        NamedUIWidgetGroup.call(this, name, "horizontal mcs color-6");
 
         this.dom_node.setAttribute("title", "MIDI Controller Shaper");
 
@@ -4832,11 +4838,11 @@
     function VirtualControlsUI(synth)
     {
         var keyboard = document.createElement("div"),
-            virt_ctls = new ClosableNamedUIWidgetGroup("Virtual controllers"),
+            virt_ctls = new ClosableNamedUIWidgetGroup("Virtual Controllers"),
             virt_keys = {},
             i, l, virt_key, key_desc, dom_node;
 
-        NamedUIWidgetGroup.call(this, "Virtual inputs", "module color-1", "virt-inputs");
+        NamedUIWidgetGroup.call(this, "Virtual Inputs", "module color-1", "virt-inputs");
 
         this.set_description("Octave up/down: [left] and [right], more velocity: [shift]");
 
@@ -5197,8 +5203,8 @@
 
         effects.add(new DistortionUI("Overdrive", "vertical color-8", theremin.effects.overdrive, synth));
         effects.add(new DistortionUI("Distortion", "vertical color-9", theremin.effects.distortion, synth));
-        effects.add(new ShelfFilterUI("Low shelf", "vertical color-4", theremin.effects.low_shelf, synth));
-        effects.add(new ShelfFilterUI("High shelf", "vertical color-3", theremin.effects.high_shelf, synth));
+        effects.add(new ShelfFilterUI("Low Shelf", "vertical color-4", theremin.effects.low_shelf, synth));
+        effects.add(new ShelfFilterUI("High Shelf", "vertical color-3", theremin.effects.high_shelf, synth));
         effects.add(new EchoUI(synth, theremin.effects.echo));
         effects.add(new ReverbUI(synth, theremin.effects.reverb));
 
