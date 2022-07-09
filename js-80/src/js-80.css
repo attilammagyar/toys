@@ -404,12 +404,17 @@ div.param.wide label {
   padding-left: 8px;
 }
 
-div.seq-scale-container > div.name {
-  width: 98%;
+div.seq-selects {
+  min-width: 98%;
+}
+
+div.seq-selects > div.name {
+  width: 56px;
+  min-width: auto;
 }
 
 div.seq-bank {
-  width: 620px;
+  width: 630px;
 }
 
 #menu div.menu-item.hidden,
