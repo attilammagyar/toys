@@ -835,6 +835,7 @@
 
         this._params = [];
         this._param_keys = {};
+        this._controller_update_depth = 0;
 
         this.audio_ctx = audio_ctx;
         this.garbage = [];
@@ -847,27 +848,27 @@
             new NumParam(this, "vcp5", 0.0, 1.0, 0.5)
         ];
         this.virt_ctls = [
-            new VirtualMIDIController(this.virt_ctl_params[0]),
-            new VirtualMIDIController(this.virt_ctl_params[1]),
-            new VirtualMIDIController(this.virt_ctl_params[2]),
-            new VirtualMIDIController(this.virt_ctl_params[3]),
-            new VirtualMIDIController(this.virt_ctl_params[4])
+            new VirtualMIDIController(this, this.virt_ctl_params[0]),
+            new VirtualMIDIController(this, this.virt_ctl_params[1]),
+            new VirtualMIDIController(this, this.virt_ctl_params[2]),
+            new VirtualMIDIController(this, this.virt_ctl_params[3]),
+            new VirtualMIDIController(this, this.virt_ctl_params[4])
         ];
 
         for (i = 0; i < 228; ++i) {
             freqs[i] = Math.pow(2.0, ((i - 117.0) / 12.0)) * 440.0;
         }
 
-        this._pitch_ctl = new MIDIController(0.5);
-        this._note_ctl = new MIDIController(0.5);
-        this._velocity_ctl = new MIDIController(0.6);
+        this._pitch_ctl = new MIDIController(this, 0.5);
+        this._note_ctl = new MIDIController(this, 0.5);
+        this._velocity_ctl = new MIDIController(this, 0.6);
         this._midi_ctls = [];
 
-        this._virt_note_ctl = new MIDIController(0.5);
-        this._virt_vel_ctl = new MIDIController(0.6);
-        this._seq_note_ctl = new MIDIController(0.5);
-        this._seq_prog_ctl = new MIDIController(0.5);
-        this._seq_vel_ctl = new MIDIController(0.6);
+        this._virt_note_ctl = new MIDIController(this, 0.5);
+        this._virt_vel_ctl = new MIDIController(this, 0.6);
+        this._seq_note_ctl = new MIDIController(this, 0.5);
+        this._seq_prog_ctl = new MIDIController(this, 0.5);
+        this._seq_vel_ctl = new MIDIController(this, 0.6);
 
         for (i = 0; i < 128; ++i) {
             this._midi_ctls[i] = null;
@@ -875,20 +876,20 @@
 
         this.controllers = {
             "pitch": this._pitch_ctl,
-            "mod": this._midi_ctls[1] = new MIDIController(0.25),
-            "breath": this._midi_ctls[2] = new MIDIController(0.5),
-            "volume": this._midi_ctls[7] = new MIDIController(0.5),
-            "pan": this._midi_ctls[10] = new MIDIController(0.5),
-            "expr": this._midi_ctls[11] = new MIDIController(0.5),
-            "gp1": this._midi_ctls[16] = new MIDIController(0.5),
-            "gp2": this._midi_ctls[17] = new MIDIController(0.5),
-            "gp3": this._midi_ctls[18] = new MIDIController(0.5),
-            "gp4": this._midi_ctls[19] = new MIDIController(0.5),
-            "fx1": this._midi_ctls[91] = new MIDIController(0.5),
-            "fx2": this._midi_ctls[92] = new MIDIController(0.5),
-            "fx3": this._midi_ctls[93] = new MIDIController(0.5),
-            "fx4": this._midi_ctls[94] = new MIDIController(0.5),
-            "fx5": this._midi_ctls[95] = new MIDIController(0.5),
+            "mod": this._midi_ctls[1] = new MIDIController(this, 0.25),
+            "breath": this._midi_ctls[2] = new MIDIController(this, 0.5),
+            "volume": this._midi_ctls[7] = new MIDIController(this, 0.5),
+            "pan": this._midi_ctls[10] = new MIDIController(this, 0.5),
+            "expr": this._midi_ctls[11] = new MIDIController(this, 0.5),
+            "gp1": this._midi_ctls[16] = new MIDIController(this, 0.5),
+            "gp2": this._midi_ctls[17] = new MIDIController(this, 0.5),
+            "gp3": this._midi_ctls[18] = new MIDIController(this, 0.5),
+            "gp4": this._midi_ctls[19] = new MIDIController(this, 0.5),
+            "fx1": this._midi_ctls[91] = new MIDIController(this, 0.5),
+            "fx2": this._midi_ctls[92] = new MIDIController(this, 0.5),
+            "fx3": this._midi_ctls[93] = new MIDIController(this, 0.5),
+            "fx4": this._midi_ctls[94] = new MIDIController(this, 0.5),
+            "fx5": this._midi_ctls[95] = new MIDIController(this, 0.5),
             "note": this._note_ctl,
             "vel": this._velocity_ctl,
             "vrt1": this.virt_ctls[0],
@@ -972,6 +973,27 @@
         }
 
         this.garbage = new_garbage;
+    };
+
+    Synth.prototype.controller_update_push = function ()
+    {
+        ++this._controller_update_depth;
+    };
+
+    Synth.prototype.controller_update_pop = function ()
+    {
+        if ((--this._controller_update_depth) < 1) {
+            this.update_dirty_custom_waveforms();
+        }
+    };
+
+    Synth.prototype.update_dirty_custom_waveforms = function ()
+    {
+        this.theremin.update_dirty_custom_waveform();
+        this.midi_voice.osc_1.update_dirty_custom_waveform();
+        this.midi_voice.osc_2.update_dirty_custom_waveform();
+        this.comp_voice.osc_1.update_dirty_custom_waveform();
+        this.comp_voice.osc_2.update_dirty_custom_waveform();
     };
 
     Synth.prototype.register_param = function (param)
@@ -2484,6 +2506,8 @@
         Observable.call(this);
         Observer.call(this);
 
+        this._synth = synth;
+
         pan = new StereoPannerNode(synth.audio_ctx);
         pan.connect(output);
 
@@ -2504,6 +2528,7 @@
         this.waveform.observers.push(this);
 
         this._custom_waveform_key = custom_waveform_key = key + "_cwf";
+        this._is_custom_waveform_dirty = false;
         this.custom_waveform = new CustomWaveParams(synth, custom_waveform_key);
         this.custom_waveform.observers.push(this);
 
@@ -2571,6 +2596,10 @@
     {
     };
 
+    ComplexOscillator.prototype.update_dirty_custom_waveform = function ()
+    {
+    };
+
     function MIDINoteBasedOscillator(
             synth, key, poliphony, frequencies, output, volume_param_target,
             lfo_highpass_params, lfo_lowpass_params
@@ -2614,15 +2643,14 @@
         var notes = this._notes,
             flags = this._filter_flags,
             key = param.key,
-            i, l, flag, wave;
+            i, l, flag, synth;
 
         if (key === this._waveform_key) {
             if (new_value === "custom") {
-                wave = this.custom_waveform.get_waveform();
-
-                for (i = 0, l = notes.length; i < l; ++i) {
-                    notes[i].set_custom_waveform(wave);
-                }
+                synth = this._synth;
+                synth.controller_update_push();
+                this._is_custom_waveform_dirty = true;
+                synth.controller_update_pop();
             } else {
                 for (i = 0, l = notes.length; i < l; ++i) {
                     notes[i].set_waveform(new_value);
@@ -2631,11 +2659,10 @@
 
             this.notify_observers(new_value);
         } else if (key === this._custom_waveform_key && this.waveform.value === "custom") {
-            wave = this.custom_waveform.get_waveform();
-
-            for (i = 0, l = notes.length; i < l; ++i) {
-                notes[i].set_custom_waveform(wave);
-            }
+            synth = this._synth;
+            synth.controller_update_push();
+            this._is_custom_waveform_dirty = true;
+            synth.controller_update_pop();
         } else if (flags.hasOwnProperty(key)) {
             flag = flags[key];
 
@@ -2649,6 +2676,24 @@
                 }
             }
         }
+    };
+
+    MIDINoteBasedOscillator.prototype.update_dirty_custom_waveform = function ()
+    {
+        var notes, wave, i, l;
+
+        if (!this._is_custom_waveform_dirty) {
+            return;
+        }
+
+        notes = this._notes;
+        wave = this.custom_waveform.get_waveform();
+
+        for (i = 0, l = notes.length; i < l; ++i) {
+            notes[i].set_custom_waveform(wave);
+        }
+
+        this._is_custom_waveform_dirty = false;
     };
 
     MIDINoteBasedOscillator.prototype.start = function (when)
@@ -2753,6 +2798,7 @@
 
     MIDINoteBasedCarrier.prototype.notify_observers = MIDINoteBasedOscillator.prototype.notify_observers;
     MIDINoteBasedCarrier.prototype.update = MIDINoteBasedOscillator.prototype.update;
+    MIDINoteBasedCarrier.prototype.update_dirty_custom_waveform = MIDINoteBasedOscillator.prototype.update_dirty_custom_waveform;
     MIDINoteBasedCarrier.prototype.start = MIDINoteBasedOscillator.prototype.start;
     MIDINoteBasedCarrier.prototype.trigger_note = MIDINoteBasedOscillator.prototype.trigger_note;
     MIDINoteBasedCarrier.prototype.stop_note = MIDINoteBasedOscillator.prototype.stop_note;
@@ -2839,6 +2885,7 @@
 
     MIDINoteBasedModulator.prototype.notify_observers = MIDINoteBasedOscillator.prototype.notify_observers;
     MIDINoteBasedModulator.prototype.update = MIDINoteBasedOscillator.prototype.update;
+    MIDINoteBasedModulator.prototype.update_dirty_custom_waveform = MIDINoteBasedOscillator.prototype.update_dirty_custom_waveform;
     MIDINoteBasedModulator.prototype.trigger_note = MIDINoteBasedOscillator.prototype.trigger_note;
     MIDINoteBasedModulator.prototype.stop_note = MIDINoteBasedOscillator.prototype.stop_note;
     MIDINoteBasedModulator.prototype.cancel_note = MIDINoteBasedOscillator.prototype.cancel_note;
@@ -2955,20 +3002,24 @@
     {
         var key = param.key,
             flags = this._filter_flags,
-            flag, wave;
+            synth, flag;
 
         if (key === this._waveform_key) {
             if (new_value === "custom") {
-                wave = this.custom_waveform.get_waveform();
-                this._note.set_custom_waveform(wave);
+                synth = this._synth;
+                synth.controller_update_push();
+                this._is_custom_waveform_dirty = true;
+                synth.controller_update_pop();
             } else {
                 this._note.set_waveform(new_value);
             }
 
             this.notify_observers(new_value);
         } else if (key === this._custom_waveform_key && this.waveform.value === "custom") {
-            wave = this.custom_waveform.get_waveform();
-            this._note.set_custom_waveform(wave);
+            synth = this._synth;
+            synth.controller_update_push();
+            this._is_custom_waveform_dirty = true;
+            synth.controller_update_pop();
         } else if (flags.hasOwnProperty(key)) {
             flag = flags[key];
 
@@ -2978,6 +3029,16 @@
                 this._note.bypass_filter(flag);
             }
         }
+    };
+
+    Theremin.prototype.update_dirty_custom_waveform = function ()
+    {
+        if (!this._is_custom_waveform_dirty) {
+            return;
+        }
+
+        this._note.set_custom_waveform(this.custom_waveform.get_waveform());
+        this._is_custom_waveform_dirty = false;
     };
 
     Theremin.prototype.start = function (when)
@@ -3898,6 +3959,7 @@
         }
 
         this._audio_ctx = synth.audio_ctx;
+
         this.params = params;
         this.waveform = null;
     }
@@ -4037,11 +4099,13 @@
         this._lfo_ctl.update_wave_shaper();
     };
 
-    function MIDIController(default_value)
+    function MIDIController(synth, default_value)
     {
         this._params = [];
         this._connections = {};
         this._next_conn = 0;
+        this._synth = synth;
+
         this.value = default_value;
     }
 
@@ -4085,8 +4149,12 @@
 
     MIDIController.prototype.set_value = function (new_value)
     {
+        var synth = this._synth;
+
+        synth.controller_update_push();
         this.value = new_value;
         this.control_params();
+        synth.controller_update_pop();
     };
 
     MIDIController.prototype.control_params = function ()
@@ -4100,9 +4168,9 @@
         }
     };
 
-    function VirtualMIDIController(virt_ctl_param)
+    function VirtualMIDIController(synth, virt_ctl_param)
     {
-        MIDIController.call(this, virt_ctl_param.default_value);
+        MIDIController.call(this, synth, virt_ctl_param.default_value);
         Observer.call(this);
 
         virt_ctl_param.observers.push(this);
@@ -4143,7 +4211,7 @@
         this._inputs = inputs;
         this._last_input_value = 0.0;
 
-        MIDIController.call(this, 0);
+        MIDIController.call(this, synth, 0.0);
         Observer.call(this);
 
         this.input_1.observers.push(this);
