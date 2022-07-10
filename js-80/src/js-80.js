@@ -4365,7 +4365,7 @@
     {
         var params = new UIWidgetGroup("vertical"),
             amp_env = new NamedUIWidgetGroup("Amplitude envelope", "vertical"),
-            custom_waveform = new CustomWaveParamsUI("", complex_osc.custom_waveform),
+            custom_waveform = new CustomWaveParamsUI("", complex_osc.custom_waveform, synth),
             filters = new ClosableNamedUIWidgetGroup("Filters", "filters horizontal"),
             env_highpass = new EnvelopeHighpassUI(complex_osc, synth),
             env_lowpass = new EnvelopeLowpassUI(complex_osc, synth),
@@ -5262,7 +5262,7 @@
         var touch_area = document.createElement("div"),
             params = new UIWidgetGroup("horizontal"),
             filters = new ClosableNamedUIWidgetGroup("Filters", "filters horizontal"),
-            custom_waveform = new CustomWaveParamsUI("", theremin.custom_waveform),
+            custom_waveform = new CustomWaveParamsUI("", theremin.custom_waveform, synth),
             env_highpass = new EnvelopeHighpassUI(theremin, synth),
             env_lowpass = new EnvelopeLowpassUI(theremin, synth),
             lfo_highpass = new LFOCompatibleHighpassUI("", theremin.lfo_highpass_params, synth),
