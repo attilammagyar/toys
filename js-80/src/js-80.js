@@ -2758,12 +2758,12 @@
 
     MIDINoteBasedOscillator.prototype.stop_note = function (when, note_idx)
     {
-        this._notes[note_idx].stop(when, this.amp_env_params, this.env_highpass_params, this.env_lowpass_params);
+        this._notes[note_idx].stop(when);
     };
 
     MIDINoteBasedOscillator.prototype.cancel_note = function (when, note_idx)
     {
-        this._notes[note_idx].cancel(when, this.amp_env_params, this.env_highpass_params, this.env_lowpass_params);
+        this._notes[note_idx].cancel(when);
     };
 
     function MIDINoteBasedCarrier(synth, key, poliphony, frequencies, output)
@@ -3105,12 +3105,7 @@
     Theremin.prototype.stop = function (x, y)
     {
         this.move(x, y);
-        this._note.stop(
-            this._audio_ctx.currentTime + 0.01,
-            this.amp_env_params,
-            this.env_highpass_params,
-            this.env_lowpass_params
-        );
+        this._note.stop(this._audio_ctx.currentTime + 0.01);
     };
 
     function Note(synth, output)
@@ -3155,13 +3150,21 @@
 
         this._amp_sustain_start = null;
         this._amp_sustain_level = null;
+        this._amp_release_time = null;
         this._ehp_sustain_start = null;
+        this._ehp_sustain_level = null;
+        this._ehp_release_time = null
+        this._ehp_release_freq = null
         this._elp_sustain_start = null;
+        this._elp_sustain_level = null;
+        this._elp_release_time = null
+        this._elp_release_freq = null
 
         this.frequency = osc.frequency;
         this.pan = pan;
 
         this._chain_mask = 0;
+        this._chain_mask_when_triggered = 0;
         this._chain_in = osc;
         this._chains = [
             [vel_vol],
@@ -3186,7 +3189,7 @@
         chain_in.disconnect();
 
         for (i = 0, l = old_chain.length - 1; i < l; ++i) {
-            old_chain[i].disconnect();
+            old_chain[i].disconnect(old_chain[i + 1]);
         }
 
         chain_in.connect(new_chain[0]);
@@ -3246,6 +3249,9 @@
             amp_env_params[4].value,
             this._amp_sustain_level = amp_env_params[5].value * velocity
         );
+        this._amp_release_time = amp_env_params[6].value;
+
+        this._chain_mask_when_triggered = chain_mask;
 
         if (0 < (chain_mask & 1)) {
             this._ehp_sustain_start = this._apply_envelope_dahds(
@@ -3258,9 +3264,14 @@
                 env_highpass_params[3].value,
                 env_highpass_params[4].value,
                 env_highpass_params[5].value,
-                env_highpass_params[6].value
+                this._ehp_sustain_level = env_highpass_params[6].value
             );
+        } else {
+            this._ehp_sustain_level = env_highpass_params[6].value;
         }
+
+        this._ehp_release_time = env_highpass_params[7].value;
+        this._ehp_release_freq = env_highpass_params[8].value;
 
         if (0 < (chain_mask & 2)) {
             this._elp_sustain_start = this._apply_envelope_dahds(
@@ -3273,9 +3284,14 @@
                 env_lowpass_params[3].value,
                 env_lowpass_params[4].value,
                 env_lowpass_params[5].value,
-                env_lowpass_params[6].value
+                this._elp_sustain_level = env_lowpass_params[6].value
             );
+        } else {
+            this._elp_sustain_level = env_lowpass_params[6].value;
         }
+
+        this._elp_release_time = env_lowpass_params[7].value;
+        this._elp_release_freq = env_lowpass_params[8].value;
     };
 
     // initial-l ==delay-t==> initial-l ==attack-t==> peak-l ==hold-t==> peak-l ==decay-t==> sustain-l
@@ -3299,16 +3315,16 @@
         return when;
     }
 
-    Note.prototype.stop = function (when, amp_env_params, env_highpass_params, env_lowpass_params)
+    Note.prototype.stop = function (when)
     {
-        var chain_mask = this._chain_mask;
+        var chain_mask = this._chain_mask_when_triggered;
 
         this._apply_envelope_r(
             this._vel_vol.gain,
             when,
             this._amp_sustain_start,
             this._amp_sustain_level,
-            amp_env_params[6].value,
+            this._amp_release_time,
             0.0
         );
 
@@ -3317,9 +3333,9 @@
                 this._env_highpass.frequency,
                 when,
                 this._ehp_sustain_start,
-                env_highpass_params[6].value,
-                env_highpass_params[7].value,
-                env_highpass_params[8].value
+                this._ehp_sustain_level,
+                this._ehp_release_time,
+                this._ehp_release_freq
             );
         }
 
@@ -3328,9 +3344,9 @@
                 this._env_lowpass.frequency,
                 when,
                 this._elp_sustain_start,
-                env_lowpass_params[6].value,
-                env_lowpass_params[7].value,
-                env_lowpass_params[8].value
+                this._elp_sustain_level,
+                this._elp_release_time,
+                this._elp_release_freq
             );
         }
     };
@@ -3347,9 +3363,9 @@
         param.linearRampToValueAtTime(rl, when + rt);
     }
 
-    Note.prototype.cancel = function (when, amp_env_params, env_highpass_params, env_lowpass_params)
+    Note.prototype.cancel = function (when)
     {
-        var chain_mask = this._chain_mask;
+        var chain_mask = this._chain_mask_when_triggered;
 
         this._apply_envelope_r(
             this._vel_vol.gain,
@@ -3365,9 +3381,9 @@
                 this._env_highpass.frequency,
                 when,
                 this._ehp_sustain_start,
-                env_highpass_params[6].value,
+                this._ehp_sustain_level,
                 0.0,
-                env_highpass_params[8].value
+                this._ehp_release_freq
             );
         }
 
@@ -3376,9 +3392,9 @@
                 this._env_lowpass.frequency,
                 when,
                 this._elp_sustain_start,
-                env_lowpass_params[6].value,
+                this._elp_sustain_level,
                 0.0,
-                env_lowpass_params[8].value
+                this._elp_release_freq
             );
         }
     };
@@ -3474,22 +3490,22 @@
         this._freq_cns.start(when);
     };
 
-    ZeroPhaseNote.prototype.stop = function (when, amp_env_params, env_highpass_params, env_lowpass_params)
+    ZeroPhaseNote.prototype.stop = function (when)
     {
         var osc = this._osc;
 
-        Note.prototype.stop.call(this, when, amp_env_params, env_highpass_params, env_lowpass_params);
+        Note.prototype.stop.call(this, when);
 
         if (osc !== null) {
-            osc.stop(when + amp_env_params[6].value);
+            osc.stop(when + this._amp_release_time);
         }
     };
 
-    Note.prototype.cancel = function (when, amp_env_params, env_highpass_params, env_lowpass_params)
+    ZeroPhaseNote.prototype.cancel = function (when)
     {
         var osc = this._osc;
 
-        Note.prototype.cancel.call(this, when, amp_env_params, env_highpass_params, env_lowpass_params);
+        Note.prototype.cancel.call(this, when);
 
         if (osc !== null) {
             this._osc.stop(when);
@@ -3509,7 +3525,7 @@
             this._synth.garbage.push([when, osc, freq_cns, osc.frequency, detune, osc.detune, fine_detune, osc.detune]);
         }
 
-        this._osc = osc = new OscillatorNode(this._audio_ctx, {"channelCount": 1});
+        this._chain_in = this._osc = osc = new OscillatorNode(this._audio_ctx, {"channelCount": 1});
 
         if (waveform === null) {
             osc.setPeriodicWave(this._periodic_wave);
@@ -3553,7 +3569,13 @@
     CarrierNote.prototype.engage_filter = ZeroPhaseNote.prototype.engage_filter;
     CarrierNote.prototype.bypass_filter = ZeroPhaseNote.prototype.bypass_filter;
     CarrierNote.prototype.start = ZeroPhaseNote.prototype.start;
-    CarrierNote.prototype._replace_oscillator = ZeroPhaseNote.prototype._replace_oscillator;
+
+    CarrierNote.prototype._replace_oscillator = function (when, osc_connection)
+    {
+        ZeroPhaseNote.prototype._replace_oscillator.call(this, when, osc_connection);
+
+        this._chain_in = this._am_in;
+    };
 
     CarrierNote.prototype.trigger = function (
             now, when, freq, velocity, pan,
