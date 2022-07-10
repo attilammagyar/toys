@@ -1042,6 +1042,19 @@ div.color-9 { background-color: #410; }
             "m5": "add + FM",
             "m6": "AM + FM",
             "m7": "add + AM + FM",
+            "m8": "split at C3",
+            "m9": "split at C#3 / Db3",
+            "m10": "split at D3",
+            "m11": "split at D#3 / Eb3",
+            "m12": "split at E3",
+            "m13": "split at F3",
+            "m14": "split at F#3 / Gb3",
+            "m15": "split at G3",
+            "m16": "split at G#3 / Ab3",
+            "m17": "split at A3",
+            "m18": "split at A#3 / Bb3",
+            "m19": "split at B3",
+            "m20": "split at C4"
         },
         MOD_MASKS = {
             "m1": 1,
@@ -1051,6 +1064,41 @@ div.color-9 { background-color: #410; }
             "m5": 5,
             "m6": 6,
             "m7": 7,
+            "m8": 1,
+            "m9": 1,
+            "m10": 1,
+            "m11": 1,
+            "m12": 1,
+            "m13": 1,
+            "m14": 1,
+            "m15": 1,
+            "m16": 1,
+            "m17": 1,
+            "m18": 1,
+            "m19": 1,
+            "m20": 1
+        },
+        SPLITS = {
+            "m1": null,
+            "m2": null,
+            "m3": null,
+            "m4": null,
+            "m5": null,
+            "m6": null,
+            "m7": null,
+            "m8": 48,
+            "m9": 49,
+            "m10": 50,
+            "m11": 51,
+            "m12": 52,
+            "m13": 53,
+            "m14": 54,
+            "m15": 55,
+            "m16": 56,
+            "m17": 57,
+            "m18": 58,
+            "m19": 59,
+            "m20": 60
         },
         ENV_HP_FLAG = 1,
         ENV_LP_FLAG = 2,
@@ -2525,6 +2573,7 @@ div.color-9 { background-color: #410; }
         this._am_vol = am_vol;
         this._fm_vol = fm_vol;
         this._mod = MOD_MASKS["m1"];
+        this._split = null;
         this._poliphony = poliphony;
         this.effects = effects;
 
@@ -2546,6 +2595,7 @@ div.color-9 { background-color: #410; }
     Voice.prototype.update = function (modulation, arg)
     {
         this.osc_1.modulate(MOD_MASKS[arg]);
+        this._split = SPLITS[arg];
     };
 
     Voice.prototype.start = function (when)
@@ -2559,7 +2609,7 @@ div.color-9 { background-color: #410; }
     Voice.prototype.trigger_note = function (now, when, midi_note, velocity)
     {
         var active_notes = this._active_notes,
-            note_pan, note_idx;
+            note_idx;
 
         if (active_notes[midi_note] !== null) {
             return;
@@ -2571,19 +2621,30 @@ div.color-9 { background-color: #410; }
 
         active_notes[midi_note] = note_idx;
 
-        // note_pan = 2.0 * (midi_note / 127.0) - 1.0;
-        note_pan = midi_note / 63.5 - 1.0;
+        this._trigger_note(now, when, note_idx, midi_note, velocity);
+    };
 
-        this.osc_1.trigger_note(now, when, note_idx, midi_note, velocity, note_pan);
-        this.osc_2.trigger_note(now, when, note_idx, midi_note, velocity, note_pan);
+    Voice.prototype._trigger_note = function (now, when, note_idx, midi_note, velocity)
+    {
+        // note_pan = 2.0 * (midi_note / 127.0) - 1.0;
+        var note_pan = midi_note / 63.5 - 1.0,
+            split = this._split;
+
+        if (split === null) {
+            this.osc_1.trigger_note(now, when, note_idx, midi_note, velocity, note_pan);
+            this.osc_2.trigger_note(now, when, note_idx, midi_note, velocity, note_pan);
+        } else {
+            if (midi_note < split) {
+                this.osc_1.trigger_note(now, when, note_idx, midi_note, velocity, note_pan);
+            } else {
+                this.osc_2.trigger_note(now, when, note_idx, midi_note, velocity, note_pan);
+            }
+        }
     };
 
     Voice.prototype.schedule_note = function (when, note_idx, midi_note, velocity)
     {
-        var note_pan = midi_note / 63.5 - 1.0;
-
-        this.osc_1.trigger_note(when, when, note_idx, midi_note, velocity, note_pan);
-        this.osc_2.trigger_note(when, when, note_idx, midi_note, velocity, note_pan);
+        this._trigger_note(when, when, note_idx, midi_note, velocity);
     };
 
     Voice.prototype.stop_note = function (when, midi_note)
@@ -4147,16 +4208,24 @@ div.color-9 { background-color: #410; }
 
     ZeroPhaseNote.prototype.stop = function (when, amp_env_params, env_highpass_params, env_lowpass_params)
     {
+        var osc = this._osc;
+
         Note.prototype.stop.call(this, when, amp_env_params, env_highpass_params, env_lowpass_params);
 
-        this._osc.stop(when + amp_env_params[6].value);
+        if (osc !== null) {
+            osc.stop(when + amp_env_params[6].value);
+        }
     };
 
     Note.prototype.cancel = function (when, amp_env_params, env_highpass_params, env_lowpass_params)
     {
+        var osc = this._osc;
+
         Note.prototype.cancel.call(this, when, amp_env_params, env_highpass_params, env_lowpass_params);
 
-        this._osc.stop(when);
+        if (osc !== null) {
+            this._osc.stop(when);
+        }
     };
 
     ZeroPhaseNote.prototype._replace_oscillator = function (when, osc_connection)
@@ -5135,7 +5204,7 @@ div.color-9 { background-color: #410; }
         settings.add(new FaderUI("VOL", "Volume", "%", 1000, 10, ALL_CONTROLS, voice.volume, synth));
         settings.add(new FaderUI("AM", "Amplitude modulation volume", "%", 1000, 10, ALL_CONTROLS, voice.am_volume, synth));
         settings.add(new FaderUI("FM", "Frequency modulation volume", "%", 100, 100, ALL_CONTROLS, voice.fm_volume, synth));
-        settings.add(new SelectUI("1+2", "Modulate Oscillator 2 with Oscillator 1", "modulation", voice.modulation, synth));
+        settings.add(new SelectUI("1+2", "Relation of Oscillator 1 and Oscillator 2", "modulation", voice.modulation, synth));
 
         effects.add(new DistortionUI("Overdrive", "vertical color-8", voice.effects.overdrive, synth));
         effects.add(new DistortionUI("Distortion", "vertical color-9", voice.effects.distortion, synth));
