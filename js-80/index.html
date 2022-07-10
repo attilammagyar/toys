@@ -2214,9 +2214,9 @@ div.color-9 { background-color: #410; }
         if ((this._next_bank_key = this.active_bank.value) !== this._active_bank_key) {
             this._next_bank_base_note_idx_in_scale = 0;
             this._next_bank_base_note_offset = 48;
-            this._scheduled_root_idx = 0;
 
             if (this._beat_idx < 1) {
+                this._scheduled_root_idx = 0;
                 this._reload_next_bank_scale(
                     this._active_bank = this.banks[this._active_bank_key = this._next_bank_key]
                 );
