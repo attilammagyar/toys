@@ -3881,7 +3881,7 @@
     {
         var mul = new GainNode(synth.audio_ctx, {"channelCount": 1}),
             add = new GainNode(synth.audio_ctx, {"channelCount": 1}),
-            ofs = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1});
+            ofs = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1, "offset": 0.0});
 
         MIDIControllableParam.call(this, synth, key, min, max, default_value);
 
@@ -3901,7 +3901,7 @@
         this._ofs = ofs;
         this._add = add;
         this._ctl_out = null;
-        this._automated_until = 0;
+        this._automated_until = 0.0;
         this._target_param = target_param;
 
         this.set_value(default_value);
@@ -3914,8 +3914,8 @@
 
     LFOControllableParam.prototype.set_value = function (new_value)
     {
-        this._target_param.value = 0;
-        this._mul.gain.value = 0;
+        this._target_param.value = 0.0;
+        this._mul.gain.value = 0.0;
         this.value = new_value;
 
         this._ofs.offset.linearRampToValueAtTime(
@@ -3933,10 +3933,10 @@
 
         if (this._automated_until > (ct = this._audio_ctx.currentTime)) {
             this._ofs.offset.cancelAndHoldAtTime(ct);
-            this._automated_until = 0;
+            this._automated_until = 0.0;
         }
 
-        this._target_param.value = 0;
+        this._target_param.value = 0.0;
         this._ofs.offset.value = this.min;
         this._mul.gain.value = this.delta;
         this._ctl_out = ctl_out;
@@ -3960,7 +3960,7 @@
 
         this._ctl_out = null;
         ctl_out.disconnect(this._mul);
-        this._mul.gain.value = 0.0;
+        this.set_value(this.value);
     };
 
     function CustomWaveParams(synth, key)
@@ -4036,15 +4036,21 @@
     function LFOController(synth, key)
     {
         var osc = new OscillatorNode(synth.audio_ctx, {"channelCount": 1}),
-            ws = new WaveShaperNode(synth.audio_ctx, {"curve": new Float32Array([0.0, 1.0]), "channelCount": 1});
+            gain = new GainNode(synth.audio_ctx, {"gain": 0.0, "channelCount": 1}),
+            ws_0_1 = new WaveShaperNode(synth.audio_ctx, {"curve": new Float32Array([0.0, 1.0]), "channelCount": 1}),
+            ws_min_max = new WaveShaperNode(synth.audio_ctx, {"curve": new Float32Array([0.0, 1.0]), "channelCount": 1});
 
         Observable.call(this);
         Observer.call(this);
 
-        osc.connect(ws);
+        osc.connect(ws_0_1);
+        ws_0_1.connect(gain);
+        gain.connect(ws_min_max);
 
         this._osc = osc;
-        this._wave_shaper = ws;
+        this._gain = gain;
+        this._wave_shaper_0_1 = ws_0_1;
+        this._wave_shaper_min_max = ws_min_max;
 
         this.key = key;
 
@@ -4052,11 +4058,11 @@
         this.waveform.observers.push(this);
 
         this.frequency = new LFOControllableParam(synth, key + "_f", osc.frequency, LFO_FREQ_MIN, LFO_FREQ_MAX, LFO_FREQ_DEF);
-        this.amt = new LFOControllerParam(synth, key + "_am", this, 0.0, 1.0, 1.0);
+        this.amt = new LFOControllableParam(synth, key + "_am", gain.gain, 0.0, 1.0, 1.0);
         this.min = new LFOControllerParam(synth, key + "_mi", this, 0.0, 1.0, 0.0);
         this.max = new LFOControllerParam(synth, key + "_ma", this, 0.0, 1.0, 1.0);
         this.rnd = new LFOControllerParam(synth, key + "_rn", this, 0.0, 1.0, 0.0);
-        this.output = ws;
+        this.output = ws_min_max;
     }
 
     LFOController.prototype.notify_observers = Observable.prototype.notify_observers;
@@ -4075,30 +4081,33 @@
     LFOController.prototype.update_wave_shaper = function ()
     {
         var min = this.min.value,
-            curve = [],
+            max = this.max.value,
             rnd_weight = this.rnd.value,
-            amt = this.amt.value,
-            l = RANDOMS,
-            r = RANDOMS - 1,
-            delta, inv_rnd_weight, i;
-
-        delta = this.max.value - min;
+            curve, delta, inv_rnd_weight, i, l, r;
 
         if (rnd_weight < 0.0001) {
-            this._wave_shaper.curve = new Float32Array([min, min + delta * amt]);
+            this._wave_shaper_min_max.curve = new Float32Array([min, min, max]);
         } else {
+            r = (l = RANDOMS) - 1;
+            curve = new Float32Array(l * 2 - 1);
+
+            for (i = 0; i < r; ++i) {
+                curve[i] = min;
+            }
+
+            delta = max - min;
             inv_rnd_weight = 1.0 - rnd_weight;
 
-            for (i = 0, l = RANDOMS; i < l; ++i) {
-                curve.push(
-                    min + delta * amt * (
+            for (i = 0; i < l; ++i) {
+                curve[i + r] = (
+                    min + delta * (
                         rnd_weight * random_numbers[i]
                         + inv_rnd_weight * (i / r)
                     )
                 );
             }
 
-            this._wave_shaper.curve = new Float32Array(curve);
+            this._wave_shaper_min_max.curve = curve;
         }
     };
 
@@ -4766,7 +4775,7 @@
     {
         var wav = new SelectUI("WAV", "Waveform", "waveform-selector", lfo_ctl.waveform, synth),
             freq = new FaderUI("FRQ", "Frequency", "Hz", 100, 100, ALL_CONTROLS, lfo_ctl.frequency, synth),
-            amt = new FaderUI("AMT", "Amount", "%", 5000, 50, MIDI_CONTROLS, lfo_ctl.amt, synth),
+            amt = new FaderUI("AMT", "Amount", "%", 5000, 50, ALL_CONTROLS, lfo_ctl.amt, synth),
             min = new FaderUI("MIN", "Minimum value", "%", 5000, 50, MIDI_CONTROLS, lfo_ctl.min, synth),
             max = new FaderUI("MAX", "Maximum value", "%", 5000, 50, MIDI_CONTROLS, lfo_ctl.max, synth),
             rnd = new FaderUI("RND", "Randomness", "%", 5000, 50, MIDI_CONTROLS, lfo_ctl.rnd, synth);
