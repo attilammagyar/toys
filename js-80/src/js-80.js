@@ -835,7 +835,8 @@
 
         this._params = [];
         this._param_keys = {};
-        this._controller_update_depth = 0;
+        this._update_dirty_custom_waves_timeout = null;
+        this._update_dirty_custom_waves_func = null;
 
         this.audio_ctx = audio_ctx;
         this.garbage = [];
@@ -950,6 +951,19 @@
 
         this.output = output;
         this.midi_inputs = [];
+
+        this._update_dirty_custom_waves_func = bind(
+            this,
+            function ()
+            {
+                this.theremin.update_dirty_custom_wave();
+                this.midi_voice.osc_1.update_dirty_custom_wave();
+                this.midi_voice.osc_2.update_dirty_custom_wave();
+                this.comp_voice.osc_1.update_dirty_custom_wave();
+                this.comp_voice.osc_2.update_dirty_custom_wave();
+                this._update_dirty_custom_waves_timeout = null;
+            }
+        );
     }
 
     Synth.prototype.clear_garbage = function (when)
@@ -975,25 +989,17 @@
         this.garbage = new_garbage;
     };
 
-    Synth.prototype.controller_update_push = function ()
+    Synth.prototype.update_dirty_custom_waves = function ()
     {
-        ++this._controller_update_depth;
-    };
+        var f = this._update_dirty_custom_waves_func;
 
-    Synth.prototype.controller_update_pop = function ()
-    {
-        if ((--this._controller_update_depth) < 1) {
-            this.update_dirty_custom_waveforms();
+        if (f === null) {
+            return;
         }
-    };
 
-    Synth.prototype.update_dirty_custom_waveforms = function ()
-    {
-        this.theremin.update_dirty_custom_waveform();
-        this.midi_voice.osc_1.update_dirty_custom_waveform();
-        this.midi_voice.osc_2.update_dirty_custom_waveform();
-        this.comp_voice.osc_1.update_dirty_custom_waveform();
-        this.comp_voice.osc_2.update_dirty_custom_waveform();
+        if (this._update_dirty_custom_waves_timeout === null) {
+            this._update_dirty_custom_waves_timeout = setTimeout(f, 55);
+        }
     };
 
     Synth.prototype.register_param = function (param)
@@ -2596,7 +2602,7 @@
     {
     };
 
-    ComplexOscillator.prototype.update_dirty_custom_waveform = function ()
+    ComplexOscillator.prototype.update_dirty_custom_wave = function ()
     {
     };
 
@@ -2643,15 +2649,14 @@
         var notes = this._notes,
             flags = this._filter_flags,
             key = param.key,
-            i, l, flag, synth;
+            i, l, flag;
 
         if (key === this._waveform_key) {
             if (new_value === "custom") {
-                synth = this._synth;
-                synth.controller_update_push();
                 this._is_custom_waveform_dirty = true;
-                synth.controller_update_pop();
+                this._synth.update_dirty_custom_waves();
             } else {
+                this._is_custom_waveform_dirty = false;
                 for (i = 0, l = notes.length; i < l; ++i) {
                     notes[i].set_waveform(new_value);
                 }
@@ -2659,10 +2664,8 @@
 
             this.notify_observers(new_value);
         } else if (key === this._custom_waveform_key && this.waveform.value === "custom") {
-            synth = this._synth;
-            synth.controller_update_push();
             this._is_custom_waveform_dirty = true;
-            synth.controller_update_pop();
+            this._synth.update_dirty_custom_waves();
         } else if (flags.hasOwnProperty(key)) {
             flag = flags[key];
 
@@ -2678,7 +2681,7 @@
         }
     };
 
-    MIDINoteBasedOscillator.prototype.update_dirty_custom_waveform = function ()
+    MIDINoteBasedOscillator.prototype.update_dirty_custom_wave = function ()
     {
         var notes, wave, i, l;
 
@@ -2798,7 +2801,7 @@
 
     MIDINoteBasedCarrier.prototype.notify_observers = MIDINoteBasedOscillator.prototype.notify_observers;
     MIDINoteBasedCarrier.prototype.update = MIDINoteBasedOscillator.prototype.update;
-    MIDINoteBasedCarrier.prototype.update_dirty_custom_waveform = MIDINoteBasedOscillator.prototype.update_dirty_custom_waveform;
+    MIDINoteBasedCarrier.prototype.update_dirty_custom_wave = MIDINoteBasedOscillator.prototype.update_dirty_custom_wave;
     MIDINoteBasedCarrier.prototype.start = MIDINoteBasedOscillator.prototype.start;
     MIDINoteBasedCarrier.prototype.trigger_note = MIDINoteBasedOscillator.prototype.trigger_note;
     MIDINoteBasedCarrier.prototype.stop_note = MIDINoteBasedOscillator.prototype.stop_note;
@@ -2885,7 +2888,7 @@
 
     MIDINoteBasedModulator.prototype.notify_observers = MIDINoteBasedOscillator.prototype.notify_observers;
     MIDINoteBasedModulator.prototype.update = MIDINoteBasedOscillator.prototype.update;
-    MIDINoteBasedModulator.prototype.update_dirty_custom_waveform = MIDINoteBasedOscillator.prototype.update_dirty_custom_waveform;
+    MIDINoteBasedModulator.prototype.update_dirty_custom_wave = MIDINoteBasedOscillator.prototype.update_dirty_custom_wave;
     MIDINoteBasedModulator.prototype.trigger_note = MIDINoteBasedOscillator.prototype.trigger_note;
     MIDINoteBasedModulator.prototype.stop_note = MIDINoteBasedOscillator.prototype.stop_note;
     MIDINoteBasedModulator.prototype.cancel_note = MIDINoteBasedOscillator.prototype.cancel_note;
@@ -3002,24 +3005,21 @@
     {
         var key = param.key,
             flags = this._filter_flags,
-            synth, flag;
+            flag;
 
         if (key === this._waveform_key) {
             if (new_value === "custom") {
-                synth = this._synth;
-                synth.controller_update_push();
                 this._is_custom_waveform_dirty = true;
-                synth.controller_update_pop();
+                this._synth.update_dirty_custom_waves();
             } else {
+                this._is_custom_waveform_dirty = false;
                 this._note.set_waveform(new_value);
             }
 
             this.notify_observers(new_value);
         } else if (key === this._custom_waveform_key && this.waveform.value === "custom") {
-            synth = this._synth;
-            synth.controller_update_push();
             this._is_custom_waveform_dirty = true;
-            synth.controller_update_pop();
+            this._synth.update_dirty_custom_waves();
         } else if (flags.hasOwnProperty(key)) {
             flag = flags[key];
 
@@ -3031,7 +3031,7 @@
         }
     };
 
-    Theremin.prototype.update_dirty_custom_waveform = function ()
+    Theremin.prototype.update_dirty_custom_wave = function ()
     {
         if (!this._is_custom_waveform_dirty) {
             return;
@@ -4182,10 +4182,8 @@
     {
         var synth = this._synth;
 
-        synth.controller_update_push();
         this.value = new_value;
         this.control_params();
-        synth.controller_update_pop();
     };
 
     MIDIController.prototype.control_params = function ()
