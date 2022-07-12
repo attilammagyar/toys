@@ -5457,7 +5457,7 @@
         params.add(new FaderUI("VOL", "Volume", "%", 1000, 10, ALL_CONTROLS, theremin.volume, synth));
         params.add(new FaderUI("PAN", "Panning", "%", 100, 1, ALL_CONTROLS, theremin.pan, synth));
         params.add(new FaderUI("WID", "Width", "%", 100, 1, MIDI_CONTROLS, theremin.width, synth));
-        params.add(new FaderUI("RES", "Resolution", "", 1, 1, MIDI_CONTROLS, theremin.resolution, synth));
+        params.add(new FaderUI("PX", "Pixelate", "", 1, 1, MIDI_CONTROLS, theremin.resolution, synth));
         params.add(new FaderUI("MIN", "Minimum frequencey", "Hz", 1, 1, MIDI_CONTROLS, theremin.min_freq, synth));
         params.add(new FaderUI("MAX", "Maximum frequencey", "Hz", 1, 1, MIDI_CONTROLS, theremin.max_freq, synth));
         params.add(new FaderUI("ATK", "Attack time", "s", 1000, 1000, MIDI_CONTROLS, theremin.amp_env_params[1], synth));
