@@ -1861,18 +1861,16 @@
 
     Voice.prototype._trigger_note = function (now, when, note_idx, midi_note, velocity)
     {
-        // note_pan = 2.0 * (midi_note / 127.0) - 1.0;
-        var note_pan = midi_note / 63.5 - 1.0,
-            split = this._split;
+        var split = this._split;
 
         if (split === null) {
-            this.osc_1.trigger_note(now, when, note_idx, midi_note, velocity, note_pan);
-            this.osc_2.trigger_note(now, when, note_idx, midi_note, velocity, note_pan);
+            this.osc_1.trigger_note(now, when, note_idx, midi_note, velocity);
+            this.osc_2.trigger_note(now, when, note_idx, midi_note, velocity);
         } else {
             if (midi_note < split) {
-                this.osc_1.trigger_note(now, when, note_idx, midi_note, velocity, note_pan);
+                this.osc_1.trigger_note(now, when, note_idx, midi_note, velocity);
             } else {
-                this.osc_2.trigger_note(now, when, note_idx, midi_note, velocity, note_pan);
+                this.osc_2.trigger_note(now, when, note_idx, midi_note, velocity);
             }
         }
     };
@@ -2714,10 +2712,19 @@
         }
     };
 
-    MIDINoteBasedOscillator.prototype.trigger_note = function (now, when, note_idx, midi_note, velocity, note_pan)
+    MIDINoteBasedOscillator.prototype.trigger_note = function (now, when, note_idx, midi_note, velocity)
     {
         var vs = this.velocity_sensitivity.value,
-            prt_depth, prt_start_freq, vos, freq, v;
+            note_pan, prt_depth, prt_start_freq, vos, freq, v;
+
+        // note_pan = 2.0 * (midi_note / 127.0) - 1.0;
+        note_pan = (midi_note + this.detune.value) / 63.5 - 1.0;
+
+        if (note_pan < -1.0) {
+            note_pan = -1.0;
+        } else if (note_pan > 1.0) {
+            note_pan = 1.0;
+        }
 
         midi_note += 48;
 
