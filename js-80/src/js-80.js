@@ -2046,7 +2046,8 @@
                     "type": filter_type,
                     "Q": FILTER_Q_DEF,
                     "frequency": default_freq,
-                    "gain": 0.0
+                    "gain": 0.0,
+                    "channelCount": 1
                 }
             );
 
@@ -2502,8 +2503,7 @@
             synth, key, output, volume_param_target,
             lfo_highpass_params, lfo_lowpass_params
     ) {
-        var pan, volume,
-            waveform_key, custom_waveform_key, ehp_onoff_key, elp_onoff_key,
+        var pan, waveform_key, custom_waveform_key, ehp_onoff_key, elp_onoff_key,
             env_highpass_onoff, env_lowpass_onoff,
             i;
 
@@ -2515,16 +2515,7 @@
         pan = new StereoPannerNode(synth.audio_ctx);
         pan.connect(output);
 
-        volume = null;
-
-        if (volume_param_target === null) {
-            volume = new GainNode(synth.audio_ctx, {"gain": 1.0});
-            volume_param_target = volume.gain;
-            volume.connect(pan);
-        }
-
         this._key = key;
-        this._vol = volume;
         this._pan = pan;
 
         this._waveform_key = waveform_key = key + "_wf";
@@ -2605,19 +2596,23 @@
     };
 
     function MIDINoteBasedOscillator(
-            synth, key, poliphony, frequencies, output, volume_param_target,
+            synth, key, poliphony, frequencies, output,
             lfo_highpass_params, lfo_lowpass_params
     ) {
         var notes = [],
+            vol_cns = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1}),
             fine_detune_cns,
             detune_cns,
             i, note;
 
         ComplexOscillator.call(
             this,
-            synth, key, output, volume_param_target,
+            synth, key, output, vol_cns.offset,
             lfo_highpass_params, lfo_lowpass_params
         );
+
+        vol_cns.offset.value = 0.0;
+        this._vol_cns = vol_cns;
 
         fine_detune_cns = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1});
         fine_detune_cns.offset.value = 0.0;
@@ -2704,6 +2699,7 @@
 
         ComplexOscillator.prototype.start.call(this, when);
 
+        this._vol_cns.start(when);
         this._fine_detune_cns.start(when);
         this._detune_cns.start(when);
 
@@ -2787,19 +2783,19 @@
 
         MIDINoteBasedOscillator.call(
             this,
-            synth, key, poliphony, frequencies, output, null,
+            synth, key, poliphony, frequencies, output,
             [lfo_highpass.onoff, lfo_highpass.freq, lfo_highpass.q],
             [lfo_lowpass.onoff, lfo_lowpass.freq, lfo_lowpass.q]
         );
 
-        lfo_lowpass.output = this._vol;
+        lfo_lowpass.output = this._pan;
 
         lfo_highpass.bypass();
         lfo_lowpass.bypass();
 
         for (i = 0; i < poliphony; ++i) {
             notes.push(
-                note = new CarrierNote(synth, lfo_highpass.input, this._detune_cns, this._fine_detune_cns)
+                note = new CarrierNote(synth, lfo_highpass.input, this._vol_cns, this._detune_cns, this._fine_detune_cns)
             );
         }
 
@@ -2817,7 +2813,6 @@
     function MIDINoteBasedModulator(synth, key, poliphony, frequencies, output, carrier_osc, am_vol_cns, fm_vol_cns)
     {
         var notes = [],
-            vol_cns,
             lfo_highpass_onoff, lfo_highpass_freq, lfo_highpass_q,
             lfo_lowpass_onoff, lfo_lowpass_freq, lfo_lowpass_q,
             note, i;
@@ -2828,10 +2823,6 @@
                 + String(carrier_osc._notes.length) + " != " + String(poliphony)
             );
         }
-
-        vol_cns = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1});
-        vol_cns.offset.value = 0.0;
-        this._vol_cns = vol_cns;
 
         lfo_highpass_onoff = new OnOffParam(synth, key + "_h_st");
         lfo_highpass_freq = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1});
@@ -2852,7 +2843,7 @@
 
         MIDINoteBasedOscillator.call(
             this,
-            synth, key, poliphony, frequencies, output, vol_cns.offset,
+            synth, key, poliphony, frequencies, output,
             [
                 lfo_highpass_onoff,
                 new LFOControllableParam(synth, key + "_hf", lfo_highpass_freq.offset, SND_FREQ_MIN, SND_FREQ_MAX, SND_FREQ_MIN),
@@ -2908,7 +2899,6 @@
         this._lfo_hp_q_cns.start(when);
         this._lfo_lp_freq_cns.start(when);
         this._lfo_lp_q_cns.start(when);
-        this._vol_cns.start(when);
     };
 
     /**
@@ -2972,31 +2962,33 @@
     function Theremin(synth, output)
     {
         var effects = new Effects(synth, "th", output),
-            vol = new GainNode(synth.audio_ctx, {"gain": 0.0}),
+            note_vol = new GainNode(synth.audio_ctx, {"gain": 0.0, "channelCount": 1}),
             lfo_lowpass, lfo_highpass,
             note;
 
-        lfo_lowpass = new LFOCompatibleBiquadFilter(synth, "th_l", "lowpass", SND_FREQ_MAX, effects.input);
-        lfo_highpass = new LFOCompatibleBiquadFilter(synth, "th_h", "highpass", SND_FREQ_MIN, lfo_lowpass.input);
+        note = new Note(synth, note_vol);
 
-        lfo_highpass.bypass();
-        lfo_lowpass.bypass();
+        lfo_lowpass = new LFOCompatibleBiquadFilter(synth, "th_l", "lowpass", SND_FREQ_MAX, null);
+        lfo_highpass = new LFOCompatibleBiquadFilter(synth, "th_h", "highpass", SND_FREQ_MIN, lfo_lowpass.input);
 
         ComplexOscillator.call(
             this,
-            synth, "th", lfo_highpass.input, null,
+            synth, "th", effects.input, note.osc_vol.gain,
             [lfo_highpass.onoff, lfo_highpass.freq, lfo_highpass.q],
             [lfo_lowpass.onoff, lfo_lowpass.freq, lfo_lowpass.q]
         );
 
-        note = new Note(synth, vol);
+        lfo_lowpass.output = this._pan;
 
-        vol.gain.value = 0.0;
-        vol.connect(this._vol);
+        lfo_highpass.bypass();
+        lfo_lowpass.bypass();
+        note_vol.connect(lfo_highpass.input);
+
+        note_vol.gain.value = 0.0;
 
         this._audio_ctx = synth.audio_ctx;
         this._note = note;
-        this._note_vol = vol;
+        this._note_vol = note_vol;
         this._lfo_highpass = lfo_highpass;
         this._lfo_lowpass = lfo_lowpass;
 
@@ -3118,6 +3110,7 @@
     function Note(synth, output)
     {
         var osc = new OscillatorNode(synth.audio_ctx, {"channelCount": 1}),
+            osc_vol = new GainNode(synth.audio_ctx, {"channelCount": 1}),
             vel_vol = new GainNode(synth.audio_ctx, {"channelCount": 1}),
             pan = new StereoPannerNode(synth.audio_ctx, {"channelCount": 2}),
             env_highpass = new BiquadFilterNode(
@@ -3141,9 +3134,11 @@
                 }
             );
 
+        osc_vol.gain.value = 0.0;
         vel_vol.gain.value = 0.0;
         osc.frequency.value = 0.0;
 
+        osc.connect(osc_vol);
         vel_vol.connect(pan);
 
         if (output !== null) {
@@ -3169,10 +3164,11 @@
 
         this.frequency = osc.frequency;
         this.pan = pan;
+        this.osc_vol = osc_vol;
 
         this._chain_mask = 0;
         this._chain_mask_when_triggered = 0;
-        this._chain_in = osc;
+        this._chain_in = osc_vol;
         this._chains = [
             [vel_vol],
             [env_highpass, vel_vol],
@@ -3438,11 +3434,13 @@
         this._rewire(chain_mask & (0xffff & ~flag));
     };
 
-    function ZeroPhaseNote(synth, output, detune, fine_detune)
+    function ZeroPhaseNote(synth, output, vol_cns, detune_cns, fine_detune_cns)
     {
         var freq_cns = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1});
 
         Note.call(this, synth, output);
+
+        vol_cns.connect(this.osc_vol.gain);
 
         freq_cns.offset.value = 0.0;
 
@@ -3451,8 +3449,8 @@
 
         this._audio_ctx = synth.audio_ctx;
         this._synth = synth;
-        this._detune = detune;
-        this._fine_detune = fine_detune;
+        this._detune_cns = detune_cns;
+        this._fine_detune_cns = fine_detune_cns;
         this._freq_cns = freq_cns;
 
         this._waveform = null;
@@ -3466,7 +3464,55 @@
     ZeroPhaseNote.prototype._apply_envelope_r = Note.prototype._apply_envelope_r;
     ZeroPhaseNote.prototype.engage_filter = Note.prototype.engage_filter;
     ZeroPhaseNote.prototype.bypass_filter = Note.prototype.bypass_filter;
-    ZeroPhaseNote.prototype.trigger = Note.prototype.trigger;
+
+    ZeroPhaseNote.prototype.trigger = function (
+            now, when, freq, velocity, pan,
+            prt_start_freq, prt_time,
+            amp_env_params, env_highpass_params, env_lowpass_params
+    ) {
+        var osc = this._osc,
+            detune = this._detune_cns,
+            fine_detune = this._fine_detune_cns,
+            freq_cns = this._freq_cns,
+            waveform = this._waveform;
+
+        if (osc !== null) {
+            osc.stop(when);
+            this._synth.garbage.push(
+                [
+                    when,
+                    osc,
+                    freq_cns, osc.frequency,
+                    detune, osc.detune,
+                    fine_detune, osc.detune
+                ]
+            );
+        }
+
+        this._osc = osc = new OscillatorNode(this._audio_ctx, {"channelCount": 1});
+
+        if (waveform === null) {
+            osc.setPeriodicWave(this._periodic_wave);
+        } else {
+            this._osc.type = waveform;
+        }
+
+        osc.frequency.value = 0.0;
+        osc.connect(this.osc_vol);
+
+        freq_cns.connect(osc.frequency);
+        detune.connect(osc.detune);
+        fine_detune.connect(osc.detune);
+
+        osc.start(when);
+
+        Note.prototype.trigger.call(
+            this,
+            now, when, freq, velocity, pan,
+            prt_start_freq, prt_time,
+            amp_env_params, env_highpass_params, env_lowpass_params
+        );
+    };
 
     ZeroPhaseNote.prototype.set_waveform = function (new_waveform)
     {
@@ -3519,44 +3565,18 @@
         }
     };
 
-    ZeroPhaseNote.prototype._replace_oscillator = function (when, osc_connection)
+    function CarrierNote(synth, output, vol_cns, detune_cns, fine_detune_cns)
     {
-        var osc = this._osc,
-            detune = this._detune,
-            fine_detune = this._fine_detune,
-            freq_cns = this._freq_cns,
-            waveform = this._waveform;
+        var am_in = new GainNode(synth.audio_ctx, {"channelCount": 1}),
+            osc_vol;
 
-        if (osc !== null) {
-            osc.stop(when);
-            this._synth.garbage.push([when, osc, freq_cns, osc.frequency, detune, osc.detune, fine_detune, osc.detune]);
-        }
+        ZeroPhaseNote.call(this, synth, output, vol_cns, detune_cns, fine_detune_cns);
 
-        this._chain_in = this._osc = osc = new OscillatorNode(this._audio_ctx, {"channelCount": 1});
-
-        if (waveform === null) {
-            osc.setPeriodicWave(this._periodic_wave);
-        } else {
-            this._osc.type = waveform;
-        }
-
-        osc.frequency.value = 0.0;
-        osc.connect(osc_connection);
-
-        freq_cns.connect(osc.frequency);
-        detune.connect(osc.detune);
-        fine_detune.connect(osc.detune);
-
-        osc.start(when);
-    };
-
-    function CarrierNote(synth, output, detune, fine_detune)
-    {
-        var am_in = new GainNode(synth.audio_ctx, {"channelCount": 1});
-
-        ZeroPhaseNote.call(this, synth, output, detune, fine_detune);
-
+        osc_vol = this.osc_vol;
         am_in.gain.value = 1.0;
+
+        osc_vol.disconnect();
+        osc_vol.connect(am_in);
 
         this._am_in = am_in;
         this._chain_in = am_in;
@@ -3576,36 +3596,14 @@
     CarrierNote.prototype.engage_filter = ZeroPhaseNote.prototype.engage_filter;
     CarrierNote.prototype.bypass_filter = ZeroPhaseNote.prototype.bypass_filter;
     CarrierNote.prototype.start = ZeroPhaseNote.prototype.start;
-
-    CarrierNote.prototype._replace_oscillator = function (when, osc_connection)
-    {
-        ZeroPhaseNote.prototype._replace_oscillator.call(this, when, osc_connection);
-
-        this._chain_in = this._am_in;
-    };
-
-    CarrierNote.prototype.trigger = function (
-            now, when, freq, velocity, pan,
-            prt_start_freq, prt_time,
-            amp_env_params, env_highpass_params, env_lowpass_params
-    ) {
-        this._replace_oscillator(when, this._am_in);
-
-        ZeroPhaseNote.prototype.trigger.call(
-            this,
-            now, when, freq, velocity, pan,
-            prt_start_freq, prt_time,
-            amp_env_params, env_highpass_params, env_lowpass_params
-        );
-    };
+    CarrierNote.prototype.trigger = ZeroPhaseNote.prototype.trigger;
 
     function ModulatorNote(
-            synth, vol_cns, detune, fine_detune,
+            synth, vol_cns, detune_cns, fine_detune_cns,
             lfo_hp_freq_cns, lfo_hp_q_cns,
             lfo_lp_freq_cns, lfo_lp_q_cns
     ) {
-        var vol = new GainNode(synth.audio_ctx, {"channelCount": 1}),
-            fm_freq = new GainNode(synth.audio_ctx, {"channelCount": 1}),
+        var fm_freq = new GainNode(synth.audio_ctx, {"channelCount": 1}),
             am_out = new GainNode(synth.audio_ctx, {"channelCount": 1}),
             fm_out = new GainNode(synth.audio_ctx, {"channelCount": 1}),
             lfo_highpass = new BiquadFilterNode(
@@ -3628,9 +3626,7 @@
                     "channelCount": 1
                 }
             ),
-            vel_vol, env_highpass, env_lowpass;
-
-        vol.gain.value = 0.0;
+            pan, vel_vol, env_highpass, env_lowpass;
 
         lfo_highpass.frequency.value = 0.0;
         lfo_highpass.Q.value = 0.0;
@@ -3642,9 +3638,9 @@
         lfo_lp_freq_cns.connect(lfo_lowpass.frequency);
         lfo_lp_q_cns.connect(lfo_lowpass.Q);
 
-        ZeroPhaseNote.call(this, synth, null, detune, fine_detune);
+        ZeroPhaseNote.call(this, synth, null, vol_cns, detune_cns, fine_detune_cns);
 
-        this._vol = vol;
+        pan = this.pan;
 
         this._lfo_highpass = lfo_highpass;
         this._lfo_lowpass = lfo_lowpass;
@@ -3652,7 +3648,7 @@
 
         this.fm_out = fm_out;
         this.am_out = am_out;
-        this.output = this.pan;
+        this.output = pan;
 
         am_out.gain.value = 0.0;
         fm_out.gain.value = 0.0;
@@ -3664,14 +3660,9 @@
         env_highpass = this._env_highpass;
         env_lowpass = this._env_lowpass;
 
-        vol_cns.connect(vol.gain);
-
-        vol.connect(am_out);
-        vol.connect(fm_freq);
-
-        vel_vol.disconnect();
-        vel_vol.connect(vol);
-        vol.connect(this.pan);
+        vel_vol.connect(pan);
+        vel_vol.connect(am_out);
+        vel_vol.connect(fm_freq);
 
         this._chains = [
             [vel_vol],
@@ -3706,22 +3697,7 @@
     ModulatorNote.prototype.engage_filter = ZeroPhaseNote.prototype.engage_filter;
     ModulatorNote.prototype.bypass_filter = ZeroPhaseNote.prototype.bypass_filter;
     ModulatorNote.prototype.start = ZeroPhaseNote.prototype.start;
-    ModulatorNote.prototype._replace_oscillator = ZeroPhaseNote.prototype._replace_oscillator;
-
-    ModulatorNote.prototype.trigger = function (
-            now, when, freq, velocity, pan,
-            prt_start_freq, prt_time,
-            amp_env_params, env_highpass_params, env_lowpass_params
-    ) {
-        this._replace_oscillator(when, this._chain[0]);
-
-        ZeroPhaseNote.prototype.trigger.call(
-            this,
-            now, when, freq, velocity, pan,
-            prt_start_freq, prt_time,
-            amp_env_params, env_highpass_params, env_lowpass_params
-        );
-    };
+    ModulatorNote.prototype.trigger = ZeroPhaseNote.prototype.trigger;
 
     function Param(synth, key, default_value)
     {
