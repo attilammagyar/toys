@@ -8,6 +8,9 @@
             "square": "square",
             "triangle": "triangle"
         },
+        LFO_WAVEFORMS = {
+            "invsaw": "inverse sawtooth",
+        },
         MIDI_CONTROLS = {
             "none": "",
             "pitch": "pitch wheel",
@@ -3150,6 +3153,7 @@
         this._env_highpass = env_highpass;
         this._env_lowpass = env_lowpass;
 
+        this._is_triggered = false;
         this._amp_sustain_start = null;
         this._amp_sustain_level = null;
         this._amp_release_time = null;
@@ -3221,6 +3225,8 @@
             f = this.frequency,
             p = this.pan.pan,
             chain_mask = this._chain_mask;
+
+        this._is_triggered = true;
 
         f.cancelAndHoldAtTime(when);
 
@@ -3320,37 +3326,43 @@
 
     Note.prototype.stop = function (when)
     {
-        var chain_mask = this._chain_mask_when_triggered;
+        var chain_mask;
 
-        this._apply_envelope_r(
-            this._vel_vol.gain,
-            when,
-            this._amp_sustain_start,
-            this._amp_sustain_level,
-            this._amp_release_time,
-            0.0
-        );
+        if (this._is_triggered) {
+            this._is_triggered = false;
 
-        if (0 < (chain_mask & 1)) {
+            chain_mask = this._chain_mask_when_triggered;
+
             this._apply_envelope_r(
-                this._env_highpass.frequency,
+                this._vel_vol.gain,
                 when,
-                this._ehp_sustain_start,
-                this._ehp_sustain_level,
-                this._ehp_release_time,
-                this._ehp_release_freq
+                this._amp_sustain_start,
+                this._amp_sustain_level,
+                this._amp_release_time,
+                0.0
             );
-        }
 
-        if (0 < (chain_mask & 2)) {
-            this._apply_envelope_r(
-                this._env_lowpass.frequency,
-                when,
-                this._elp_sustain_start,
-                this._elp_sustain_level,
-                this._elp_release_time,
-                this._elp_release_freq
-            );
+            if (0 < (chain_mask & 1)) {
+                this._apply_envelope_r(
+                    this._env_highpass.frequency,
+                    when,
+                    this._ehp_sustain_start,
+                    this._ehp_sustain_level,
+                    this._ehp_release_time,
+                    this._ehp_release_freq
+                );
+            }
+
+            if (0 < (chain_mask & 2)) {
+                this._apply_envelope_r(
+                    this._env_lowpass.frequency,
+                    when,
+                    this._elp_sustain_start,
+                    this._elp_sustain_level,
+                    this._elp_release_time,
+                    this._elp_release_freq
+                );
+            }
         }
     };
 
@@ -3368,37 +3380,43 @@
 
     Note.prototype.cancel = function (when)
     {
-        var chain_mask = this._chain_mask_when_triggered;
+        var chain_mask;
 
-        this._apply_envelope_r(
-            this._vel_vol.gain,
-            when,
-            this._amp_sustain_start,
-            this._amp_sustain_level,
-            0.0,
-            0.0
-        );
+        if (this._is_triggered) {
+            this._is_triggered = false;
 
-        if (0 < (chain_mask & 1)) {
+            chain_mask = this._chain_mask_when_triggered;
+
             this._apply_envelope_r(
-                this._env_highpass.frequency,
+                this._vel_vol.gain,
                 when,
-                this._ehp_sustain_start,
-                this._ehp_sustain_level,
+                this._amp_sustain_start,
+                this._amp_sustain_level,
                 0.0,
-                this._ehp_release_freq
+                0.0
             );
-        }
 
-        if (0 < (chain_mask & 2)) {
-            this._apply_envelope_r(
-                this._env_lowpass.frequency,
-                when,
-                this._elp_sustain_start,
-                this._elp_sustain_level,
-                0.0,
-                this._elp_release_freq
-            );
+            if (0 < (chain_mask & 1)) {
+                this._apply_envelope_r(
+                    this._env_highpass.frequency,
+                    when,
+                    this._ehp_sustain_start,
+                    this._ehp_sustain_level,
+                    0.0,
+                    this._ehp_release_freq
+                );
+            }
+
+            if (0 < (chain_mask & 2)) {
+                this._apply_envelope_r(
+                    this._env_lowpass.frequency,
+                    when,
+                    this._elp_sustain_start,
+                    this._elp_sustain_level,
+                    0.0,
+                    this._elp_release_freq
+                );
+            }
         }
     };
 
@@ -3920,7 +3938,7 @@
         }
 
         this._target_param.value = 0.0;
-        this._ofs.offset.value = this.min;
+        this._ofs.offset.setValueAtTime(this.min, ct);
         this._mul.gain.value = this.delta;
         this._ctl_out = ctl_out;
 
@@ -4020,8 +4038,12 @@
     {
         var osc = new OscillatorNode(synth.audio_ctx, {"channelCount": 1}),
             gain = new GainNode(synth.audio_ctx, {"gain": 0.0, "channelCount": 1}),
-            ws_0_1 = new WaveShaperNode(synth.audio_ctx, {"curve": new Float32Array([0.0, 1.0]), "channelCount": 1}),
-            ws_min_max = new WaveShaperNode(synth.audio_ctx, {"curve": new Float32Array([0.0, 1.0]), "channelCount": 1});
+            curve_0_1 = new Float32Array([0.0, 1.0]),
+            curve_1_0 = new Float32Array([1.0, 0.0]),
+            ws_0_1, ws_min_max;
+
+        ws_0_1 = new WaveShaperNode(synth.audio_ctx, {"curve": curve_0_1, "channelCount": 1});
+        ws_min_max = new WaveShaperNode(synth.audio_ctx, {"curve": curve_0_1, "channelCount": 1});
 
         Observable.call(this);
         Observer.call(this);
@@ -4034,10 +4056,12 @@
         this._gain = gain;
         this._wave_shaper_0_1 = ws_0_1;
         this._wave_shaper_min_max = ws_min_max;
+        this._curve_0_1 = curve_0_1;
+        this._curve_1_0 = curve_1_0;
 
         this.key = key;
 
-        this.waveform = new EnumParam(synth, key + "_wf", WAVEFORMS, "sine");
+        this.waveform = new EnumParam(synth, key + "_wf", merge(WAVEFORMS, LFO_WAVEFORMS), "sine");
         this.waveform.observers.push(this);
 
         this.frequency = new LFOControllableParam(synth, key + "_f", osc.frequency, LFO_FREQ_MIN, LFO_FREQ_MAX, LFO_FREQ_DEF);
@@ -4052,6 +4076,13 @@
 
     LFOController.prototype.update = function (waveform_param, new_waveform)
     {
+        if (new_waveform === "invsaw") {
+            new_waveform = "sawtooth";
+            this._wave_shaper_0_1.curve = this._curve_1_0;
+        } else {
+            this._wave_shaper_0_1.curve = this._curve_0_1;
+        }
+
         this._osc.type = new_waveform;
         this.notify_observers(new_waveform);
     };
