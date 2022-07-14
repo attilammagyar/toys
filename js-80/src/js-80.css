@@ -522,15 +522,29 @@ table.seq-beats div.param select {
   line-height: 24px;
 }
 
+div.touchpad-touch,
+div.theremin-touch {
+  margin: 5px auto;
+  background-color: #000;
+  border-radius: 3px;
+  cursor: crosshair;
+}
+
 div.theremin-touch {
   width: 630px;
   height: 200px;
-  margin: 5px auto;
-  background-color: #000;
   background: linear-gradient(18.509405deg, #060000, #340a06);
   border: inset 1px #964;
-  border-radius: 3px;
-  cursor: crosshair;
+}
+
+div.touchpad-touch {
+  width: 280px;
+  height: 200px;
+  border: inset 1px #547;
+}
+
+div.touchpad {
+  width: 300px;
 }
 
 div.modulation {

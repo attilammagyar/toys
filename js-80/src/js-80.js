@@ -11,7 +11,8 @@
         LFO_WAVEFORMS = {
             "invsaw": "inverse sawtooth",
         },
-        MIDI_CONTROLS = {
+        MIDI_CONTROLS = null,
+        BASE_MIDI_CONTROLS = {
             "none": "",
             "pitch": "pitch wheel",
             "mod": "modulation (CC 1)",
@@ -40,6 +41,12 @@
             "seqnote": "seq. note (imprecise)",
             "seqprog": "seq. progress (imprecise)",
             "seqvel": "seq. velocity (imprecise)",
+            "touch1x": "touch 1 X",
+            "touch1y": "touch 1 Y",
+            "touch2x": "touch 2 X",
+            "touch2y": "touch 2 Y"
+        },
+        MCS_CONTROLS = {
             "mcs1": "MCS 1",
             "mcs2": "MCS 2",
             "mcs3": "MCS 3",
@@ -394,7 +401,8 @@
     {
         var i;
 
-        ALL_CONTROLS = merge(MIDI_CONTROLS, LFO_CONTROLS);
+        MIDI_CONTROLS = merge(BASE_MIDI_CONTROLS, MCS_CONTROLS);
+        ALL_CONTROLS = merge(merge(BASE_MIDI_CONTROLS, LFO_CONTROLS), MCS_CONTROLS);
 
         $("main-form").onsubmit = stop_event;
 
@@ -874,6 +882,11 @@
         this._seq_prog_ctl = new MIDIController(this, 0.5);
         this._seq_vel_ctl = new MIDIController(this, 0.6);
 
+        this.touch_1_x_ctl = new MIDIController(this, 0.5);
+        this.touch_1_y_ctl = new MIDIController(this, 0.5);
+        this.touch_2_x_ctl = new MIDIController(this, 0.5);
+        this.touch_2_y_ctl = new MIDIController(this, 0.5);
+
         for (i = 0; i < 128; ++i) {
             this._midi_ctls[i] = null;
         }
@@ -905,7 +918,11 @@
             "vrtvel": this._virt_vel_ctl,
             "seqnote": this._seq_note_ctl,
             "seqprog": this._seq_prog_ctl,
-            "seqvel": this._seq_vel_ctl
+            "seqvel": this._seq_vel_ctl,
+            "touch1x": this.touch_1_x_ctl,
+            "touch1y": this.touch_1_y_ctl,
+            "touch2x": this.touch_2_x_ctl,
+            "touch2y": this.touch_2_y_ctl
         };
 
         ct = audio_ctx.currentTime;
@@ -5114,6 +5131,8 @@
         var keyboard = document.createElement("div"),
             virt_ctls = new ClosableNamedUIWidgetGroup("Virtual Controllers"),
             virt_keys = {},
+            touch_ctl_1 = new TouchControllerUI("Touchpad 1", synth.touch_1_x_ctl, synth.touch_1_y_ctl),
+            touch_ctl_2 = new TouchControllerUI("Touchpad 2", synth.touch_2_x_ctl, synth.touch_2_y_ctl),
             i, l, virt_key, key_desc, dom_node;
 
         NamedUIWidgetGroup.call(this, "Virtual Inputs", "module color-1", "virt-inputs");
@@ -5152,16 +5171,22 @@
         this.dom_node.appendChild(keyboard);
 
         this._virt_keys = virt_keys;
+        this._touch_ctl_1 = touch_ctl_1;
+        this._touch_ctl_2 = touch_ctl_2;
         this._synth = synth;
         this._mouse_down = false;
 
         this.add(new FaderUI("DTN", "Detune (semitones)", "st", 1, 1, null, synth.virt_detune, synth));
+
+        this.add(touch_ctl_1);
+        this.add(touch_ctl_2);
 
         virt_ctls.add(new FaderUI("virtual 1", "Virtual controller 1", "%", 1000, 10, null, synth.virt_ctl_params[0], synth));
         virt_ctls.add(new FaderUI("virtual 2", "Virtual controller 2", "%", 1000, 10, null, synth.virt_ctl_params[1], synth));
         virt_ctls.add(new FaderUI("virtual 3", "Virtual controller 3", "%", 1000, 10, null, synth.virt_ctl_params[2], synth));
         virt_ctls.add(new FaderUI("virtual 4", "Virtual controller 4", "%", 1000, 10, null, synth.virt_ctl_params[3], synth));
         virt_ctls.add(new FaderUI("virtual 5", "Virtual controller 5", "%", 1000, 10, null, synth.virt_ctl_params[4], synth));
+
         this.add(virt_ctls);
     }
 
@@ -5214,6 +5239,9 @@
     VirtualControlsUI.prototype.handle_document_mouse_up = function (evt)
     {
         this._mouse_down = false;
+
+        this._touch_ctl_1.handle_document_mouse_up(evt);
+        this._touch_ctl_2.handle_document_mouse_up(evt);
 
         return true;
     };
@@ -5437,6 +5465,159 @@
         }
     };
 
+    function TouchControllerUI(name, touch_x_ctl, touch_y_ctl)
+    {
+        var touch_area = document.createElement("div");
+
+        NamedUIWidgetGroup.call(this, name, "touchpad", "");
+
+        touch_area.setAttribute("class", "touchpad-touch");
+        touch_area.onmousedown = bind(this, this.handle_touch_ctl_mouse_down);
+        touch_area.onmouseup = bind(this, this.handle_touch_ctl_mouse_up);
+        touch_area.onmousemove = bind(this, this.handle_touch_ctl_mouse_move);
+        touch_area.onmouseenter = bind(this, this.handle_touch_ctl_mouse_enter);
+        touch_area.onmouseleave = bind(this, this.handle_touch_ctl_mouse_leave);
+        touch_area.ontouchstart = bind(this, this.handle_touch_ctl_touch_start);
+        touch_area.ontouchmove = bind(this, this.handle_touch_ctl_touch_move);
+        touch_area.ontouchend = bind(this, this.handle_touch_ctl_touch_end);
+        touch_area.ontouchcancel = bind(this, this.handle_touch_ctl_touch_end);
+
+        this._touch_area = touch_area;
+        this._touch_x_ctl = touch_x_ctl;
+        this._touch_y_ctl = touch_y_ctl;
+        this._ongoing_touch = null;
+        this._mouse_down = false;
+
+        this.dom_node.appendChild(touch_area);
+    }
+
+    TouchControllerUI.prototype._handle_event = function (evt)
+    {
+        var c = get_evt_relative_pos(this._touch_area, evt);
+
+        this._touch_x_ctl.set_value(c[0]);
+        this._touch_y_ctl.set_value(c[1]);
+
+        return true;
+    };
+
+    TouchControllerUI.prototype.handle_touch_ctl_mouse_move = function (evt)
+    {
+        if (this._mouse_down) {
+            this._handle_event(evt || event);
+        }
+
+        return true;
+    };
+
+    TouchControllerUI.prototype.handle_touch_ctl_mouse_down = function (evt)
+    {
+        if (this._mouse_down) {
+            return;
+        }
+
+        this._handle_event(evt || event);
+        this._mouse_down = true;
+
+        return stop_event(evt);
+    };
+
+    TouchControllerUI.prototype.handle_touch_ctl_mouse_up = function (evt)
+    {
+        if (this._mouse_down) {
+            this._handle_event(evt || event);
+            this._mouse_down = false;
+        }
+
+        return stop_event(evt);
+    };
+
+    TouchControllerUI.prototype.handle_document_mouse_up = function (evt)
+    {
+        this._mouse_down = false;
+
+        return true;
+    };
+
+    TouchControllerUI.prototype.handle_touch_ctl_mouse_enter = function (evt)
+    {
+        if (this._mouse_down) {
+            this._handle_event(evt || event);
+        }
+
+        return true;
+    };
+
+    TouchControllerUI.prototype.handle_touch_ctl_mouse_leave = function (evt)
+    {
+        if (this._mouse_down) {
+            this._handle_event(evt || event);
+        }
+
+        return true;
+    };
+
+    TouchControllerUI.prototype.handle_touch_ctl_touch_start = function (evt)
+    {
+        var ct, t;
+
+        evt = evt || event;
+        ct = evt.changedTouches;
+
+        if ((this._ongoing_touch === null) && (0 < ct.length)) {
+            t = ct[0];
+            this._ongoing_touch = t.identifier;
+            this._handle_event(t);
+        }
+
+        return stop_event(evt);
+    };
+
+    TouchControllerUI.prototype.handle_touch_ctl_touch_move = function (evt)
+    {
+        var ongoing_touch = this._ongoing_touch,
+            ct, i, l, t;
+
+        if (ongoing_touch === null) {
+            return stop_event(evt);
+        }
+
+        evt = evt || event;
+        ct = evt.changedTouches;
+
+        for (i = 0, l = ct.length; i < l; ++i) {
+            if ((t = ct[i]).identifier === ongoing_touch) {
+                this._handle_event(t);
+                break;
+            }
+        }
+
+        return stop_event(evt);
+    };
+
+    TouchControllerUI.prototype.handle_touch_ctl_touch_end = function (evt)
+    {
+        var ongoing_touch = this._ongoing_touch,
+            ct, i, l, t;
+
+        if (ongoing_touch === null) {
+            return stop_event(evt);
+        }
+
+        evt = evt || event;
+        ct = evt.changedTouches;
+
+        for (i = 0, l = ct.length; i < l; ++i) {
+            if ((t = ct[i]).identifier === ongoing_touch) {
+                this._handle_event(t);
+                this._ongoing_touch = null;
+                break;
+            }
+        }
+
+        return stop_event(evt);
+    };
+
     function ThereminUI(theremin, synth)
     {
         var touch_area = document.createElement("div"),
@@ -5513,21 +5694,11 @@
             return;
         }
 
-        c = this._get_relative_pos(evt || event);
+        c = get_evt_relative_pos(this._touch_area, evt || event);
         this._theremin.trigger(c[0], c[1]);
         this._mouse_down = true;
 
         return stop_event(evt);
-    };
-
-    ThereminUI.prototype._get_relative_pos = function (evt)
-    {
-        var rect = this._touch_area.getClientRects()[0];
-
-        return [
-            Math.max(0.0, Math.min(1.0, (evt.clientX - rect.left) / rect.width)),
-            Math.max(0.0, Math.min(1.0, (evt.clientY - rect.top) / rect.height))
-        ];
     };
 
     ThereminUI.prototype.handle_theremin_mouse_up = function (evt)
@@ -5535,7 +5706,7 @@
         var c;
 
         if (this._mouse_down) {
-            c = this._get_relative_pos(evt || event);
+            c = get_evt_relative_pos(this._touch_area, evt || event);
             this._theremin.stop(c[0], c[1]);
             this._mouse_down = false;
         }
@@ -5555,7 +5726,7 @@
         var c;
 
         if (this._mouse_down) {
-            c = this._get_relative_pos(evt || event);
+            c = get_evt_relative_pos(this._touch_area, evt || event);
             this._theremin.move(c[0], c[1]);
         }
 
@@ -5567,7 +5738,7 @@
         var c;
 
         if (this._mouse_down) {
-            c = this._get_relative_pos(evt || event);
+            c = get_evt_relative_pos(this._touch_area, evt || event);
             this._theremin.move(c[0], c[1]);
         }
 
@@ -5579,7 +5750,7 @@
         var c;
 
         if (this._mouse_down) {
-            c = this._get_relative_pos(evt || event);
+            c = get_evt_relative_pos(this._touch_area, evt || event);
             this._theremin.stop(c[0], c[1]);
             this._mouse_down = false;
         }
@@ -5594,9 +5765,9 @@
         evt = evt || event;
         ct = evt.changedTouches;
 
-        if (0 < ct.length) {
+        if ((this._ongoing_touch === null) && (0 < ct.length)) {
             this._ongoing_touch = ct[0].identifier;
-            c = this._get_relative_pos(ct[0]);
+            c = get_evt_relative_pos(this._touch_area, ct[0]);
             this._theremin.trigger(c[0], c[1]);
         }
 
@@ -5617,7 +5788,7 @@
 
         for (i = 0, l = ct.length; i < l; ++i) {
             if ((t = ct[i]).identifier === ongoing_touch) {
-                c = this._get_relative_pos(t);
+                c = get_evt_relative_pos(this._touch_area, t);
                 this._theremin.move(c[0], c[1]);
                 break;
             }
@@ -5640,7 +5811,7 @@
 
         for (i = 0, l = ct.length; i < l; ++i) {
             if ((t = ct[i]).identifier === ongoing_touch) {
-                c = this._get_relative_pos(t);
+                c = get_evt_relative_pos(this._touch_area, t);
                 this._theremin.stop(c[0], c[1]);
                 this._ongoing_touch = null;
                 break;
@@ -5714,6 +5885,16 @@
     {
         select.value = selected;
     }
+
+    function get_evt_relative_pos(dom_node, evt)
+    {
+        var rect = dom_node.getClientRects()[0];
+
+        return [
+            Math.max(0.0, Math.min(1.0, (evt.clientX - rect.left) / rect.width)),
+            Math.max(0.0, Math.min(1.0, (evt.clientY - rect.top) / rect.height))
+        ];
+    };
 
     function stop_event(evt)
     {
