@@ -305,29 +305,29 @@ div.param.connected-lfo label:nth-child(3) {
 input.fader::-moz-range-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 12px;
+  width: 11px;
   height: 15px;
-  border-radius: 5px;
+  border-radius: 2px;
   border: solid 1px #f0f0f8;
-  background-color: #70d0f0;
+  background-color: #d0d0d8;
 }
 input.fader::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 12px;
+  width: 11px;
   height: 15px;
-  border-radius: 5px;
+  border-radius: 2px;
   border: solid 1px #f0f0f8;
-  background-color: #70d0f0;
+  background-color: #d0d0d8;
 }
 input.fader::-ms-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 12px;
+  width: 11px;
   height: 15px;
-  border-radius: 5px;
+  border-radius: 2px;
   border: solid 1px #f0f0f8;
-  background-color: #70d0f0;
+  background-color: #d0d0d8;
 }
 
 select {
@@ -5993,14 +5993,13 @@ div.color-9 { background-color: #410; }
 
         this.add(new FaderUI("DTN", "Detune (semitones)", "st", 1, 1, null, synth.virt_detune, synth));
 
-        this.add(touch_ctl_1);
-        this.add(touch_ctl_2);
-
         virt_ctls.add(new FaderUI("virtual 1", "Virtual controller 1", "%", 1000, 10, null, synth.virt_ctl_params[0], synth));
         virt_ctls.add(new FaderUI("virtual 2", "Virtual controller 2", "%", 1000, 10, null, synth.virt_ctl_params[1], synth));
         virt_ctls.add(new FaderUI("virtual 3", "Virtual controller 3", "%", 1000, 10, null, synth.virt_ctl_params[2], synth));
         virt_ctls.add(new FaderUI("virtual 4", "Virtual controller 4", "%", 1000, 10, null, synth.virt_ctl_params[3], synth));
         virt_ctls.add(new FaderUI("virtual 5", "Virtual controller 5", "%", 1000, 10, null, synth.virt_ctl_params[4], synth));
+        virt_ctls.add(touch_ctl_1);
+        virt_ctls.add(touch_ctl_2);
 
         this.add(virt_ctls);
     }

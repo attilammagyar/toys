@@ -5186,14 +5186,13 @@
 
         this.add(new FaderUI("DTN", "Detune (semitones)", "st", 1, 1, null, synth.virt_detune, synth));
 
-        this.add(touch_ctl_1);
-        this.add(touch_ctl_2);
-
         virt_ctls.add(new FaderUI("virtual 1", "Virtual controller 1", "%", 1000, 10, null, synth.virt_ctl_params[0], synth));
         virt_ctls.add(new FaderUI("virtual 2", "Virtual controller 2", "%", 1000, 10, null, synth.virt_ctl_params[1], synth));
         virt_ctls.add(new FaderUI("virtual 3", "Virtual controller 3", "%", 1000, 10, null, synth.virt_ctl_params[2], synth));
         virt_ctls.add(new FaderUI("virtual 4", "Virtual controller 4", "%", 1000, 10, null, synth.virt_ctl_params[3], synth));
         virt_ctls.add(new FaderUI("virtual 5", "Virtual controller 5", "%", 1000, 10, null, synth.virt_ctl_params[4], synth));
+        virt_ctls.add(touch_ctl_1);
+        virt_ctls.add(touch_ctl_2);
 
         this.add(virt_ctls);
     }

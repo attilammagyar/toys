@@ -287,29 +287,29 @@ div.param.connected-lfo label:nth-child(3) {
 input.fader::-moz-range-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 12px;
+  width: 11px;
   height: 15px;
-  border-radius: 5px;
+  border-radius: 2px;
   border: solid 1px #f0f0f8;
-  background-color: #70d0f0;
+  background-color: #d0d0d8;
 }
 input.fader::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 12px;
+  width: 11px;
   height: 15px;
-  border-radius: 5px;
+  border-radius: 2px;
   border: solid 1px #f0f0f8;
-  background-color: #70d0f0;
+  background-color: #d0d0d8;
 }
 input.fader::-ms-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 12px;
+  width: 11px;
   height: 15px;
-  border-radius: 5px;
+  border-radius: 2px;
   border: solid 1px #f0f0f8;
-  background-color: #70d0f0;
+  background-color: #d0d0d8;
 }
 
 select {
