@@ -890,10 +890,10 @@
         this._seq_prog_ctl = new MIDIController(this, 0.5);
         this._seq_vel_ctl = new MIDIController(this, 0.6);
 
-        this.touch_1_x_ctl = new MIDIController(this, 0.5);
-        this.touch_1_y_ctl = new MIDIController(this, 0.5);
-        this.touch_2_x_ctl = new MIDIController(this, 0.5);
-        this.touch_2_y_ctl = new MIDIController(this, 0.5);
+        this.touch_1_x_ctl = new MIDIController(this, 0.2);
+        this.touch_1_y_ctl = new MIDIController(this, 0.2);
+        this.touch_2_x_ctl = new MIDIController(this, 0.2);
+        this.touch_2_y_ctl = new MIDIController(this, 0.2);
 
         for (i = 0; i < 128; ++i) {
             this._midi_ctls[i] = null;
@@ -2532,7 +2532,7 @@
             lfo_highpass_params, lfo_lowpass_params
     ) {
         var pan, waveform_key, custom_waveform_key, ehp_onoff_key, elp_onoff_key,
-            env_highpass_onoff, env_lowpass_onoff,
+            env_highpass_onoff, env_lowpass_onoff, folding_cns,
             i;
 
         Observable.call(this);
@@ -2543,8 +2543,12 @@
         pan = new StereoPannerNode(synth.audio_ctx);
         pan.connect(output);
 
+        folding_cns = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1});
+        folding_cns.offset.value = 0.125;
+
         this._key = key;
         this._pan = pan;
+        this._folding_cns = folding_cns;
 
         this._waveform_key = waveform_key = key + "_wf";
         this.waveform = new EnumParam(synth, waveform_key, merge(WAVEFORMS, {"custom": "custom"}), "sine");
@@ -2555,9 +2559,10 @@
         this.custom_waveform = new CustomWaveParams(synth, custom_waveform_key);
         this.custom_waveform.observers.push(this);
 
-        this.volume = new LFOControllableParam(synth, key + "_vl", volume_param_target, 0.0, 1.0, 0.5);
+        this.volume = new LFOControllableParam(synth, key + "_vl", volume_param_target, 0.0, 8.0, 4.0);
         this.pan = new LFOControllableParam(synth, key + "_pn", pan.pan, -1.0, 1.0, 0.0);
         this.width = new MIDIControllableParam(synth, key + "_wd", -1.0, 1.0, 0.2);
+        this.folding = new LFOControllableParam(synth, key + "_fl", folding_cns.offset, 0.0, 0.875, 0.0);
 
         this.amp_env_params = [
             new MIDIControllableParam(synth, key + "_edl", ENV_DEL_MIN, ENV_DEL_MAX, ENV_DEL_DEF),
@@ -2617,6 +2622,7 @@
 
     ComplexOscillator.prototype.start = function (when)
     {
+        this._folding_cns.start(when);
     };
 
     ComplexOscillator.prototype.update_dirty_custom_wave = function ()
@@ -2823,7 +2829,10 @@
 
         for (i = 0; i < poliphony; ++i) {
             notes.push(
-                note = new CarrierNote(synth, lfo_highpass.input, this._vol_cns, this._detune_cns, this._fine_detune_cns)
+                note = new CarrierNote(
+                    synth, lfo_highpass.input,
+                    this._vol_cns, this._detune_cns, this._fine_detune_cns, this._folding_cns
+                )
             );
         }
 
@@ -2897,6 +2906,7 @@
                     this._vol_cns,
                     this._detune_cns,
                     this._fine_detune_cns,
+                    this._folding_cns,
                     this._lfo_hp_freq_cns,
                     this._lfo_hp_q_cns,
                     this._lfo_lp_freq_cns,
@@ -2994,7 +3004,7 @@
             lfo_lowpass, lfo_highpass,
             note;
 
-        note = new Note(synth, note_vol);
+        note = new Note(synth, note_vol, null);
 
         lfo_lowpass = new LFOCompatibleBiquadFilter(synth, "th_l", "lowpass", SND_FREQ_MAX, null);
         lfo_highpass = new LFOCompatibleBiquadFilter(synth, "th_h", "highpass", SND_FREQ_MIN, lfo_lowpass.input);
@@ -3005,6 +3015,8 @@
             [lfo_highpass.onoff, lfo_highpass.freq, lfo_highpass.q],
             [lfo_lowpass.onoff, lfo_lowpass.freq, lfo_lowpass.q]
         );
+
+        this._folding_cns.connect(note.folding_cns_target);
 
         lfo_lowpass.output = this._pan;
 
@@ -3135,9 +3147,14 @@
         this._note.stop(this._audio_ctx.currentTime + 0.01);
     };
 
-    function Note(synth, output)
+    function Note(synth, output, folding_cns)
     {
         var osc = new OscillatorNode(synth.audio_ctx, {"channelCount": 1}),
+            fold_threshold = new GainNode(synth.audio_ctx, {"gain": 0.125, "channelCount": 1}),
+            folder,
+            folder_curve = new Float32Array(
+                [0.0, 0.125, 0.0, -0.125, 0.0, 0.125, 0.0, -0.125, 0.0, 0.125, 0.0, -0.125, 0.0, 0.125, 0.0, -0.125, 0.0]
+            ),
             osc_vol = new GainNode(synth.audio_ctx, {"channelCount": 1}),
             vel_vol = new GainNode(synth.audio_ctx, {"channelCount": 1}),
             pan = new StereoPannerNode(synth.audio_ctx, {"channelCount": 2}),
@@ -3162,11 +3179,20 @@
                 }
             );
 
+        folder = new WaveShaperNode(synth.audio_ctx, {"curve": folder_curve, "channelCount": 1});
+
         osc_vol.gain.value = 0.0;
         vel_vol.gain.value = 0.0;
         osc.frequency.value = 0.0;
 
-        osc.connect(osc_vol);
+        if (folding_cns !== null) {
+            folding_cns.connect(fold_threshold.gain);
+        }
+
+        osc.connect(fold_threshold);
+        fold_threshold.connect(folder);
+        folder.connect(osc_vol);
+
         vel_vol.connect(pan);
 
         if (output !== null) {
@@ -3174,6 +3200,8 @@
         }
 
         this._osc = osc;
+        this._fold_threshold = fold_threshold;
+        this._folder = folder;
         this._vel_vol = vel_vol;
         this._env_highpass = env_highpass;
         this._env_lowpass = env_lowpass;
@@ -3194,6 +3222,7 @@
         this.frequency = osc.frequency;
         this.pan = pan;
         this.osc_vol = osc_vol;
+        this.folding_cns_target = fold_threshold.gain;
 
         this._chain_mask = 0;
         this._chain_mask_when_triggered = 0;
@@ -3477,11 +3506,11 @@
         this._rewire(chain_mask & (0xffff & ~flag));
     };
 
-    function ZeroPhaseNote(synth, output, vol_cns, detune_cns, fine_detune_cns)
+    function ZeroPhaseNote(synth, output, vol_cns, detune_cns, fine_detune_cns, folding_cns)
     {
         var freq_cns = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1});
 
-        Note.call(this, synth, output);
+        Note.call(this, synth, output, folding_cns);
 
         vol_cns.connect(this.osc_vol.gain);
 
@@ -3541,7 +3570,7 @@
         }
 
         osc.frequency.value = 0.0;
-        osc.connect(this.osc_vol);
+        osc.connect(this._fold_threshold);
 
         freq_cns.connect(osc.frequency);
         detune.connect(osc.detune);
@@ -3608,12 +3637,12 @@
         }
     };
 
-    function CarrierNote(synth, output, vol_cns, detune_cns, fine_detune_cns)
+    function CarrierNote(synth, output, vol_cns, detune_cns, fine_detune_cns, folding_cns)
     {
         var am_in = new GainNode(synth.audio_ctx, {"channelCount": 1}),
             osc_vol;
 
-        ZeroPhaseNote.call(this, synth, output, vol_cns, detune_cns, fine_detune_cns);
+        ZeroPhaseNote.call(this, synth, output, vol_cns, detune_cns, fine_detune_cns, folding_cns);
 
         osc_vol = this.osc_vol;
         am_in.gain.value = 1.0;
@@ -3642,7 +3671,7 @@
     CarrierNote.prototype.trigger = ZeroPhaseNote.prototype.trigger;
 
     function ModulatorNote(
-            synth, vol_cns, detune_cns, fine_detune_cns,
+            synth, vol_cns, detune_cns, fine_detune_cns, folding_cns,
             lfo_hp_freq_cns, lfo_hp_q_cns,
             lfo_lp_freq_cns, lfo_lp_q_cns
     ) {
@@ -3681,7 +3710,7 @@
         lfo_lp_freq_cns.connect(lfo_lowpass.frequency);
         lfo_lp_q_cns.connect(lfo_lowpass.Q);
 
-        ZeroPhaseNote.call(this, synth, null, vol_cns, detune_cns, fine_detune_cns);
+        ZeroPhaseNote.call(this, synth, null, vol_cns, detune_cns, fine_detune_cns, folding_cns);
 
         pan = this.pan;
 
@@ -4580,11 +4609,12 @@
 
         ClosableNamedUIWidgetGroup.call(this, name, "horizontal oscillator " + class_names, id_attr);
 
-        params.add(new FaderUI("VOL", "Volume", "%", 1000, 10, ALL_CONTROLS, complex_osc.volume, synth));
+        params.add(new FaderUI("VOL", "Volume", "%", 125, 10, ALL_CONTROLS, complex_osc.volume, synth));
         params.add(new FaderUI("VS", "Velocity sensitivity", "%", 100, 1, MIDI_CONTROLS, complex_osc.velocity_sensitivity, synth));
         params.add(new FaderUI("VOS", "Velocity oversensitivity", "%", 100, 1, MIDI_CONTROLS, complex_osc.vel_ovsens, synth));
         params.add(new FaderUI("PAN", "Panning", "%", 100, 1, ALL_CONTROLS, complex_osc.pan, synth));
         params.add(new FaderUI("WID", "Width", "%", 100, 1, MIDI_CONTROLS, complex_osc.width, synth));
+        params.add(new FaderUI("FLD", "Folding", "%", 1000 / 0.875, 10, ALL_CONTROLS, complex_osc.folding, synth));
         params.add(new FaderUI("PRT", "Portamento time", "s", 100, 100, MIDI_CONTROLS, complex_osc.prt_time, synth));
         params.add(new FaderUI("PRD", "Portamento depth (cents; 0 = start from latest note)", "c", 1, 1, MIDI_CONTROLS, complex_osc.prt_depth, synth));
         params.add(new FaderUI("DTN", "Detune (semitones)", "st", 1, 1, MIDI_CONTROLS, complex_osc.detune, synth));
@@ -5656,7 +5686,7 @@
         touch_area.ontouchend = bind(this, this.handle_theremin_touch_end);
         touch_area.ontouchcancel = bind(this, this.handle_theremin_touch_end);
 
-        params.add(new FaderUI("VOL", "Volume", "%", 1000, 10, ALL_CONTROLS, theremin.volume, synth));
+        params.add(new FaderUI("VOL", "Volume", "%", 125, 10, ALL_CONTROLS, theremin.volume, synth));
         params.add(new FaderUI("PAN", "Panning", "%", 100, 1, ALL_CONTROLS, theremin.pan, synth));
         params.add(new FaderUI("WID", "Width", "%", 100, 1, MIDI_CONTROLS, theremin.width, synth));
         params.add(new FaderUI("PX", "Pixelate", "", 1, 1, MIDI_CONTROLS, theremin.resolution, synth));
@@ -5664,6 +5694,7 @@
         params.add(new FaderUI("MAX", "Maximum frequencey", "Hz", 1, 1, MIDI_CONTROLS, theremin.max_freq, synth));
         params.add(new FaderUI("ATK", "Attack time", "s", 1000, 1000, MIDI_CONTROLS, theremin.amp_env_params[1], synth));
         params.add(new FaderUI("REL", "Release time", "s", 1000, 1000, MIDI_CONTROLS, theremin.amp_env_params[6], synth));
+        params.add(new FaderUI("FLD", "Folding", "%", 1000 / 0.875, 10, ALL_CONTROLS, theremin.folding, synth));
 
         filters.add(env_highpass);
         filters.add(env_lowpass);
@@ -6030,6 +6061,7 @@
             "cmp_o1_er": [0.1, "none"],
             "cmp_o1_es": [0.7, "none"],
             "cmp_o1_fd": [0, "none"],
+            "cmp_o1_fl": [0.0, "none"],
             "cmp_o1_h_st": ["off", "none"],
             "cmp_o1_hf": [20, "none"],
             "cmp_o1_hq": [1, "none"],
@@ -6040,7 +6072,7 @@
             "cmp_o1_prd": [0, "none"],
             "cmp_o1_prt": [0, "none"],
             "cmp_o1_v": [1, "none"],
-            "cmp_o1_vl": [0.5, "none"],
+            "cmp_o1_vl": [4.0, "none"],
             "cmp_o1_vs": [0, "none"],
             "cmp_o1_wd": [0.2, "none"],
             "cmp_o1_wf": ["sawtooth", "none"],
@@ -6086,6 +6118,7 @@
             "cmp_o2_er": [0.1, "none"],
             "cmp_o2_es": [0.7, "none"],
             "cmp_o2_fd": [0, "none"],
+            "cmp_o2_fl": [0.0, "none"],
             "cmp_o2_h_st": ["off", "none"],
             "cmp_o2_hf": [20, "none"],
             "cmp_o2_hq": [1, "none"],
@@ -6096,7 +6129,7 @@
             "cmp_o2_prd": [0, "none"],
             "cmp_o2_prt": [0, "none"],
             "cmp_o2_v": [1, "none"],
-            "cmp_o2_vl": [0.5, "none"],
+            "cmp_o2_vl": [4.0, "none"],
             "cmp_o2_vs": [0, "none"],
             "cmp_o2_wd": [0.2, "none"],
             "cmp_o2_wf": ["square", "none"],
@@ -6389,6 +6422,7 @@
             "midi_o1_er": [0.1, "none"],
             "midi_o1_es": [0.7, "none"],
             "midi_o1_fd": [0, "none"],
+            "midi_o1_fl": [0.0, "none"],
             "midi_o1_h_st": ["off", "none"],
             "midi_o1_hf": [20, "none"],
             "midi_o1_hq": [1, "none"],
@@ -6399,7 +6433,7 @@
             "midi_o1_prd": [0, "none"],
             "midi_o1_prt": [0, "none"],
             "midi_o1_v": [1, "none"],
-            "midi_o1_vl": [0.5, "none"],
+            "midi_o1_vl": [4.0, "none"],
             "midi_o1_vs": [0, "none"],
             "midi_o1_wd": [0.2, "none"],
             "midi_o1_wf": ["sawtooth", "none"],
@@ -6445,6 +6479,7 @@
             "midi_o2_er": [0.1, "none"],
             "midi_o2_es": [0.7, "none"],
             "midi_o2_fd": [0, "none"],
+            "midi_o2_fl": [0.0, "none"],
             "midi_o2_h_st": ["off", "none"],
             "midi_o2_hf": [20, "none"],
             "midi_o2_hq": [1, "none"],
@@ -6455,7 +6490,7 @@
             "midi_o2_prd": [0, "none"],
             "midi_o2_prt": [0, "none"],
             "midi_o2_v": [1, "none"],
-            "midi_o2_vl": [0.5, "none"],
+            "midi_o2_vl": [4.0, "none"],
             "midi_o2_vs": [0, "none"],
             "midi_o2_wd": [0.2, "none"],
             "midi_o2_wf": ["square", "none"],
@@ -6964,6 +6999,7 @@
             "th_ep": [1, "none"],
             "th_er": [0.1, "none"],
             "th_es": [0.7, "none"],
+            "th_fl": [0.0, "none"],
             "th_h_st": ["off", "none"],
             "th_hf": [20, "none"],
             "th_hq": [1, "none"],
@@ -6990,7 +7026,7 @@
             "th_rev_st": ["off", "none"],
             "th_rev_w": [-0.25, "none"],
             "th_rev_wet": [0.3, "none"],
-            "th_vl": [0.5, "none"],
+            "th_vl": [4.0, "none"],
             "th_wd": [0.2, "none"],
             "th_wf": ["sine", "none"],
             "vcp1": [0.5, "none"],
@@ -7064,6 +7100,7 @@
             "cmp_o1_er": [0.16, "none"],
             "cmp_o1_es": [0, "none"],
             "cmp_o1_fd": [-2.5, "none"],
+            "cmp_o1_fl": [0.0, "none"],
             "cmp_o1_h_st": ["off", "none"],
             "cmp_o1_hf": [20, "none"],
             "cmp_o1_hq": [1, "none"],
@@ -7074,7 +7111,7 @@
             "cmp_o1_prd": [0, "none"],
             "cmp_o1_prt": [0, "none"],
             "cmp_o1_v": [1, "none"],
-            "cmp_o1_vl": [0.3, "none"],
+            "cmp_o1_vl": [2.4, "none"],
             "cmp_o1_vs": [0, "none"],
             "cmp_o1_wd": [0.2, "none"],
             "cmp_o1_wf": ["square", "none"],
@@ -7120,6 +7157,7 @@
             "cmp_o2_er": [0.15, "none"],
             "cmp_o2_es": [0, "none"],
             "cmp_o2_fd": [2.5, "none"],
+            "cmp_o2_fl": [0.0, "none"],
             "cmp_o2_h_st": ["off", "none"],
             "cmp_o2_hf": [20, "none"],
             "cmp_o2_hq": [1, "none"],
@@ -7130,7 +7168,7 @@
             "cmp_o2_prd": [0, "none"],
             "cmp_o2_prt": [0, "none"],
             "cmp_o2_v": [1, "none"],
-            "cmp_o2_vl": [0.4, "none"],
+            "cmp_o2_vl": [3.2, "none"],
             "cmp_o2_vs": [0, "none"],
             "cmp_o2_wd": [0.2, "none"],
             "cmp_o2_wf": ["sawtooth", "none"],
@@ -7423,6 +7461,7 @@
             "midi_o1_er": [0.1, "none"],
             "midi_o1_es": [0.705511811023622, "mcs8"],
             "midi_o1_fd": [0, "lfo1"],
+            "midi_o1_fl": [0.0, "none"],
             "midi_o1_h_st": ["off", "none"],
             "midi_o1_hf": [20, "none"],
             "midi_o1_hq": [1.01, "none"],
@@ -7433,7 +7472,7 @@
             "midi_o1_prd": [-15, "none"],
             "midi_o1_prt": [0.1, "none"],
             "midi_o1_v": [1, "none"],
-            "midi_o1_vl": [0.5, "none"],
+            "midi_o1_vl": [4.0, "none"],
             "midi_o1_vs": [0, "none"],
             "midi_o1_wd": [0.2, "none"],
             "midi_o1_wf": ["sawtooth", "none"],
@@ -7479,6 +7518,7 @@
             "midi_o2_er": [0.1, "none"],
             "midi_o2_es": [0.5055118110236221, "mcs9"],
             "midi_o2_fd": [0, "lfo1"],
+            "midi_o2_fl": [0.0, "none"],
             "midi_o2_h_st": ["off", "none"],
             "midi_o2_hf": [20, "none"],
             "midi_o2_hq": [1, "none"],
@@ -7489,7 +7529,7 @@
             "midi_o2_prd": [-22, "none"],
             "midi_o2_prt": [0.06, "none"],
             "midi_o2_v": [1, "none"],
-            "midi_o2_vl": [0.17, "none"],
+            "midi_o2_vl": [1.36, "none"],
             "midi_o2_vs": [0.63, "none"],
             "midi_o2_wd": [0.2, "none"],
             "midi_o2_wf": ["sawtooth", "none"],
@@ -7998,6 +8038,7 @@
             "th_ep": [1, "none"],
             "th_er": [0.1, "none"],
             "th_es": [0.7, "none"],
+            "th_fl": [0.0, "none"],
             "th_h_st": ["off", "none"],
             "th_hf": [20, "none"],
             "th_hq": [1, "none"],
@@ -8024,7 +8065,7 @@
             "th_rev_st": ["off", "none"],
             "th_rev_w": [-0.25, "none"],
             "th_rev_wet": [0.3, "none"],
-            "th_vl": [0.5, "none"],
+            "th_vl": [4.0, "none"],
             "th_wd": [0.2, "none"],
             "th_wf": ["sine", "none"],
             "vcp1": [0.5, "none"],
@@ -8098,6 +8139,7 @@
             "cmp_o1_er": [0.1, "none"],
             "cmp_o1_es": [0.8, "none"],
             "cmp_o1_fd": [0, "lfo3"],
+            "cmp_o1_fl": [0.0, "none"],
             "cmp_o1_h_st": ["off", "none"],
             "cmp_o1_hf": [20, "none"],
             "cmp_o1_hq": [1, "none"],
@@ -8108,7 +8150,7 @@
             "cmp_o1_prd": [0, "none"],
             "cmp_o1_prt": [0, "none"],
             "cmp_o1_v": [1, "none"],
-            "cmp_o1_vl": [0.5, "none"],
+            "cmp_o1_vl": [4.0, "none"],
             "cmp_o1_vs": [0, "none"],
             "cmp_o1_wd": [0.2, "none"],
             "cmp_o1_wf": ["custom", "none"],
@@ -8154,6 +8196,7 @@
             "cmp_o2_er": [0.1, "none"],
             "cmp_o2_es": [0.7, "none"],
             "cmp_o2_fd": [0, "lfo4"],
+            "cmp_o2_fl": [0.0, "none"],
             "cmp_o2_h_st": ["off", "none"],
             "cmp_o2_hf": [20, "none"],
             "cmp_o2_hq": [1, "none"],
@@ -8164,7 +8207,7 @@
             "cmp_o2_prd": [0, "none"],
             "cmp_o2_prt": [0, "none"],
             "cmp_o2_v": [1, "none"],
-            "cmp_o2_vl": [0.5, "none"],
+            "cmp_o2_vl": [4.0, "none"],
             "cmp_o2_vs": [0, "none"],
             "cmp_o2_wd": [0.2, "none"],
             "cmp_o2_wf": ["custom", "none"],
@@ -8457,6 +8500,7 @@
             "midi_o1_er": [0.1, "none"],
             "midi_o1_es": [0.8, "none"],
             "midi_o1_fd": [0, "lfo1"],
+            "midi_o1_fl": [0.0, "none"],
             "midi_o1_h_st": ["off", "none"],
             "midi_o1_hf": [20, "none"],
             "midi_o1_hq": [1, "none"],
@@ -8467,7 +8511,7 @@
             "midi_o1_prd": [0, "none"],
             "midi_o1_prt": [0, "none"],
             "midi_o1_v": [1, "none"],
-            "midi_o1_vl": [0.5, "none"],
+            "midi_o1_vl": [4.0, "none"],
             "midi_o1_vs": [0, "none"],
             "midi_o1_wd": [0.2, "none"],
             "midi_o1_wf": ["custom", "none"],
@@ -8513,6 +8557,7 @@
             "midi_o2_er": [0.1, "none"],
             "midi_o2_es": [0.7, "none"],
             "midi_o2_fd": [0, "lfo2"],
+            "midi_o2_fl": [0.0, "none"],
             "midi_o2_h_st": ["off", "none"],
             "midi_o2_hf": [20, "none"],
             "midi_o2_hq": [1, "none"],
@@ -8523,7 +8568,7 @@
             "midi_o2_prd": [0, "none"],
             "midi_o2_prt": [0, "none"],
             "midi_o2_v": [1, "none"],
-            "midi_o2_vl": [0.5, "none"],
+            "midi_o2_vl": [4.0, "none"],
             "midi_o2_vs": [0, "none"],
             "midi_o2_wd": [0.2, "none"],
             "midi_o2_wf": ["custom", "none"],
@@ -9032,6 +9077,7 @@
             "th_ep": [1, "none"],
             "th_er": [0.1, "none"],
             "th_es": [0.7, "none"],
+            "th_fl": [0.0, "none"],
             "th_h_st": ["off", "none"],
             "th_hf": [20, "none"],
             "th_hq": [1, "none"],
@@ -9058,7 +9104,7 @@
             "th_rev_st": ["off", "none"],
             "th_rev_w": [-0.25, "none"],
             "th_rev_wet": [0.3, "none"],
-            "th_vl": [0.5, "none"],
+            "th_vl": [4.0, "none"],
             "th_wd": [0.2, "none"],
             "th_wf": ["custom", "none"],
             "vcp1": [0.5, "none"],
@@ -9132,6 +9178,7 @@
             "cmp_o1_er": [0.1, "none"],
             "cmp_o1_es": [0.8, "none"],
             "cmp_o1_fd": [0, "lfo1"],
+            "cmp_o1_fl": [0.0, "none"],
             "cmp_o1_h_st": ["off", "none"],
             "cmp_o1_hf": [20, "none"],
             "cmp_o1_hq": [1, "none"],
@@ -9142,7 +9189,7 @@
             "cmp_o1_prd": [0, "none"],
             "cmp_o1_prt": [0, "none"],
             "cmp_o1_v": [1, "none"],
-            "cmp_o1_vl": [0.5, "none"],
+            "cmp_o1_vl": [4.0, "none"],
             "cmp_o1_vs": [0, "none"],
             "cmp_o1_wd": [0.2, "none"],
             "cmp_o1_wf": ["custom", "none"],
@@ -9188,6 +9235,7 @@
             "cmp_o2_er": [0.1, "none"],
             "cmp_o2_es": [0.7, "none"],
             "cmp_o2_fd": [0, "lfo2"],
+            "cmp_o2_fl": [0.0, "none"],
             "cmp_o2_h_st": ["off", "none"],
             "cmp_o2_hf": [20, "none"],
             "cmp_o2_hq": [1, "none"],
@@ -9198,7 +9246,7 @@
             "cmp_o2_prd": [0, "none"],
             "cmp_o2_prt": [0, "none"],
             "cmp_o2_v": [1, "none"],
-            "cmp_o2_vl": [0.5, "none"],
+            "cmp_o2_vl": [4.0, "none"],
             "cmp_o2_vs": [0, "none"],
             "cmp_o2_wd": [0.2, "none"],
             "cmp_o2_wf": ["custom", "none"],
@@ -9491,6 +9539,7 @@
             "midi_o1_er": [0.1, "none"],
             "midi_o1_es": [0.8, "none"],
             "midi_o1_fd": [0, "lfo3"],
+            "midi_o1_fl": [0.0, "none"],
             "midi_o1_h_st": ["off", "none"],
             "midi_o1_hf": [20, "none"],
             "midi_o1_hq": [1, "none"],
@@ -9501,7 +9550,7 @@
             "midi_o1_prd": [0, "none"],
             "midi_o1_prt": [0, "none"],
             "midi_o1_v": [1, "none"],
-            "midi_o1_vl": [0.5, "none"],
+            "midi_o1_vl": [4.0, "none"],
             "midi_o1_vs": [0, "none"],
             "midi_o1_wd": [0.2, "none"],
             "midi_o1_wf": ["custom", "none"],
@@ -9547,6 +9596,7 @@
             "midi_o2_er": [0.1, "none"],
             "midi_o2_es": [0.7, "none"],
             "midi_o2_fd": [0, "lfo4"],
+            "midi_o2_fl": [0.0, "none"],
             "midi_o2_h_st": ["off", "none"],
             "midi_o2_hf": [20, "none"],
             "midi_o2_hq": [1, "none"],
@@ -9557,7 +9607,7 @@
             "midi_o2_prd": [0, "none"],
             "midi_o2_prt": [0, "none"],
             "midi_o2_v": [1, "none"],
-            "midi_o2_vl": [0.5, "none"],
+            "midi_o2_vl": [4.0, "none"],
             "midi_o2_vs": [0, "none"],
             "midi_o2_wd": [0.2, "none"],
             "midi_o2_wf": ["custom", "none"],
@@ -10066,6 +10116,7 @@
             "th_ep": [1, "none"],
             "th_er": [0.1, "none"],
             "th_es": [0.7, "none"],
+            "th_fl": [0.0, "none"],
             "th_h_st": ["off", "none"],
             "th_hf": [20, "none"],
             "th_hq": [1, "none"],
@@ -10092,7 +10143,7 @@
             "th_rev_st": ["off", "none"],
             "th_rev_w": [-0.25, "none"],
             "th_rev_wet": [0.3, "none"],
-            "th_vl": [0.5, "none"],
+            "th_vl": [4.0, "none"],
             "th_wd": [0.2, "none"],
             "th_wf": ["custom", "none"],
             "vcp1": [0.5, "none"],
@@ -10166,6 +10217,7 @@
             "cmp_o1_er": [0.16, "none"],
             "cmp_o1_es": [0, "none"],
             "cmp_o1_fd": [-2.5, "none"],
+            "cmp_o1_fl": [0.0, "none"],
             "cmp_o1_h_st": ["off", "none"],
             "cmp_o1_hf": [20, "none"],
             "cmp_o1_hq": [1, "none"],
@@ -10176,7 +10228,7 @@
             "cmp_o1_prd": [0, "none"],
             "cmp_o1_prt": [0, "none"],
             "cmp_o1_v": [1, "none"],
-            "cmp_o1_vl": [0.3, "none"],
+            "cmp_o1_vl": [2.4, "none"],
             "cmp_o1_vs": [0, "none"],
             "cmp_o1_wd": [0.2, "none"],
             "cmp_o1_wf": ["square", "none"],
@@ -10222,6 +10274,7 @@
             "cmp_o2_er": [0.15, "none"],
             "cmp_o2_es": [0, "none"],
             "cmp_o2_fd": [2.5, "none"],
+            "cmp_o2_fl": [0.0, "none"],
             "cmp_o2_h_st": ["off", "none"],
             "cmp_o2_hf": [20, "none"],
             "cmp_o2_hq": [1, "none"],
@@ -10232,7 +10285,7 @@
             "cmp_o2_prd": [0, "none"],
             "cmp_o2_prt": [0, "none"],
             "cmp_o2_v": [1, "none"],
-            "cmp_o2_vl": [0.4, "none"],
+            "cmp_o2_vl": [3.2, "none"],
             "cmp_o2_vs": [0, "none"],
             "cmp_o2_wd": [0.2, "none"],
             "cmp_o2_wf": ["sawtooth", "none"],
@@ -10525,6 +10578,7 @@
             "midi_o1_er": [0.1, "none"],
             "midi_o1_es": [0.7000000000000001, "mcs8"],
             "midi_o1_fd": [0, "lfo1"],
+            "midi_o1_fl": [0.0, "none"],
             "midi_o1_h_st": ["off", "none"],
             "midi_o1_hf": [20, "none"],
             "midi_o1_hq": [1.01, "none"],
@@ -10535,7 +10589,7 @@
             "midi_o1_prd": [-15, "none"],
             "midi_o1_prt": [0.1, "none"],
             "midi_o1_v": [1, "none"],
-            "midi_o1_vl": [0.5, "none"],
+            "midi_o1_vl": [4.0, "none"],
             "midi_o1_vs": [0, "none"],
             "midi_o1_wd": [0.2, "none"],
             "midi_o1_wf": ["sawtooth", "none"],
@@ -10581,6 +10635,7 @@
             "midi_o2_er": [0.1, "none"],
             "midi_o2_es": [0.5, "mcs9"],
             "midi_o2_fd": [0, "lfo1"],
+            "midi_o2_fl": [0.0, "none"],
             "midi_o2_h_st": ["off", "none"],
             "midi_o2_hf": [20, "none"],
             "midi_o2_hq": [1, "none"],
@@ -10591,7 +10646,7 @@
             "midi_o2_prd": [-22, "none"],
             "midi_o2_prt": [0.06, "none"],
             "midi_o2_v": [1, "none"],
-            "midi_o2_vl": [0.17, "none"],
+            "midi_o2_vl": [1.36, "none"],
             "midi_o2_vs": [0.63, "none"],
             "midi_o2_wd": [0.2, "none"],
             "midi_o2_wf": ["sawtooth", "none"],
@@ -11100,6 +11155,7 @@
             "th_ep": [1, "none"],
             "th_er": [0.1, "none"],
             "th_es": [0.7, "none"],
+            "th_fl": [0.0, "none"],
             "th_h_st": ["off", "none"],
             "th_hf": [20, "none"],
             "th_hq": [1, "none"],
@@ -11126,7 +11182,7 @@
             "th_rev_st": ["off", "none"],
             "th_rev_w": [-0.25, "none"],
             "th_rev_wet": [0.3, "none"],
-            "th_vl": [0.5, "none"],
+            "th_vl": [4.0, "none"],
             "th_wd": [0.2, "none"],
             "th_wf": ["sine", "none"],
             "vcp1": [0.5, "none"],
@@ -11200,6 +11256,7 @@
             "cmp_o1_er": [0.1, "none"],
             "cmp_o1_es": [0.6, "none"],
             "cmp_o1_fd": [-5.5, "lfo4"],
+            "cmp_o1_fl": [0.0, "none"],
             "cmp_o1_h_st": ["off", "none"],
             "cmp_o1_hf": [20, "none"],
             "cmp_o1_hq": [1, "none"],
@@ -11210,7 +11267,7 @@
             "cmp_o1_prd": [0, "none"],
             "cmp_o1_prt": [0, "none"],
             "cmp_o1_v": [1, "none"],
-            "cmp_o1_vl": [1, "none"],
+            "cmp_o1_vl": [8.0, "none"],
             "cmp_o1_vs": [0.2, "none"],
             "cmp_o1_wd": [0.2, "none"],
             "cmp_o1_wf": ["sawtooth", "none"],
@@ -11256,6 +11313,7 @@
             "cmp_o2_er": [0.1, "none"],
             "cmp_o2_es": [0.7, "none"],
             "cmp_o2_fd": [0, "lfo5"],
+            "cmp_o2_fl": [0.0, "none"],
             "cmp_o2_h_st": ["off", "none"],
             "cmp_o2_hf": [20, "none"],
             "cmp_o2_hq": [1, "none"],
@@ -11266,7 +11324,7 @@
             "cmp_o2_prd": [0, "none"],
             "cmp_o2_prt": [0, "none"],
             "cmp_o2_v": [1, "none"],
-            "cmp_o2_vl": [0.5, "none"],
+            "cmp_o2_vl": [4.0, "none"],
             "cmp_o2_vs": [0, "none"],
             "cmp_o2_wd": [0.2, "none"],
             "cmp_o2_wf": ["square", "none"],
@@ -11559,6 +11617,7 @@
             "midi_o1_er": [0.1, "none"],
             "midi_o1_es": [0.5, "none"],
             "midi_o1_fd": [0, "lfo1"],
+            "midi_o1_fl": [0.0, "none"],
             "midi_o1_h_st": ["off", "none"],
             "midi_o1_hf": [20, "none"],
             "midi_o1_hq": [1, "none"],
@@ -11569,7 +11628,7 @@
             "midi_o1_prd": [0, "none"],
             "midi_o1_prt": [0, "none"],
             "midi_o1_v": [1, "none"],
-            "midi_o1_vl": [0.36, "none"],
+            "midi_o1_vl": [2.88, "none"],
             "midi_o1_vs": [0.3, "none"],
             "midi_o1_wd": [0.3, "none"],
             "midi_o1_wf": ["sine", "none"],
@@ -11615,6 +11674,7 @@
             "midi_o2_er": [0.1, "none"],
             "midi_o2_es": [0.7, "none"],
             "midi_o2_fd": [0, "lfo2"],
+            "midi_o2_fl": [0.0, "none"],
             "midi_o2_h_st": ["off", "none"],
             "midi_o2_hf": [20, "none"],
             "midi_o2_hq": [1, "none"],
@@ -11625,7 +11685,7 @@
             "midi_o2_prd": [0, "none"],
             "midi_o2_prt": [0, "none"],
             "midi_o2_v": [1, "none"],
-            "midi_o2_vl": [0.5, "none"],
+            "midi_o2_vl": [4.0, "none"],
             "midi_o2_vs": [0, "none"],
             "midi_o2_wd": [0.3, "none"],
             "midi_o2_wf": ["sine", "none"],
@@ -12134,6 +12194,7 @@
             "th_ep": [1, "none"],
             "th_er": [0.1, "none"],
             "th_es": [0.7, "none"],
+            "th_fl": [0.0, "none"],
             "th_h_st": ["off", "none"],
             "th_hf": [20, "none"],
             "th_hq": [1, "none"],
@@ -12160,7 +12221,7 @@
             "th_rev_st": ["on", "none"],
             "th_rev_w": [-0.25, "none"],
             "th_rev_wet": [0.1, "none"],
-            "th_vl": [0.5, "none"],
+            "th_vl": [4.0, "none"],
             "th_wd": [0.2, "none"],
             "th_wf": ["square", "none"],
             "vcp1": [0.5, "none"],
@@ -12234,6 +12295,7 @@
             "cmp_o1_er": [0.1, "none"],
             "cmp_o1_es": [0.5, "none"],
             "cmp_o1_fd": [0, "lfo1"],
+            "cmp_o1_fl": [0.0, "none"],
             "cmp_o1_h_st": ["off", "none"],
             "cmp_o1_hf": [20, "none"],
             "cmp_o1_hq": [1, "none"],
@@ -12244,7 +12306,7 @@
             "cmp_o1_prd": [0, "none"],
             "cmp_o1_prt": [0, "none"],
             "cmp_o1_v": [1, "none"],
-            "cmp_o1_vl": [0.36, "none"],
+            "cmp_o1_vl": [2.88, "none"],
             "cmp_o1_vs": [0.3, "none"],
             "cmp_o1_wd": [0.3, "none"],
             "cmp_o1_wf": ["sine", "none"],
@@ -12290,6 +12352,7 @@
             "cmp_o2_er": [0.1, "none"],
             "cmp_o2_es": [0.7, "none"],
             "cmp_o2_fd": [0, "lfo2"],
+            "cmp_o2_fl": [0.0, "none"],
             "cmp_o2_h_st": ["off", "none"],
             "cmp_o2_hf": [20, "none"],
             "cmp_o2_hq": [1, "none"],
@@ -12300,7 +12363,7 @@
             "cmp_o2_prd": [0, "none"],
             "cmp_o2_prt": [0, "none"],
             "cmp_o2_v": [1, "none"],
-            "cmp_o2_vl": [0.5, "none"],
+            "cmp_o2_vl": [4.0, "none"],
             "cmp_o2_vs": [0, "none"],
             "cmp_o2_wd": [0.3, "none"],
             "cmp_o2_wf": ["sine", "none"],
@@ -12593,6 +12656,7 @@
             "midi_o1_er": [0.1, "none"],
             "midi_o1_es": [0.6, "none"],
             "midi_o1_fd": [-5.5, "lfo4"],
+            "midi_o1_fl": [0.0, "none"],
             "midi_o1_h_st": ["off", "none"],
             "midi_o1_hf": [20, "none"],
             "midi_o1_hq": [1, "none"],
@@ -12603,7 +12667,7 @@
             "midi_o1_prd": [0, "none"],
             "midi_o1_prt": [0, "none"],
             "midi_o1_v": [1, "none"],
-            "midi_o1_vl": [1, "none"],
+            "midi_o1_vl": [8.0, "none"],
             "midi_o1_vs": [0.2, "none"],
             "midi_o1_wd": [0.2, "none"],
             "midi_o1_wf": ["sawtooth", "none"],
@@ -12649,6 +12713,7 @@
             "midi_o2_er": [0.1, "none"],
             "midi_o2_es": [0.7, "none"],
             "midi_o2_fd": [0, "lfo5"],
+            "midi_o2_fl": [0.0, "none"],
             "midi_o2_h_st": ["off", "none"],
             "midi_o2_hf": [20, "none"],
             "midi_o2_hq": [1, "none"],
@@ -12659,7 +12724,7 @@
             "midi_o2_prd": [0, "none"],
             "midi_o2_prt": [0, "none"],
             "midi_o2_v": [1, "none"],
-            "midi_o2_vl": [0.5, "none"],
+            "midi_o2_vl": [4.0, "none"],
             "midi_o2_vs": [0, "none"],
             "midi_o2_wd": [0.2, "none"],
             "midi_o2_wf": ["square", "none"],
@@ -13168,6 +13233,7 @@
             "th_ep": [1, "none"],
             "th_er": [0.1, "none"],
             "th_es": [0.7, "none"],
+            "th_fl": [0.0, "none"],
             "th_h_st": ["off", "none"],
             "th_hf": [20, "none"],
             "th_hq": [1, "none"],
@@ -13194,7 +13260,7 @@
             "th_rev_st": ["on", "none"],
             "th_rev_w": [-0.25, "none"],
             "th_rev_wet": [0.1, "none"],
-            "th_vl": [0.5, "none"],
+            "th_vl": [4.0, "none"],
             "th_wd": [0.2, "none"],
             "th_wf": ["square", "none"],
             "vcp1": [0.5, "none"],
@@ -13268,6 +13334,7 @@
             "cmp_o1_er": [0.273, "none"],
             "cmp_o1_es": [0.3, "none"],
             "cmp_o1_fd": [0, "vrt2"],
+            "cmp_o1_fl": [0.0, "none"],
             "cmp_o1_h_st": ["off", "none"],
             "cmp_o1_hf": [20, "none"],
             "cmp_o1_hq": [1, "none"],
@@ -13278,7 +13345,7 @@
             "cmp_o1_prd": [0, "none"],
             "cmp_o1_prt": [0, "none"],
             "cmp_o1_v": [1, "none"],
-            "cmp_o1_vl": [0.5, "none"],
+            "cmp_o1_vl": [4.0, "none"],
             "cmp_o1_vs": [0, "none"],
             "cmp_o1_wd": [0.2, "none"],
             "cmp_o1_wf": ["sine", "none"],
@@ -13324,6 +13391,7 @@
             "cmp_o2_er": [0.273, "none"],
             "cmp_o2_es": [0.3, "none"],
             "cmp_o2_fd": [0, "vrt2"],
+            "cmp_o2_fl": [0.0, "none"],
             "cmp_o2_h_st": ["off", "none"],
             "cmp_o2_hf": [20, "none"],
             "cmp_o2_hq": [1, "none"],
@@ -13334,7 +13402,7 @@
             "cmp_o2_prd": [0, "none"],
             "cmp_o2_prt": [0, "none"],
             "cmp_o2_v": [1, "none"],
-            "cmp_o2_vl": [0.5, "none"],
+            "cmp_o2_vl": [4.0, "none"],
             "cmp_o2_vs": [0, "none"],
             "cmp_o2_wd": [0.2, "none"],
             "cmp_o2_wf": ["sawtooth", "none"],
@@ -13627,6 +13695,7 @@
             "midi_o1_er": [0.205, "none"],
             "midi_o1_es": [0.75, "none"],
             "midi_o1_fd": [0, "lfo1"],
+            "midi_o1_fl": [0.0, "none"],
             "midi_o1_h_st": ["off", "none"],
             "midi_o1_hf": [20, "none"],
             "midi_o1_hq": [1, "none"],
@@ -13637,7 +13706,7 @@
             "midi_o1_prd": [0, "none"],
             "midi_o1_prt": [0.02, "none"],
             "midi_o1_v": [1, "none"],
-            "midi_o1_vl": [0.5, "none"],
+            "midi_o1_vl": [4.0, "none"],
             "midi_o1_vs": [0, "none"],
             "midi_o1_wd": [0.2, "none"],
             "midi_o1_wf": ["sawtooth", "none"],
@@ -13683,6 +13752,7 @@
             "midi_o2_er": [0.205, "none"],
             "midi_o2_es": [0.75, "none"],
             "midi_o2_fd": [0, "lfo2"],
+            "midi_o2_fl": [0.0, "none"],
             "midi_o2_h_st": ["off", "none"],
             "midi_o2_hf": [20, "none"],
             "midi_o2_hq": [1, "none"],
@@ -13693,7 +13763,7 @@
             "midi_o2_prd": [0, "none"],
             "midi_o2_prt": [0.02, "none"],
             "midi_o2_v": [1, "none"],
-            "midi_o2_vl": [0.5, "none"],
+            "midi_o2_vl": [4.0, "none"],
             "midi_o2_vs": [0, "none"],
             "midi_o2_wd": [0.2, "none"],
             "midi_o2_wf": ["sawtooth", "none"],
@@ -14202,6 +14272,7 @@
             "th_ep": [1, "none"],
             "th_er": [0.307, "none"],
             "th_es": [0.7, "none"],
+            "th_fl": [0.0, "none"],
             "th_h_st": ["off", "none"],
             "th_hf": [20, "none"],
             "th_hq": [1, "none"],
@@ -14228,7 +14299,7 @@
             "th_rev_st": ["off", "none"],
             "th_rev_w": [-0.25, "none"],
             "th_rev_wet": [0.3, "none"],
-            "th_vl": [0.5, "none"],
+            "th_vl": [4.0, "none"],
             "th_wd": [0.2, "none"],
             "th_wf": ["sawtooth", "none"],
             "vcp1": [0.5, "none"],
@@ -14302,6 +14373,7 @@
             "cmp_o1_er": [0.205, "none"],
             "cmp_o1_es": [0.75, "none"],
             "cmp_o1_fd": [0, "lfo1"],
+            "cmp_o1_fl": [0.0, "none"],
             "cmp_o1_h_st": ["off", "none"],
             "cmp_o1_hf": [20, "none"],
             "cmp_o1_hq": [1, "none"],
@@ -14312,7 +14384,7 @@
             "cmp_o1_prd": [0, "none"],
             "cmp_o1_prt": [0.02, "none"],
             "cmp_o1_v": [1, "none"],
-            "cmp_o1_vl": [0.5, "none"],
+            "cmp_o1_vl": [4.0, "none"],
             "cmp_o1_vs": [0, "none"],
             "cmp_o1_wd": [0.2, "none"],
             "cmp_o1_wf": ["sawtooth", "none"],
@@ -14358,6 +14430,7 @@
             "cmp_o2_er": [0.205, "none"],
             "cmp_o2_es": [0.75, "none"],
             "cmp_o2_fd": [0, "lfo2"],
+            "cmp_o2_fl": [0.0, "none"],
             "cmp_o2_h_st": ["off", "none"],
             "cmp_o2_hf": [20, "none"],
             "cmp_o2_hq": [1, "none"],
@@ -14368,7 +14441,7 @@
             "cmp_o2_prd": [0, "none"],
             "cmp_o2_prt": [0.02, "none"],
             "cmp_o2_v": [1, "none"],
-            "cmp_o2_vl": [0.5, "none"],
+            "cmp_o2_vl": [4.0, "none"],
             "cmp_o2_vs": [0, "none"],
             "cmp_o2_wd": [0.2, "none"],
             "cmp_o2_wf": ["sawtooth", "none"],
@@ -14661,6 +14734,7 @@
             "midi_o1_er": [0.273, "none"],
             "midi_o1_es": [0.3, "none"],
             "midi_o1_fd": [0, "pitch"],
+            "midi_o1_fl": [0.0, "none"],
             "midi_o1_h_st": ["off", "none"],
             "midi_o1_hf": [20, "none"],
             "midi_o1_hq": [1, "none"],
@@ -14671,7 +14745,7 @@
             "midi_o1_prd": [0, "none"],
             "midi_o1_prt": [0, "none"],
             "midi_o1_v": [1, "none"],
-            "midi_o1_vl": [0.5, "none"],
+            "midi_o1_vl": [4.0, "none"],
             "midi_o1_vs": [0, "none"],
             "midi_o1_wd": [0.2, "none"],
             "midi_o1_wf": ["sine", "none"],
@@ -14717,6 +14791,7 @@
             "midi_o2_er": [0.273, "none"],
             "midi_o2_es": [0.3, "none"],
             "midi_o2_fd": [0, "pitch"],
+            "midi_o2_fl": [0.0, "none"],
             "midi_o2_h_st": ["off", "none"],
             "midi_o2_hf": [20, "none"],
             "midi_o2_hq": [1, "none"],
@@ -14727,7 +14802,7 @@
             "midi_o2_prd": [0, "none"],
             "midi_o2_prt": [0, "none"],
             "midi_o2_v": [1, "none"],
-            "midi_o2_vl": [0.5, "none"],
+            "midi_o2_vl": [4.0, "none"],
             "midi_o2_vs": [0, "none"],
             "midi_o2_wd": [0.2, "none"],
             "midi_o2_wf": ["sawtooth", "none"],
@@ -15236,6 +15311,7 @@
             "th_ep": [1, "none"],
             "th_er": [0.307, "none"],
             "th_es": [0.7, "none"],
+            "th_fl": [0.0, "none"],
             "th_h_st": ["off", "none"],
             "th_hf": [20, "none"],
             "th_hq": [1, "none"],
@@ -15262,7 +15338,7 @@
             "th_rev_st": ["off", "none"],
             "th_rev_w": [-0.25, "none"],
             "th_rev_wet": [0.3, "none"],
-            "th_vl": [0.5, "none"],
+            "th_vl": [4.0, "none"],
             "th_wd": [0.2, "none"],
             "th_wf": ["sawtooth", "none"],
             "vcp1": [0.5, "none"],
@@ -15336,6 +15412,7 @@
             "cmp_o1_er": [0.1, "none"],
             "cmp_o1_es": [0.705511811023622, "mcs8"],
             "cmp_o1_fd": [0, "lfo1"],
+            "cmp_o1_fl": [0.0, "none"],
             "cmp_o1_h_st": ["off", "none"],
             "cmp_o1_hf": [20, "none"],
             "cmp_o1_hq": [1.01, "none"],
@@ -15346,7 +15423,7 @@
             "cmp_o1_prd": [-15, "none"],
             "cmp_o1_prt": [0.1, "none"],
             "cmp_o1_v": [1, "none"],
-            "cmp_o1_vl": [0.5, "none"],
+            "cmp_o1_vl": [4.0, "none"],
             "cmp_o1_vs": [0, "none"],
             "cmp_o1_wd": [0.2, "none"],
             "cmp_o1_wf": ["sawtooth", "none"],
@@ -15392,6 +15469,7 @@
             "cmp_o2_er": [0.1, "none"],
             "cmp_o2_es": [0.5055118110236221, "mcs9"],
             "cmp_o2_fd": [0, "lfo1"],
+            "cmp_o2_fl": [0.0, "none"],
             "cmp_o2_h_st": ["off", "none"],
             "cmp_o2_hf": [20, "none"],
             "cmp_o2_hq": [1, "none"],
@@ -15402,7 +15480,7 @@
             "cmp_o2_prd": [-22, "none"],
             "cmp_o2_prt": [0.06, "none"],
             "cmp_o2_v": [1, "none"],
-            "cmp_o2_vl": [0.17, "none"],
+            "cmp_o2_vl": [1.36, "none"],
             "cmp_o2_vs": [0.63, "none"],
             "cmp_o2_wd": [0.2, "none"],
             "cmp_o2_wf": ["sawtooth", "none"],
@@ -15695,6 +15773,7 @@
             "midi_o1_er": [0.16, "none"],
             "midi_o1_es": [0, "none"],
             "midi_o1_fd": [-2.5, "none"],
+            "midi_o1_fl": [0.0, "none"],
             "midi_o1_h_st": ["off", "none"],
             "midi_o1_hf": [20, "none"],
             "midi_o1_hq": [1, "none"],
@@ -15705,7 +15784,7 @@
             "midi_o1_prd": [0, "none"],
             "midi_o1_prt": [0, "none"],
             "midi_o1_v": [1, "none"],
-            "midi_o1_vl": [0.3, "none"],
+            "midi_o1_vl": [2.4, "none"],
             "midi_o1_vs": [0, "none"],
             "midi_o1_wd": [0.2, "none"],
             "midi_o1_wf": ["square", "none"],
@@ -15751,6 +15830,7 @@
             "midi_o2_er": [0.15, "none"],
             "midi_o2_es": [0, "none"],
             "midi_o2_fd": [2.5, "none"],
+            "midi_o2_fl": [0.0, "none"],
             "midi_o2_h_st": ["off", "none"],
             "midi_o2_hf": [20, "none"],
             "midi_o2_hq": [1, "none"],
@@ -15761,7 +15841,7 @@
             "midi_o2_prd": [0, "none"],
             "midi_o2_prt": [0, "none"],
             "midi_o2_v": [1, "none"],
-            "midi_o2_vl": [0.4, "none"],
+            "midi_o2_vl": [3.2, "none"],
             "midi_o2_vs": [0, "none"],
             "midi_o2_wd": [0.2, "none"],
             "midi_o2_wf": ["sawtooth", "none"],
@@ -16270,6 +16350,7 @@
             "th_ep": [1, "none"],
             "th_er": [0.1, "none"],
             "th_es": [0.7, "none"],
+            "th_fl": [0.0, "none"],
             "th_h_st": ["off", "none"],
             "th_hf": [20, "none"],
             "th_hq": [1, "none"],
@@ -16296,7 +16377,7 @@
             "th_rev_st": ["off", "none"],
             "th_rev_w": [-0.25, "none"],
             "th_rev_wet": [0.3, "none"],
-            "th_vl": [0.5, "none"],
+            "th_vl": [4.0, "none"],
             "th_wd": [0.2, "none"],
             "th_wf": ["sine", "none"],
             "vcp1": [0.5, "none"],
