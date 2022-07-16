@@ -4081,7 +4081,7 @@
             this._audio_ctx,
             {
                 "channelCount": 1,
-                "disableNormalization": true,
+                "disableNormalization": false,
                 "real": real,
                 "imag": imag
             }
