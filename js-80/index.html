@@ -608,7 +608,7 @@ div.color-9 { background-color: #410; }
         Connect your MIDI keyboard, then hit the button below:
       </p>
       <div>
-        <label for="comp-poliphony">Computer module poliphony:</label>
+        <label for="comp-poliphony">QWERTY module poliphony:</label>
         <select id="comp-poliphony" name="comp-poliphony">
           <option value="4">4</option>
           <option value="5">5</option>
@@ -762,7 +762,7 @@ div.color-9 { background-color: #410; }
         </li>
         <li>
           By default, the <em>MIDI module</em> has 8 notes polyphony and the
-          <em>Computer module</em> has 6. The <em>Sequencer</em> reserves up to
+          <em>QWERTY module</em> has 6. The <em>Sequencer</em> reserves up to
           5 notes from the module to which it is assigned, reducing the
           polyphonic notes of the module that can be played manually while the
           <em>Sequencer</em> is turned on.
@@ -1779,7 +1779,7 @@ div.color-9 { background-color: #410; }
         this.comp_keyboard_target = new EnumParam(
             this,
             "ckb_trg",
-            {"comp": "Computer Module", "seq": "Sequencer root note"},
+            {"comp": "QWERTY Module", "seq": "Sequencer root note"},
             "comp"
         );
         this.comp_keyboard_target.observers.push(this);
@@ -2138,7 +2138,7 @@ div.color-9 { background-color: #410; }
         midi_note_ctl, midi_vel_ctl,
         virt_note_ctl, virt_vel_ctl
     ) {
-        var target = new EnumParam(synth, "sq_trg", {"comp": "Computer Module", "midi": "MIDI Module"}, "comp"),
+        var target = new EnumParam(synth, "sq_trg", {"comp": "QWERTY Module", "midi": "MIDI Module"}, "comp"),
             active_bank = new EnumParam(synth, "sq_ab", SEQ_BANKS, "b0"),
             onoff = new OnOffParam(synth, SEQ_ON_OFF_KEY),
             banks = {
@@ -5255,7 +5255,7 @@ div.color-9 { background-color: #410; }
     function SynthUI(synth)
     {
         var midi_module = new VoiceUI("MIDI Module", "color-2", "midi-", synth.midi_voice, synth),
-            comp_module = new VoiceUI("Computer Module", "color-1", "comp-", synth.comp_voice, synth),
+            comp_module = new VoiceUI("QWERTY Module", "color-1", "comp-", synth.comp_voice, synth),
             virtual_modules = new UIWidgetGroup("color-7 horizontal"),
             inputs = new UIWidgetGroup("color-7 vertical"),
             voice_modules = new UIWidgetGroup("color-7 horizontal"),

@@ -972,7 +972,7 @@
         this.comp_keyboard_target = new EnumParam(
             this,
             "ckb_trg",
-            {"comp": "Computer Module", "seq": "Sequencer root note"},
+            {"comp": "QWERTY Module", "seq": "Sequencer root note"},
             "comp"
         );
         this.comp_keyboard_target.observers.push(this);
@@ -1331,7 +1331,7 @@
         midi_note_ctl, midi_vel_ctl,
         virt_note_ctl, virt_vel_ctl
     ) {
-        var target = new EnumParam(synth, "sq_trg", {"comp": "Computer Module", "midi": "MIDI Module"}, "comp"),
+        var target = new EnumParam(synth, "sq_trg", {"comp": "QWERTY Module", "midi": "MIDI Module"}, "comp"),
             active_bank = new EnumParam(synth, "sq_ab", SEQ_BANKS, "b0"),
             onoff = new OnOffParam(synth, SEQ_ON_OFF_KEY),
             banks = {
@@ -4448,7 +4448,7 @@
     function SynthUI(synth)
     {
         var midi_module = new VoiceUI("MIDI Module", "color-2", "midi-", synth.midi_voice, synth),
-            comp_module = new VoiceUI("Computer Module", "color-1", "comp-", synth.comp_voice, synth),
+            comp_module = new VoiceUI("QWERTY Module", "color-1", "comp-", synth.comp_voice, synth),
             virtual_modules = new UIWidgetGroup("color-7 horizontal"),
             inputs = new UIWidgetGroup("color-7 vertical"),
             voice_modules = new UIWidgetGroup("color-7 horizontal"),
