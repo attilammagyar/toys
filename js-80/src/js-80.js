@@ -4,12 +4,10 @@
 
     var WAVEFORMS = {
             "sawtooth": "sawtooth",
+            "invsaw": "inverse sawtooth",
             "sine": "sine",
             "square": "square",
             "triangle": "triangle"
-        },
-        LFO_WAVEFORMS = {
-            "invsaw": "inverse sawtooth",
         },
         MIDI_CONTROLS = null,
         BASE_MIDI_CONTROLS = {
@@ -389,6 +387,14 @@
             "Semicolon":    [72, ";:",  "white", "C5"],
         },
         DEFAULT_PRESET = "p7",
+        FOLD_THRESHOLD = 0.125,
+        FOLD_MAX = 0.875,
+        FOLD_CURVE = new Float32Array(
+            [0.0, 0.125, 0.0, -0.125, 0.0, 0.125, 0.0, -0.125, 0.0, 0.125, 0.0, -0.125, 0.0, 0.125, 0.0, -0.125, 0.0]
+        ),
+        FOLD_CURVE_INV = new Float32Array(
+            [0.0, -0.125, 0.0, 0.125, 0.0, -0.125, 0.0, 0.125, 0.0, -0.125, 0.0, 0.125, 0.0, -0.125, 0.0, 0.125, 0.0]
+        ),
         RANDOMS = 300,
         random_numbers = [],
         synth_ui = null,
@@ -2544,7 +2550,7 @@
         pan.connect(output);
 
         folding_cns = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1});
-        folding_cns.offset.value = 0.125;
+        folding_cns.offset.value = 0.0;
 
         this._key = key;
         this._pan = pan;
@@ -2559,10 +2565,10 @@
         this.custom_waveform = new CustomWaveParams(synth, custom_waveform_key);
         this.custom_waveform.observers.push(this);
 
-        this.volume = new LFOControllableParam(synth, key + "_vl", volume_param_target, 0.0, 8.0, 4.0);
+        this.volume = new LFOControllableParam(synth, key + "_vl", volume_param_target, 0.0, 1.0 / FOLD_THRESHOLD, 0.5 / FOLD_THRESHOLD);
         this.pan = new LFOControllableParam(synth, key + "_pn", pan.pan, -1.0, 1.0, 0.0);
         this.width = new MIDIControllableParam(synth, key + "_wd", -1.0, 1.0, 0.2);
-        this.folding = new LFOControllableParam(synth, key + "_fl", folding_cns.offset, 0.0, 0.875, 0.0);
+        this.folding = new LFOControllableParam(synth, key + "_fl", folding_cns.offset, 0.0, FOLD_MAX, 0.0);
 
         this.amp_env_params = [
             new MIDIControllableParam(synth, key + "_edl", ENV_DEL_MIN, ENV_DEL_MAX, ENV_DEL_DEF),
@@ -3150,11 +3156,8 @@
     function Note(synth, output, folding_cns)
     {
         var osc = new OscillatorNode(synth.audio_ctx, {"channelCount": 1}),
-            fold_threshold = new GainNode(synth.audio_ctx, {"gain": 0.125, "channelCount": 1}),
+            fold_threshold = new GainNode(synth.audio_ctx, {"gain": FOLD_THRESHOLD, "channelCount": 1}),
             folder,
-            folder_curve = new Float32Array(
-                [0.0, 0.125, 0.0, -0.125, 0.0, 0.125, 0.0, -0.125, 0.0, 0.125, 0.0, -0.125, 0.0, 0.125, 0.0, -0.125, 0.0]
-            ),
             osc_vol = new GainNode(synth.audio_ctx, {"channelCount": 1}),
             vel_vol = new GainNode(synth.audio_ctx, {"channelCount": 1}),
             pan = new StereoPannerNode(synth.audio_ctx, {"channelCount": 2}),
@@ -3179,7 +3182,7 @@
                 }
             );
 
-        folder = new WaveShaperNode(synth.audio_ctx, {"curve": folder_curve, "channelCount": 1});
+        folder = new WaveShaperNode(synth.audio_ctx, {"curve": FOLD_CURVE, "channelCount": 1});
 
         osc_vol.gain.value = 0.0;
         vel_vol.gain.value = 0.0;
@@ -3202,6 +3205,8 @@
         this._osc = osc;
         this._fold_threshold = fold_threshold;
         this._folder = folder;
+        this._fold_curve = FOLD_CURVE;
+        this._fold_curve_inv = FOLD_CURVE_INV;
         this._vel_vol = vel_vol;
         this._env_highpass = env_highpass;
         this._env_lowpass = env_lowpass;
@@ -3476,11 +3481,19 @@
 
     Note.prototype.set_waveform = function (new_waveform)
     {
+        if (new_waveform === "invsaw") {
+            new_waveform = "sawtooth";
+            this._folder.curve = this._fold_curve_inv;
+        } else {
+            this._folder.curve = this._fold_curve;
+        }
+
         this._osc.type = this._waveform = new_waveform;
     };
 
     Note.prototype.set_custom_waveform = function (periodic_wave)
     {
+        this._folder.curve = this._fold_curve;
         this._osc.setPeriodicWave(this._periodic_wave = periodic_wave);
     };
 
@@ -3590,6 +3603,13 @@
     {
         var osc = this._osc;
 
+        if (new_waveform === "invsaw") {
+            new_waveform = "sawtooth";
+            this._folder.curve = this._fold_curve_inv;
+        } else {
+            this._folder.curve = this._fold_curve;
+        }
+
         if (osc !== null) {
             osc.type = new_waveform;
         }
@@ -3601,6 +3621,8 @@
     ZeroPhaseNote.prototype.set_custom_waveform = function (periodic_wave)
     {
         var osc = this._osc;
+
+        this._folder.curve = this._fold_curve;
 
         if (osc !== null) {
             osc.setPeriodicWave(periodic_wave);
@@ -4115,7 +4137,7 @@
 
         this.key = key;
 
-        this.waveform = new EnumParam(synth, key + "_wf", merge(WAVEFORMS, LFO_WAVEFORMS), "sine");
+        this.waveform = new EnumParam(synth, key + "_wf", WAVEFORMS, "sine");
         this.waveform.observers.push(this);
 
         this.frequency = new LFOControllableParam(synth, key + "_f", osc.frequency, LFO_FREQ_MIN, LFO_FREQ_MAX, LFO_FREQ_DEF);
@@ -4609,12 +4631,12 @@
 
         ClosableNamedUIWidgetGroup.call(this, name, "horizontal oscillator " + class_names, id_attr);
 
-        params.add(new FaderUI("VOL", "Volume", "%", 125, 10, ALL_CONTROLS, complex_osc.volume, synth));
+        params.add(new FaderUI("VOL", "Volume", "%", 1000 * FOLD_THRESHOLD, 10, ALL_CONTROLS, complex_osc.volume, synth));
         params.add(new FaderUI("VS", "Velocity sensitivity", "%", 100, 1, MIDI_CONTROLS, complex_osc.velocity_sensitivity, synth));
         params.add(new FaderUI("VOS", "Velocity oversensitivity", "%", 100, 1, MIDI_CONTROLS, complex_osc.vel_ovsens, synth));
         params.add(new FaderUI("PAN", "Panning", "%", 100, 1, ALL_CONTROLS, complex_osc.pan, synth));
         params.add(new FaderUI("WID", "Width", "%", 100, 1, MIDI_CONTROLS, complex_osc.width, synth));
-        params.add(new FaderUI("FLD", "Folding", "%", 1000 / 0.875, 10, ALL_CONTROLS, complex_osc.folding, synth));
+        params.add(new FaderUI("FLD", "Folding", "%", 1000 / FOLD_MAX, 10, ALL_CONTROLS, complex_osc.folding, synth));
         params.add(new FaderUI("PRT", "Portamento time", "s", 100, 100, MIDI_CONTROLS, complex_osc.prt_time, synth));
         params.add(new FaderUI("PRD", "Portamento depth (cents; 0 = start from latest note)", "c", 1, 1, MIDI_CONTROLS, complex_osc.prt_depth, synth));
         params.add(new FaderUI("DTN", "Detune (semitones)", "st", 1, 1, MIDI_CONTROLS, complex_osc.detune, synth));
@@ -5686,7 +5708,7 @@
         touch_area.ontouchend = bind(this, this.handle_theremin_touch_end);
         touch_area.ontouchcancel = bind(this, this.handle_theremin_touch_end);
 
-        params.add(new FaderUI("VOL", "Volume", "%", 125, 10, ALL_CONTROLS, theremin.volume, synth));
+        params.add(new FaderUI("VOL", "Volume", "%", 1000 * FOLD_THRESHOLD, 10, ALL_CONTROLS, theremin.volume, synth));
         params.add(new FaderUI("PAN", "Panning", "%", 100, 1, ALL_CONTROLS, theremin.pan, synth));
         params.add(new FaderUI("WID", "Width", "%", 100, 1, MIDI_CONTROLS, theremin.width, synth));
         params.add(new FaderUI("PX", "Pixelate", "", 1, 1, MIDI_CONTROLS, theremin.resolution, synth));
@@ -5694,7 +5716,7 @@
         params.add(new FaderUI("MAX", "Maximum frequencey", "Hz", 1, 1, MIDI_CONTROLS, theremin.max_freq, synth));
         params.add(new FaderUI("ATK", "Attack time", "s", 1000, 1000, MIDI_CONTROLS, theremin.amp_env_params[1], synth));
         params.add(new FaderUI("REL", "Release time", "s", 1000, 1000, MIDI_CONTROLS, theremin.amp_env_params[6], synth));
-        params.add(new FaderUI("FLD", "Folding", "%", 1000 / 0.875, 10, ALL_CONTROLS, theremin.folding, synth));
+        params.add(new FaderUI("FLD", "Folding", "%", 1000 / FOLD_MAX, 10, ALL_CONTROLS, theremin.folding, synth));
 
         filters.add(env_highpass);
         filters.add(env_lowpass);
