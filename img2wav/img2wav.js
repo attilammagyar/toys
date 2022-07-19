@@ -12,6 +12,8 @@
         round = Math.round,
         PI = Math.PI,
 
+        TITLE = "Image to WAV",
+
         signed_24_bit_max = 8388607.0,
         channels = 2,
         wav_bytes_per_sample = 3,
@@ -159,26 +161,30 @@
 
     function progress(callback, task)
     {
-        var progress = sample_index / n_sample_pairs,
-            progress_percent = 100.0 * progress,
-            progress_width = 90.0 * progress,
-            i, norm;
+        var progress, progress_percent, progress_width, i, norm, progress_display;
+
+        progress = sample_index / n_sample_pairs;
+        progress_percent = 100.0 * progress;
+        progress_width = 90.0 * progress;
+        progress_display = format_number(progress_percent) + "%";
 
         if (!is_generating) {
             return;
         }
 
         if (task === 0) {
-            progress_text.innerText = "Generating samples: " + format_number(progress_percent) + "%";
+            progress_text.innerText = "Generating samples: " + progress_display;
             progressbar_1.style.width = String(progress_width) + "vw";
             progressbar_2.style.width = "90vw";
             progressbar_2.style.left = "0";
             audio_cursor.style.left = String(progress_width) + "vw";
             image_cursor.style.left = String(progress_percent) + "%";
+            document.title = "(" + progress_display + " samples) " + TITLE;
         } else {
             progress_text.innerText = "Building WAV file: " + format_number(progress_percent) + "%";
             progressbar_2.style.width = String(90.0 - progress_width) + "vw";
             progressbar_2.style.left = String(progress_width) + "vw";
+            document.title = "(" + progress_display + " WAV) " + TITLE;
         }
 
         norm = highest_peak > 0.0 ? highest_peak : 1.0;
@@ -488,6 +494,7 @@
         is_generating = false;
         ready(true);
         progress_text.innerText = "";
+        document.title = "(done)" + TITLE;
     }
 
     function typed_array_to_url(arr, mime_type)
