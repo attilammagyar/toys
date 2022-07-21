@@ -1174,15 +1174,15 @@
                 this._velocity_ctl.set_value(velocity);
 
                 if (0 < d2) {
-                    this.midi_voice.trigger_note(ct, ct + 0.02, d1, velocity);
+                    this.midi_voice.trigger_note(ct, ct + 0.009, d1, velocity);
                 } else {
-                    this.midi_voice.stop_note(ct + 0.02, d1);
+                    this.midi_voice.stop_note(ct + 0.009, d1);
                 }
 
                 break;
 
             case 128: // note off, d1 = note
-                this.midi_voice.stop_note(this.audio_ctx.currentTime + 0.02, d1);
+                this.midi_voice.stop_note(this.audio_ctx.currentTime + 0.009, d1);
                 break;
 
             case 224: // pitch bend change, d2 << 7 + d1 = bender position, 0x2000 = center
@@ -1300,10 +1300,10 @@
         if (this._comp_keyboard_target === "seq") {
             this.sequencer.set_base_note(midi_note);
         } else {
-            ct = this.audio_ctx.currentTime + 0.02;
+            ct = this.audio_ctx.currentTime;
 
             this.comp_voice.trigger_note(
-                ct, ct + 0.02, midi_note, velocity
+                ct, ct + 0.009, midi_note, velocity
             );
         }
 
@@ -1318,7 +1318,7 @@
             return;
         }
 
-        this.comp_voice.stop_note(this.audio_ctx.currentTime + 0.02, midi_note);
+        this.comp_voice.stop_note(this.audio_ctx.currentTime + 0.009, midi_note);
 
         this.on_virtual_key_up(key_code);
     };
@@ -1540,7 +1540,7 @@
             scheduled_root_idx, scheduled_roots_len, scheduled_root,
             note_start, note_ctl, vel_ctl, reserved, i, l, e;
 
-        ct = this._audio_ctx.currentTime + 0.01;
+        ct = this._audio_ctx.currentTime + 0.009;
         this._synth.clear_garbage(ct);
 
         events = this._events;
@@ -3098,9 +3098,7 @@
         var now = this._audio_ctx.currentTime,
             g = this._note_vol.gain,
             res = this.resolution.value,
-            freq, when;
-
-        when = now + 0.05;
+            freq;
 
         g.cancelAndHoldAtTime(now);
 
@@ -3113,7 +3111,7 @@
 
         this._note.trigger(
             now,
-            when,
+            now + 0.009,
             freq,
             1.0,
             this.width.value * (2.0 * x - 1.0),
@@ -3150,7 +3148,7 @@
     Theremin.prototype.stop = function (x, y)
     {
         this.move(x, y);
-        this._note.stop(this._audio_ctx.currentTime + 0.01);
+        this._note.stop(this._audio_ctx.currentTime + 0.009);
     };
 
     function Note(synth, output, folding_cns)
