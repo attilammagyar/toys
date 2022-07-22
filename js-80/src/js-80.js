@@ -357,7 +357,7 @@
         LFO_FREQ_MIN = 0.01,
         LFO_FREQ_DEF = 2.0,
         FILTER_Q_MIN = 0.0,
-        FILTER_Q_MAX = 10.0,
+        FILTER_Q_MAX = 20.0,
         FILTER_Q_DEF = 1.0,
         QWERTY = {
             "KeyZ":         [48, "zZ",  "white", "C3"],
