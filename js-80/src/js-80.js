@@ -1471,6 +1471,10 @@
                 this._reload_next_bank_scale(this.banks[this._next_bank_key]);
             }
         }
+
+        if (is_active) {
+            this.main_loop();
+        }
     };
 
     Sequencer.prototype._reload_next_bank_scale = function (bank)
