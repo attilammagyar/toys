@@ -148,7 +148,7 @@ div.group {
   font-size: 14px;
   border: solid 1px black;
   border-radius: 5px;
-  padding: 2px;
+  padding: 1px;
   margin: 1px auto;
 }
 
@@ -314,7 +314,7 @@ input.fader::-ms-thumb {
 
 select {
   background: #000;
-  width: 90px;
+  width: 86px;
   font-size: 12px;
   border: inset 1px #445;
   padding: 1px 0;

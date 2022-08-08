@@ -357,7 +357,7 @@
         LFO_FREQ_MIN = 0.01,
         LFO_FREQ_DEF = 2.0,
         FILTER_Q_MIN = 0.0,
-        FILTER_Q_MAX = 20.0,
+        FILTER_Q_MAX = 30.0,
         FILTER_Q_DEF = 1.0,
         QWERTY = {
             "KeyZ":         [48, "zZ",  "white", "C3"],
@@ -2600,7 +2600,16 @@
             new MIDIControllableParam(synth, key + "_ehsf", SND_FREQ_MIN, SND_FREQ_MAX, SND_FREQ_MIN),
             new MIDIControllableParam(synth, key + "_ehrt", ENV_REL_MIN, ENV_REL_MAX, ENV_REL_DEF),
             new MIDIControllableParam(synth, key + "_ehrf", SND_FREQ_MIN, SND_FREQ_MAX, SND_FREQ_MIN),
-            new MIDIControllableParam(synth, key + "_ehq", FILTER_Q_MIN, FILTER_Q_MAX, FILTER_Q_DEF)
+
+            new MIDIControllableParam(synth, key + "_ehqi", FILTER_Q_MIN, FILTER_Q_MAX, FILTER_Q_DEF),
+            new MIDIControllableParam(synth, key + "_ehqdlt", ENV_DEL_MIN, ENV_DEL_MAX, ENV_DEL_DEF),
+            new MIDIControllableParam(synth, key + "_ehqat", ENV_ATK_MIN, ENV_ATK_MAX, ENV_ATK_DEF),
+            new MIDIControllableParam(synth, key + "_ehqp", FILTER_Q_MIN, FILTER_Q_MAX, FILTER_Q_DEF),
+            new MIDIControllableParam(synth, key + "_ehqht", ENV_HLD_MIN, ENV_HLD_MAX, ENV_HLD_DEF),
+            new MIDIControllableParam(synth, key + "_ehqdt", ENV_DEC_MIN, ENV_DEC_MAX, ENV_DEC_DEF),
+            new MIDIControllableParam(synth, key + "_ehqs", FILTER_Q_MIN, FILTER_Q_MAX, FILTER_Q_DEF),
+            new MIDIControllableParam(synth, key + "_ehqrt", ENV_REL_MIN, ENV_REL_MAX, ENV_REL_DEF),
+            new MIDIControllableParam(synth, key + "_ehqr", FILTER_Q_MIN, FILTER_Q_MAX, FILTER_Q_DEF)
         ];
 
         elp_onoff_key = key + "_elo";
@@ -2616,7 +2625,16 @@
             new MIDIControllableParam(synth, key + "_elsf", SND_FREQ_MIN, SND_FREQ_MAX, SND_FREQ_MAX),
             new MIDIControllableParam(synth, key + "_elrt", ENV_REL_MIN, ENV_REL_MAX, ENV_REL_DEF),
             new MIDIControllableParam(synth, key + "_elrf", SND_FREQ_MIN, SND_FREQ_MAX, SND_FREQ_MAX),
-            new MIDIControllableParam(synth, key + "_elq", FILTER_Q_MIN, FILTER_Q_MAX, FILTER_Q_DEF)
+
+            new MIDIControllableParam(synth, key + "_elqi", FILTER_Q_MIN, FILTER_Q_MAX, FILTER_Q_DEF),
+            new MIDIControllableParam(synth, key + "_elqdlt", ENV_DEL_MIN, ENV_DEL_MAX, ENV_DEL_DEF),
+            new MIDIControllableParam(synth, key + "_elqat", ENV_ATK_MIN, ENV_ATK_MAX, ENV_ATK_DEF),
+            new MIDIControllableParam(synth, key + "_elqp", FILTER_Q_MIN, FILTER_Q_MAX, FILTER_Q_DEF),
+            new MIDIControllableParam(synth, key + "_elqht", ENV_HLD_MIN, ENV_HLD_MAX, ENV_HLD_DEF),
+            new MIDIControllableParam(synth, key + "_elqdt", ENV_DEC_MIN, ENV_DEC_MAX, ENV_DEC_DEF),
+            new MIDIControllableParam(synth, key + "_elqs", FILTER_Q_MIN, FILTER_Q_MAX, FILTER_Q_DEF),
+            new MIDIControllableParam(synth, key + "_elqrt", ENV_REL_MIN, ENV_REL_MAX, ENV_REL_DEF),
+            new MIDIControllableParam(synth, key + "_elqr", FILTER_Q_MIN, FILTER_Q_MAX, FILTER_Q_DEF)
         ];
 
         env_highpass_onoff.observers.push(this);
@@ -3217,17 +3235,28 @@
         this._env_lowpass = env_lowpass;
 
         this._is_triggered = false;
+
         this._amp_sustain_start = null;
         this._amp_sustain_level = null;
         this._amp_release_time = null;
-        this._ehp_sustain_start = null;
-        this._ehp_sustain_level = null;
-        this._ehp_release_time = null
-        this._ehp_release_freq = null
-        this._elp_sustain_start = null;
-        this._elp_sustain_level = null;
-        this._elp_release_time = null
-        this._elp_release_freq = null
+
+        this._ehp_f_sustain_start = null;
+        this._ehp_f_sustain_level = null;
+        this._ehp_f_release_time = null
+        this._ehp_f_release_level = null
+        this._ehp_q_sustain_start = null;
+        this._ehp_q_sustain_level = null;
+        this._ehp_q_release_time = null
+        this._ehp_q_release_level = null
+
+        this._elp_f_sustain_start = null;
+        this._elp_f_sustain_level = null;
+        this._elp_f_release_time = null
+        this._elp_f_release_level = null
+        this._elp_q_sustain_start = null;
+        this._elp_q_sustain_level = null;
+        this._elp_q_release_time = null
+        this._elp_q_release_level = null
 
         this.frequency = osc.frequency;
         this.pan = pan;
@@ -3284,8 +3313,6 @@
             amp_env_params, env_highpass_params, env_lowpass_params
     ) {
         var g = this._vel_vol.gain,
-            hq = this._env_highpass.Q,
-            lq = this._env_lowpass.Q,
             f = this.frequency,
             p = this.pan.pan,
             chain_mask = this._chain_mask;
@@ -3300,12 +3327,6 @@
             f.setValueAtTime(prt_start_freq, when);
             f.linearRampToValueAtTime(freq, when + prt_time);
         }
-
-        hq.cancelAndHoldAtTime(when);
-        hq.setValueAtTime(env_highpass_params[9].value, when);
-
-        lq.cancelAndHoldAtTime(when);
-        lq.setValueAtTime(env_lowpass_params[9].value, when);
 
         p.cancelAndHoldAtTime(when);
         p.setValueAtTime(pan, when);
@@ -3327,7 +3348,7 @@
         this._chain_mask_when_triggered = chain_mask;
 
         if (0 < (chain_mask & 1)) {
-            this._ehp_sustain_start = this._apply_envelope_dahds(
+            this._ehp_f_sustain_start = this._apply_envelope_dahds(
                 this._env_highpass.frequency,
                 now,
                 when,
@@ -3337,17 +3358,32 @@
                 env_highpass_params[3].value,
                 env_highpass_params[4].value,
                 env_highpass_params[5].value,
-                this._ehp_sustain_level = env_highpass_params[6].value
+                this._ehp_f_sustain_level = env_highpass_params[6].value
+            );
+            this._ehp_q_sustain_start = this._apply_envelope_dahds(
+                this._env_highpass.Q,
+                now,
+                when,
+                env_highpass_params[9].value,
+                env_highpass_params[10].value,
+                env_highpass_params[11].value,
+                env_highpass_params[12].value,
+                env_highpass_params[13].value,
+                env_highpass_params[14].value,
+                this._ehp_q_sustain_level = env_highpass_params[15].value
             );
         } else {
-            this._ehp_sustain_level = env_highpass_params[6].value;
+            this._ehp_f_sustain_level = env_highpass_params[6].value;
+            this._ehp_q_sustain_level = env_highpass_params[15].value;
         }
 
-        this._ehp_release_time = env_highpass_params[7].value;
-        this._ehp_release_freq = env_highpass_params[8].value;
+        this._ehp_f_release_time = env_highpass_params[7].value;
+        this._ehp_f_release_level = env_highpass_params[8].value;
+        this._ehp_q_release_time = env_highpass_params[16].value;
+        this._ehp_q_release_level = env_highpass_params[17].value;
 
         if (0 < (chain_mask & 2)) {
-            this._elp_sustain_start = this._apply_envelope_dahds(
+            this._elp_f_sustain_start = this._apply_envelope_dahds(
                 this._env_lowpass.frequency,
                 now,
                 when,
@@ -3357,14 +3393,29 @@
                 env_lowpass_params[3].value,
                 env_lowpass_params[4].value,
                 env_lowpass_params[5].value,
-                this._elp_sustain_level = env_lowpass_params[6].value
+                this._elp_f_sustain_level = env_lowpass_params[6].value
+            );
+            this._elp_q_sustain_start = this._apply_envelope_dahds(
+                this._env_lowpass.Q,
+                now,
+                when,
+                env_lowpass_params[9].value,
+                env_lowpass_params[10].value,
+                env_lowpass_params[11].value,
+                env_lowpass_params[12].value,
+                env_lowpass_params[13].value,
+                env_lowpass_params[14].value,
+                this._elp_q_sustain_level = env_lowpass_params[15].value
             );
         } else {
-            this._elp_sustain_level = env_lowpass_params[6].value;
+            this._elp_f_sustain_level = env_lowpass_params[6].value;
+            this._elp_q_sustain_level = env_lowpass_params[15].value;
         }
 
-        this._elp_release_time = env_lowpass_params[7].value;
-        this._elp_release_freq = env_lowpass_params[8].value;
+        this._elp_f_release_time = env_lowpass_params[7].value;
+        this._elp_f_release_level = env_lowpass_params[8].value;
+        this._elp_q_release_time = env_lowpass_params[16].value;
+        this._elp_q_release_level = env_lowpass_params[17].value;
     };
 
     // initial-l ==delay-t==> initial-l ==attack-t==> peak-l ==hold-t==> peak-l ==decay-t==> sustain-l
@@ -3410,10 +3461,18 @@
                 this._apply_envelope_r(
                     this._env_highpass.frequency,
                     when,
-                    this._ehp_sustain_start,
-                    this._ehp_sustain_level,
-                    this._ehp_release_time,
-                    this._ehp_release_freq
+                    this._ehp_f_sustain_start,
+                    this._ehp_f_sustain_level,
+                    this._ehp_f_release_time,
+                    this._ehp_f_release_level
+                );
+                this._apply_envelope_r(
+                    this._env_highpass.Q,
+                    when,
+                    this._ehp_q_sustain_start,
+                    this._ehp_q_sustain_level,
+                    this._ehp_q_release_time,
+                    this._ehp_q_release_level
                 );
             }
 
@@ -3421,10 +3480,18 @@
                 this._apply_envelope_r(
                     this._env_lowpass.frequency,
                     when,
-                    this._elp_sustain_start,
-                    this._elp_sustain_level,
-                    this._elp_release_time,
-                    this._elp_release_freq
+                    this._elp_f_sustain_start,
+                    this._elp_f_sustain_level,
+                    this._elp_f_release_time,
+                    this._elp_f_release_level
+                );
+                this._apply_envelope_r(
+                    this._env_lowpass.Q,
+                    when,
+                    this._elp_q_sustain_start,
+                    this._elp_q_sustain_level,
+                    this._elp_q_release_time,
+                    this._elp_q_release_level
                 );
             }
         }
@@ -3464,10 +3531,18 @@
                 this._apply_envelope_r(
                     this._env_highpass.frequency,
                     when,
-                    this._ehp_sustain_start,
-                    this._ehp_sustain_level,
+                    this._ehp_f_sustain_start,
+                    this._ehp_f_sustain_level,
                     0.0,
-                    this._ehp_release_freq
+                    this._ehp_f_release_level
+                );
+                this._apply_envelope_r(
+                    this._env_highpass.Q,
+                    when,
+                    this._ehp_q_sustain_start,
+                    this._ehp_q_sustain_level,
+                    0.0,
+                    this._ehp_q_release_level
                 );
             }
 
@@ -3475,10 +3550,18 @@
                 this._apply_envelope_r(
                     this._env_lowpass.frequency,
                     when,
-                    this._elp_sustain_start,
-                    this._elp_sustain_level,
+                    this._elp_f_sustain_start,
+                    this._elp_f_sustain_level,
                     0.0,
-                    this._elp_release_freq
+                    this._elp_f_release_level
+                );
+                this._apply_envelope_r(
+                    this._env_lowpass.Q,
+                    when,
+                    this._elp_q_sustain_start,
+                    this._elp_q_sustain_level,
+                    0.0,
+                    this._elp_q_release_level
                 );
             }
         }
@@ -4764,23 +4847,37 @@
 
     function EnvelopeBiquadFilterUI(name, onoff_param, params, synth)
     {
-        var onoff = new OnOffSwitch(onoff_param);
+        var onoff = new OnOffSwitch(onoff_param),
+            freq = new UIWidgetGroup("vertical"),
+            q = new UIWidgetGroup("vertical");
 
         NamedUIWidgetGroup.call(this, name, "vertical");
 
         this._name.appendChild(onoff.dom_node);
         this._onoff = onoff;
 
-        this.add(new FaderUI("IF", "Initial frequency", "Hz", 1, 1, MIDI_CONTROLS, params[0], synth));
-        this.add(new FaderUI("DEL", "Delay", "s", 1000, 1000, MIDI_CONTROLS, params[1], synth));
-        this.add(new FaderUI("ATK", "Attack", "s", 1000, 1000, MIDI_CONTROLS, params[2], synth));
-        this.add(new FaderUI("PF", "Peak frequency", "Hz", 1, 1, MIDI_CONTROLS, params[3], synth));
-        this.add(new FaderUI("HLD", "Hold", "s", 1000, 1000, MIDI_CONTROLS, params[4], synth));
-        this.add(new FaderUI("DEC", "Decay", "s", 1000, 1000, MIDI_CONTROLS, params[5], synth));
-        this.add(new FaderUI("SF", "Sustain frequency", "Hz", 1, 1, MIDI_CONTROLS, params[6], synth));
-        this.add(new FaderUI("REL", "Release", "s", 1000, 1000, MIDI_CONTROLS, params[7], synth));
-        this.add(new FaderUI("RF", "Release frequency", "Hz", 1, 1, MIDI_CONTROLS, params[8], synth));
-        this.add(new FaderUI("Q", "Q factor", "", 100, 100, MIDI_CONTROLS, params[9], synth));
+        freq.add(new FaderUI("IF", "Initial frequency", "Hz", 1, 1, MIDI_CONTROLS, params[0], synth));
+        freq.add(new FaderUI("DEL", "Delay", "s", 1000, 1000, MIDI_CONTROLS, params[1], synth));
+        freq.add(new FaderUI("ATK", "Attack", "s", 1000, 1000, MIDI_CONTROLS, params[2], synth));
+        freq.add(new FaderUI("PF", "Peak frequency", "Hz", 1, 1, MIDI_CONTROLS, params[3], synth));
+        freq.add(new FaderUI("HLD", "Hold", "s", 1000, 1000, MIDI_CONTROLS, params[4], synth));
+        freq.add(new FaderUI("DEC", "Decay", "s", 1000, 1000, MIDI_CONTROLS, params[5], synth));
+        freq.add(new FaderUI("SF", "Sustain frequency", "Hz", 1, 1, MIDI_CONTROLS, params[6], synth));
+        freq.add(new FaderUI("REL", "Release", "s", 1000, 1000, MIDI_CONTROLS, params[7], synth));
+        freq.add(new FaderUI("RF", "Release frequency", "Hz", 1, 1, MIDI_CONTROLS, params[8], synth));
+
+        q.add(new FaderUI("IQ", "Initial Q factor", "", 100, 100, MIDI_CONTROLS, params[9], synth));
+        q.add(new FaderUI("DEL", "Delay", "s", 1000, 1000, MIDI_CONTROLS, params[10], synth));
+        q.add(new FaderUI("ATK", "Attack", "s", 1000, 1000, MIDI_CONTROLS, params[11], synth));
+        q.add(new FaderUI("PQ", "Peak Q factor", "", 100, 100, MIDI_CONTROLS, params[12], synth));
+        q.add(new FaderUI("HLD", "Hold", "s", 1000, 1000, MIDI_CONTROLS, params[13], synth));
+        q.add(new FaderUI("DEC", "Decay", "s", 1000, 1000, MIDI_CONTROLS, params[14], synth));
+        q.add(new FaderUI("SQ", "Sustain Q factor", "", 100, 100, MIDI_CONTROLS, params[15], synth));
+        q.add(new FaderUI("REL", "Release", "s", 1000, 1000, MIDI_CONTROLS, params[16], synth));
+        q.add(new FaderUI("RQ", "Release Q factor", "", 100, 100, MIDI_CONTROLS, params[17], synth));
+
+        this.add(freq);
+        this.add(q);
     }
 
     EnvelopeBiquadFilterUI.prototype.update = NamedUIWidgetGroup.prototype.update;
