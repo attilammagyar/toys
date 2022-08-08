@@ -387,6 +387,8 @@
             "Semicolon":    [72, ";:",  "white", "C5"],
         },
         DEFAULT_PRESET = "p7",
+        CTL_DST_STEEPNESS_MIN = 3.0,
+        CTL_DST_STEEPNESS_SCALE = 12.0,
         FOLD_THRESHOLD = 0.125,
         FOLD_MAX = 0.875,
         FOLD_CURVE = new Float32Array(
@@ -2135,13 +2137,14 @@
             dry_gain = new GainNode(synth.audio_ctx, {"gain": 1.0}),
             inv_gain = new GainNode(synth.audio_ctx, {"gain": -1.0}),
             wet_gain = new GainNode(synth.audio_ctx, {"gain": 0.0}),
+            exp = Math.exp,
             ws, i, l;
 
         Effect.call(this, synth, key, output);
 
         for (i = 0; i < 5000; ++i) {
             curve.push(
-                2.0 / (1.0 + Math.exp((-steepness * (i - 2500.0)) / 2500.0)) - 1.0
+                2.0 / (1.0 + exp((-steepness * (i - 2500.0)) / 2500.0)) - 1.0
             );
         }
 
@@ -4146,7 +4149,9 @@
         this.amt = new LFOControllableParam(synth, key + "_am", gain.gain, 0.0, 1.0, 1.0);
         this.min = new LFOControllerParam(synth, key + "_mi", this, 0.0, 1.0, 0.0);
         this.max = new LFOControllerParam(synth, key + "_ma", this, 0.0, 1.0, 1.0);
+        this.distortion = new LFOControllerParam(synth, key + "_ds", this, 0.0, 1.0, 0.0);
         this.rnd = new LFOControllerParam(synth, key + "_rn", this, 0.0, 1.0, 0.0);
+
         this.output = ws_min_max;
     }
 
@@ -4174,11 +4179,36 @@
     {
         var min = this.min.value,
             max = this.max.value,
+            distortion = this.distortion.value,
             rnd_weight = this.rnd.value,
-            curve, delta, inv_rnd_weight, i, l, r;
+            curve, delta, exp, i, l, r, v, s1, s2;
 
         if (rnd_weight < 0.0001) {
-            this._wave_shaper_min_max.curve = new Float32Array([min, min, max]);
+            if (distortion > 0.0) {
+                r = (l = RANDOMS) - 1;
+                curve = new Float32Array(l * 2 - 1);
+
+                for (i = 0; i < r; ++i) {
+                    curve[i] = min;
+                }
+
+                delta = max - min;
+
+                exp = Math.exp;
+                s1 = - (CTL_DST_STEEPNESS_MIN + distortion * CTL_DST_STEEPNESS_SCALE);
+                s2 = 1.0 - distortion;
+
+                for (i = 0; i < l; ++i) {
+                    v = i / r;
+                    v = (
+                        distortion / (1.0 + exp(s1 * (2.0 * v - 1.0)))
+                        + s2 * v
+                    );
+                    curve[i + r] = min + delta * v;
+                }
+            } else {
+                curve = new Float32Array([min, min, max]);
+            }
         } else {
             r = (l = RANDOMS) - 1;
             curve = new Float32Array(l * 2 - 1);
@@ -4188,19 +4218,39 @@
             }
 
             delta = max - min;
-            inv_rnd_weight = 1.0 - rnd_weight;
 
-            for (i = 0; i < l; ++i) {
-                curve[i + r] = (
-                    min + delta * (
-                        rnd_weight * random_numbers[i]
-                        + inv_rnd_weight * (i / r)
-                    )
-                );
+            if (distortion > 0.0) {
+                exp = Math.exp;
+                s1 = - (CTL_DST_STEEPNESS_MIN + distortion * CTL_DST_STEEPNESS_SCALE);
+                s2 = 1.0 - distortion;
+
+                for (i = 0; i < l; ++i) {
+                    v = i / r;
+                    v = (
+                        distortion / (1.0 + exp(s1 * (2.0 * v - 1.0)))
+                        + s2 * v
+                    );
+                    curve[i + r] = (
+                        min + delta * (
+                            // (1.0 - rnd_weight) * v + rnd_weight * random_numbers[i]
+                            v + rnd_weight * (random_numbers[i] - v)
+                        )
+                    );
+                }
+            } else {
+                for (i = 0; i < l; ++i) {
+                    v = i / r;
+                    curve[i + r] = (
+                        min + delta * (
+                            // (1.0 - rnd_weight) * v + rnd_weight * random_numbers[i]
+                            v + rnd_weight * (random_numbers[i] - v)
+                        )
+                    );
+                }
             }
-
-            this._wave_shaper_min_max.curve = curve;
         }
+
+        this._wave_shaper_min_max.curve = curve;
     };
 
     function LFOControllerParam(synth, key, lfo_ctl, min, max, default_value)
@@ -4323,6 +4373,7 @@
         this.amt = new MIDIControllableParam(synth, key + "_am", 0.0, 1.0, 1.0);
         this.min = new MIDIControllableParam(synth, key + "_mi", 0.0, 1.0, 0.0);
         this.max = new MIDIControllableParam(synth, key + "_ma", 0.0, 1.0, 1.0);
+        this.distortion = new MIDIControllableParam(synth, key + "_ds", 0.0, 1.0, 0.0);
         this.rnd = new MIDIControllableParam(synth, key + "_rn", 0.0, 1.0, 0.0);
 
         inputs[input_1.key] = input_1;
@@ -4353,13 +4404,27 @@
     MIDIControllerShaper.prototype.update = function (param, new_value)
     {
         var min = this.min.value,
+            distortion = this.distortion.value,
             rnd_weight = this.rnd.value,
-            in_value, rnd_value, key_infix;
+            in_value, rnd_value;
 
         if (this._inputs.hasOwnProperty(param.key) && param.controller !== "none") {
             this._last_input_value = in_value = param.value;
         } else {
             in_value = this._last_input_value;
+        }
+
+        if (distortion > 0.0) {
+            in_value = (
+                distortion / (
+                    1.0
+                    + Math.exp(
+                        - (CTL_DST_STEEPNESS_MIN + distortion * CTL_DST_STEEPNESS_SCALE)
+                        * (2.0 * in_value - 1.0)
+                    )
+                )
+                + (1.0 - distortion) * in_value
+            );
         }
 
         if (rnd_weight < 0.0001) {
@@ -4843,6 +4908,7 @@
             amt = new FaderUI("AMT", "Amount", "%", 10000, 100, MIDI_CONTROLS, midi_ctl_shaper_ctl.amt, synth),
             min = new FaderUI("MIN", "Minimum value", "%", 10000, 100, MIDI_CONTROLS, midi_ctl_shaper_ctl.min, synth),
             max = new FaderUI("MAX", "Maximum value", "%", 10000, 100, MIDI_CONTROLS, midi_ctl_shaper_ctl.max, synth),
+            distortion = new FaderUI("DST", "Distortion", "%", 500, 5, MIDI_CONTROLS, midi_ctl_shaper_ctl.distortion, synth),
             rnd = new FaderUI("RND", "Randomness", "%", 10000, 100, MIDI_CONTROLS, midi_ctl_shaper_ctl.rnd, synth);
 
         NamedUIWidgetGroup.call(this, name, "horizontal mcs color-6");
@@ -4855,6 +4921,7 @@
         this.add(amt);
         this.add(min);
         this.add(max);
+        this.add(distortion);
         this.add(rnd);
     }
 
@@ -4869,6 +4936,7 @@
             amt = new FaderUI("AMT", "Amount", "%", 5000, 50, ALL_CONTROLS, lfo_ctl.amt, synth),
             min = new FaderUI("MIN", "Minimum value", "%", 5000, 50, MIDI_CONTROLS, lfo_ctl.min, synth),
             max = new FaderUI("MAX", "Maximum value", "%", 5000, 50, MIDI_CONTROLS, lfo_ctl.max, synth),
+            distortion = new FaderUI("DST", "Distortion", "%", 500, 5, MIDI_CONTROLS, lfo_ctl.distortion, synth),
             rnd = new FaderUI("RND", "Randomness", "%", 5000, 50, MIDI_CONTROLS, lfo_ctl.rnd, synth);
 
         NamedUIWidgetGroup.call(this, name, "horizontal lfo color-8");
@@ -4880,6 +4948,7 @@
         this.add(amt);
         this.add(min);
         this.add(max);
+        this.add(distortion);
         this.add(rnd);
     }
 
