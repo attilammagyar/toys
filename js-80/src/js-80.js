@@ -2,7 +2,8 @@
 
     "use strict";
 
-    var WAVEFORMS = {
+    var PATCH_VERSION = "2",
+        WAVEFORMS = {
             "sawtooth": "sawtooth",
             "invsaw": "inverse sawtooth",
             "sine": "sine",
@@ -861,7 +862,7 @@
         Observer.call(this);
 
         this._params = [];
-        this._param_keys = {};
+        this._params_by_key = {};
         this._update_dirty_custom_waves_timeout = null;
         this._update_dirty_custom_waves_func = null;
 
@@ -1042,12 +1043,12 @@
     {
         var key;
 
-        if (this._param_keys.hasOwnProperty(key = param.key)) {
+        if (this._params_by_key.hasOwnProperty(key = param.key)) {
             throw "Programming error: duplicate parameter key: " + param.key;
         }
 
         this._params.push(param);
-        this._param_keys[key] = true;
+        this._params_by_key[key] = param;
     };
 
     Synth.prototype.update = function (observable, arg)
@@ -1077,7 +1078,7 @@
 
     Synth.prototype.export_patch = function ()
     {
-        var result = {},
+        var result = {"version": PATCH_VERSION},
             params = this._params,
             i, l, param;
 
@@ -1094,12 +1095,17 @@
         var params = this._params,
             i, l, param, key, t, v, c, m;
 
+        exported = this._upgrade_patch(exported);
+
         for (i = 0, l = params.length; i < l; ++i) {
             param = params[i];
+            param.disconnect();
+
             key = param.key;
 
             if (!exported.hasOwnProperty(key)) {
-                console.log("Value for param " + key + " not found");
+                console.log("Value or controller for param " + key + " not found or invalid, using the default value");
+                param.set_value(param.default_value);
                 continue;
             }
 
@@ -1110,33 +1116,37 @@
                 continue;
             }
 
-            t = exported[key];
+            t = this._parse_exported_param(exported, key);
 
-            if (!Array.isArray(t)) {
-                console.log("Ignoring " + key + " because it is not an array of 2 elements");
+            if (t === null) {
+                console.log("Ignoring " + key + " because it is not an array of 2 elements, or it refers to an unknown controller");
+                param.set_value(param.default_value);
                 continue;
             }
 
             c = t[1];
 
-            if (c !== "none" && (!this.controllers.hasOwnProperty(c))) {
-                console.log("Ignoring " + key + " because it refers to an unknown controller");
-                continue;
+            if (c.substring(0, 3) === "lfo") {
+                if (!param.connect_lfo_ctl) {
+                    console.log("Ignoring controller for " + key + " because it is not compatible with LFOs");
+                    c = "none";
+                }
+            } else if (c !== "none" && !param.connect_midi_ctl) {
+                console.log("Ignoring controller for " + key + " because it cannot be controlled");
+                c = "none";
             }
 
             v = param.validate(t[0]);
 
             if (v === null) {
-                console.log("Ignoring " + key + " because its value is invalid");
-                continue;
+                console.log("Ignoring value of " + key + " because its value is invalid");
+                v = param.default_value;
             }
 
             param.set_value(v);
 
             if (c !== "none") {
                 this.connect(param, c);
-            } else {
-                param.disconnect();
             }
         }
 
@@ -1152,6 +1162,205 @@
         this._note_ctl.control_params();
         this._velocity_ctl.control_params();
     };
+
+    Synth.prototype._upgrade_patch = function (patch)
+    {
+        var upgraded = {},
+            param, key, value, ctl;
+
+        if (patch.hasOwnProperty("version") && patch["version"] === PATCH_VERSION) {
+            return patch;
+        }
+
+        upgraded["version"] = PATCH_VERSION;
+
+        for (key in patch) {
+            param = this._parse_exported_param(patch, key);
+
+            if (param === null) {
+                continue;
+            }
+
+            upgraded[key] = param;
+        }
+
+        upgraded["mcs1_ds"] = this._copy_or_default("mcs1_ds", patch, null);
+        upgraded["mcs2_ds"] = this._copy_or_default("mcs2_ds", patch, null);
+        upgraded["mcs3_ds"] = this._copy_or_default("mcs3_ds", patch, null);
+        upgraded["mcs4_ds"] = this._copy_or_default("mcs4_ds", patch, null);
+        upgraded["mcs5_ds"] = this._copy_or_default("mcs5_ds", patch, null);
+        upgraded["mcs6_ds"] = this._copy_or_default("mcs6_ds", patch, null);
+        upgraded["mcs7_ds"] = this._copy_or_default("mcs7_ds", patch, null);
+        upgraded["mcs8_ds"] = this._copy_or_default("mcs8_ds", patch, null);
+        upgraded["mcs9_ds"] = this._copy_or_default("mcs9_ds", patch, null);
+        upgraded["mcs10_ds"] = this._copy_or_default("mcs10_ds", patch, null);
+        upgraded["mcs11_ds"] = this._copy_or_default("mcs11_ds", patch, null);
+        upgraded["mcs12_ds"] = this._copy_or_default("mcs12_ds", patch, null);
+        upgraded["mcs13_ds"] = this._copy_or_default("mcs13_ds", patch, null);
+        upgraded["mcs14_ds"] = this._copy_or_default("mcs14_ds", patch, null);
+        upgraded["mcs15_ds"] = this._copy_or_default("mcs15_ds", patch, null);
+        upgraded["mcs16_ds"] = this._copy_or_default("mcs16_ds", patch, null);
+        upgraded["mcs17_ds"] = this._copy_or_default("mcs17_ds", patch, null);
+        upgraded["mcs18_ds"] = this._copy_or_default("mcs18_ds", patch, null);
+        upgraded["mcs19_ds"] = this._copy_or_default("mcs19_ds", patch, null);
+        upgraded["mcs20_ds"] = this._copy_or_default("mcs20_ds", patch, null);
+        upgraded["mcs21_ds"] = this._copy_or_default("mcs21_ds", patch, null);
+        upgraded["mcs22_ds"] = this._copy_or_default("mcs22_ds", patch, null);
+        upgraded["mcs23_ds"] = this._copy_or_default("mcs23_ds", patch, null);
+        upgraded["mcs24_ds"] = this._copy_or_default("mcs24_ds", patch, null);
+
+        upgraded["lfo1_ds"] = this._copy_or_default("lfo1_ds", patch, null);
+        upgraded["lfo2_ds"] = this._copy_or_default("lfo2_ds", patch, null);
+        upgraded["lfo3_ds"] = this._copy_or_default("lfo3_ds", patch, null);
+        upgraded["lfo4_ds"] = this._copy_or_default("lfo4_ds", patch, null);
+        upgraded["lfo5_ds"] = this._copy_or_default("lfo5_ds", patch, null);
+        upgraded["lfo6_ds"] = this._copy_or_default("lfo6_ds", patch, null);
+        upgraded["lfo7_ds"] = this._copy_or_default("lfo7_ds", patch, null);
+        upgraded["lfo8_ds"] = this._copy_or_default("lfo8_ds", patch, null);
+
+        upgraded["midi_o1_ehqi"] = this._copy_or_default("midi_o1_ehqi", patch, "midi_o1_ehq");
+        upgraded["midi_o1_ehqdlt"] = this._copy_or_default("midi_o1_ehqdlt", patch, null);
+        upgraded["midi_o1_ehqat"] = this._copy_or_default("midi_o1_ehqat", patch, null);
+        upgraded["midi_o1_ehqp"] = this._copy_or_default("midi_o1_ehqp", patch, "midi_o1_ehq");
+        upgraded["midi_o1_ehqht"] = this._copy_or_default("midi_o1_ehqht", patch, null);
+        upgraded["midi_o1_ehqdt"] = this._copy_or_default("midi_o1_ehqdt", patch, null);
+        upgraded["midi_o1_ehqs"] = this._copy_or_default("midi_o1_ehqs", patch, "midi_o1_ehq");
+        upgraded["midi_o1_ehqrt"] = this._copy_or_default("midi_o1_ehqrt", patch, null);
+        upgraded["midi_o1_ehqr"] = this._copy_or_default("midi_o1_ehqr", patch, "midi_o1_ehq");
+
+        upgraded["midi_o1_elqi"] = this._copy_or_default("midi_o1_elqi", patch, "midi_o1_elq");
+        upgraded["midi_o1_elqdlt"] = this._copy_or_default("midi_o1_elqdlt", patch, null);
+        upgraded["midi_o1_elqat"] = this._copy_or_default("midi_o1_elqat", patch, null);
+        upgraded["midi_o1_elqp"] = this._copy_or_default("midi_o1_elqp", patch, "midi_o1_elq");
+        upgraded["midi_o1_elqht"] = this._copy_or_default("midi_o1_elqht", patch, null);
+        upgraded["midi_o1_elqdt"] = this._copy_or_default("midi_o1_elqdt", patch, null);
+        upgraded["midi_o1_elqs"] = this._copy_or_default("midi_o1_elqs", patch, "midi_o1_elq");
+        upgraded["midi_o1_elqrt"] = this._copy_or_default("midi_o1_elqrt", patch, null);
+        upgraded["midi_o1_elqr"] = this._copy_or_default("midi_o1_elqr", patch, "midi_o1_elq");
+
+        upgraded["midi_o2_ehqi"] = this._copy_or_default("midi_o2_ehqi", patch, "midi_o2_ehq");
+        upgraded["midi_o2_ehqdlt"] = this._copy_or_default("midi_o2_ehqdlt", patch, null);
+        upgraded["midi_o2_ehqat"] = this._copy_or_default("midi_o2_ehqat", patch, null);
+        upgraded["midi_o2_ehqp"] = this._copy_or_default("midi_o2_ehqp", patch, "midi_o2_ehq");
+        upgraded["midi_o2_ehqht"] = this._copy_or_default("midi_o2_ehqht", patch, null);
+        upgraded["midi_o2_ehqdt"] = this._copy_or_default("midi_o2_ehqdt", patch, null);
+        upgraded["midi_o2_ehqs"] = this._copy_or_default("midi_o2_ehqs", patch, "midi_o2_ehq");
+        upgraded["midi_o2_ehqrt"] = this._copy_or_default("midi_o2_ehqrt", patch, null);
+        upgraded["midi_o2_ehqr"] = this._copy_or_default("midi_o2_ehqr", patch, "midi_o2_ehq");
+
+        upgraded["midi_o2_elqi"] = this._copy_or_default("midi_o2_elqi", patch, "midi_o2_elq");
+        upgraded["midi_o2_elqdlt"] = this._copy_or_default("midi_o2_elqdlt", patch, null);
+        upgraded["midi_o2_elqat"] = this._copy_or_default("midi_o2_elqat", patch, null);
+        upgraded["midi_o2_elqp"] = this._copy_or_default("midi_o2_elqp", patch, "midi_o2_elq");
+        upgraded["midi_o2_elqht"] = this._copy_or_default("midi_o2_elqht", patch, null);
+        upgraded["midi_o2_elqdt"] = this._copy_or_default("midi_o2_elqdt", patch, null);
+        upgraded["midi_o2_elqs"] = this._copy_or_default("midi_o2_elqs", patch, "midi_o2_elq");
+        upgraded["midi_o2_elqrt"] = this._copy_or_default("midi_o2_elqrt", patch, null);
+        upgraded["midi_o2_elqr"] = this._copy_or_default("midi_o2_elqr", patch, "midi_o2_elq");
+
+        upgraded["cmp_o1_ehqi"] = this._copy_or_default("cmp_o1_ehqi", patch, "cmp_o1_ehq");
+        upgraded["cmp_o1_ehqdlt"] = this._copy_or_default("cmp_o1_ehqdlt", patch, null);
+        upgraded["cmp_o1_ehqat"] = this._copy_or_default("cmp_o1_ehqat", patch, null);
+        upgraded["cmp_o1_ehqp"] = this._copy_or_default("cmp_o1_ehqp", patch, "cmp_o1_ehq");
+        upgraded["cmp_o1_ehqht"] = this._copy_or_default("cmp_o1_ehqht", patch, null);
+        upgraded["cmp_o1_ehqdt"] = this._copy_or_default("cmp_o1_ehqdt", patch, null);
+        upgraded["cmp_o1_ehqs"] = this._copy_or_default("cmp_o1_ehqs", patch, "cmp_o1_ehq");
+        upgraded["cmp_o1_ehqrt"] = this._copy_or_default("cmp_o1_ehqrt", patch, null);
+        upgraded["cmp_o1_ehqr"] = this._copy_or_default("cmp_o1_ehqr", patch, "cmp_o1_ehq");
+
+        upgraded["cmp_o1_elqi"] = this._copy_or_default("cmp_o1_elqi", patch, "cmp_o1_elq");
+        upgraded["cmp_o1_elqdlt"] = this._copy_or_default("cmp_o1_elqdlt", patch, null);
+        upgraded["cmp_o1_elqat"] = this._copy_or_default("cmp_o1_elqat", patch, null);
+        upgraded["cmp_o1_elqp"] = this._copy_or_default("cmp_o1_elqp", patch, "cmp_o1_elq");
+        upgraded["cmp_o1_elqht"] = this._copy_or_default("cmp_o1_elqht", patch, null);
+        upgraded["cmp_o1_elqdt"] = this._copy_or_default("cmp_o1_elqdt", patch, null);
+        upgraded["cmp_o1_elqs"] = this._copy_or_default("cmp_o1_elqs", patch, "cmp_o1_elq");
+        upgraded["cmp_o1_elqrt"] = this._copy_or_default("cmp_o1_elqrt", patch, null);
+        upgraded["cmp_o1_elqr"] = this._copy_or_default("cmp_o1_elqr", patch, "cmp_o1_elq");
+
+        upgraded["cmp_o2_ehqi"] = this._copy_or_default("cmp_o2_ehqi", patch, "cmp_o2_ehq");
+        upgraded["cmp_o2_ehqdlt"] = this._copy_or_default("cmp_o2_ehqdlt", patch, null);
+        upgraded["cmp_o2_ehqat"] = this._copy_or_default("cmp_o2_ehqat", patch, null);
+        upgraded["cmp_o2_ehqp"] = this._copy_or_default("cmp_o2_ehqp", patch, "cmp_o2_ehq");
+        upgraded["cmp_o2_ehqht"] = this._copy_or_default("cmp_o2_ehqht", patch, null);
+        upgraded["cmp_o2_ehqdt"] = this._copy_or_default("cmp_o2_ehqdt", patch, null);
+        upgraded["cmp_o2_ehqs"] = this._copy_or_default("cmp_o2_ehqs", patch, "cmp_o2_ehq");
+        upgraded["cmp_o2_ehqrt"] = this._copy_or_default("cmp_o2_ehqrt", patch, null);
+        upgraded["cmp_o2_ehqr"] = this._copy_or_default("cmp_o2_ehqr", patch, "cmp_o2_ehq");
+
+        upgraded["cmp_o2_elqi"] = this._copy_or_default("cmp_o2_elqi", patch, "cmp_o2_elq");
+        upgraded["cmp_o2_elqdlt"] = this._copy_or_default("cmp_o2_elqdlt", patch, null);
+        upgraded["cmp_o2_elqat"] = this._copy_or_default("cmp_o2_elqat", patch, null);
+        upgraded["cmp_o2_elqp"] = this._copy_or_default("cmp_o2_elqp", patch, "cmp_o2_elq");
+        upgraded["cmp_o2_elqht"] = this._copy_or_default("cmp_o2_elqht", patch, null);
+        upgraded["cmp_o2_elqdt"] = this._copy_or_default("cmp_o2_elqdt", patch, null);
+        upgraded["cmp_o2_elqs"] = this._copy_or_default("cmp_o2_elqs", patch, "cmp_o2_elq");
+        upgraded["cmp_o2_elqrt"] = this._copy_or_default("cmp_o2_elqrt", patch, null);
+        upgraded["cmp_o2_elqr"] = this._copy_or_default("cmp_o2_elqr", patch, "cmp_o2_elq");
+
+        upgraded["th_ehqi"] = this._copy_or_default("th_ehqi", patch, "th_ehq");
+        upgraded["th_ehqdlt"] = this._copy_or_default("th_ehqdlt", patch, null);
+        upgraded["th_ehqat"] = this._copy_or_default("th_ehqat", patch, null);
+        upgraded["th_ehqp"] = this._copy_or_default("th_ehqp", patch, "th_ehq");
+        upgraded["th_ehqht"] = this._copy_or_default("th_ehqht", patch, null);
+        upgraded["th_ehqdt"] = this._copy_or_default("th_ehqdt", patch, null);
+        upgraded["th_ehqs"] = this._copy_or_default("th_ehqs", patch, "th_ehq");
+        upgraded["th_ehqrt"] = this._copy_or_default("th_ehqrt", patch, null);
+        upgraded["th_ehqr"] = this._copy_or_default("th_ehqr", patch, "th_ehq");
+
+        upgraded["th_elqi"] = this._copy_or_default("th_elqi", patch, "th_elq");
+        upgraded["th_elqdlt"] = this._copy_or_default("th_elqdlt", patch, null);
+        upgraded["th_elqat"] = this._copy_or_default("th_elqat", patch, null);
+        upgraded["th_elqp"] = this._copy_or_default("th_elqp", patch, "th_elq");
+        upgraded["th_elqht"] = this._copy_or_default("th_elqht", patch, null);
+        upgraded["th_elqdt"] = this._copy_or_default("th_elqdt", patch, null);
+        upgraded["th_elqs"] = this._copy_or_default("th_elqs", patch, "th_elq");
+        upgraded["th_elqrt"] = this._copy_or_default("th_elqrt", patch, null);
+        upgraded["th_elqr"] = this._copy_or_default("th_elqr", patch, "th_elq");
+
+        upgraded["th_fd"] = this._copy_or_default("th_fd", patch, null);
+
+        return upgraded;
+    };
+
+    Synth.prototype._copy_or_default = function (param_key, patch, copy_from)
+    {
+        var param = this._params_by_key[param_key],
+            exported = null;
+
+        if (copy_from !== null) {
+            exported = this._parse_exported_param(patch, copy_from);
+        }
+
+        if (exported === null) {
+            return [param.default_value, "none"];
+        }
+
+        return exported;
+    };
+
+    Synth.prototype._parse_exported_param = function (patch, key)
+    {
+        var exported, ctl;
+
+        if (!patch.hasOwnProperty(key)) {
+            return null;
+        }
+
+        exported = patch[key];
+
+        if ((!Array.isArray(exported)) && (exported.length !== 2)) {
+            return null;
+        }
+
+        ctl = String(exported[1]);
+
+        if (ctl !== "none" && (!this.controllers.hasOwnProperty(ctl))) {
+            return null;
+        }
+
+        return exported;
+    }
 
     Synth.prototype.handle_midi_message = function (message)
     {
