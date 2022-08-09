@@ -3066,6 +3066,7 @@
         this.effects = effects;
         this.min_freq = new MIDIControllableParam(synth, "th_min", SND_FREQ_MIN, SND_FREQ_MAX, 110);
         this.max_freq = new MIDIControllableParam(synth, "th_max", SND_FREQ_MIN, SND_FREQ_MAX, 7040);
+        this.fine_detune = new LFOControllableParam(synth, "th_fd", note.fine_detune, -400.0, 400.0, 0.0);
         this.resolution = new MIDIControllableParam(synth, "th_res", 1, 189, 1);
     }
 
@@ -3262,6 +3263,7 @@
         this.pan = pan;
         this.osc_vol = osc_vol;
         this.folding_cns_target = fold_threshold.gain;
+        this.fine_detune = osc.detune;
 
         this._chain_mask = 0;
         this._chain_mask_when_triggered = 0;
@@ -5885,6 +5887,7 @@
         params.add(new FaderUI("ATK", "Attack time", "s", 1000, 1000, MIDI_CONTROLS, theremin.amp_env_params[1], synth));
         params.add(new FaderUI("REL", "Release time", "s", 1000, 1000, MIDI_CONTROLS, theremin.amp_env_params[6], synth));
         params.add(new FaderUI("FLD", "Folding", "%", 1000 / FOLD_MAX, 10, ALL_CONTROLS, theremin.folding, synth));
+        params.add(new FaderUI("FIN", "Fine detune (cents)", "c", 10, 10, ALL_CONTROLS, theremin.fine_detune, synth));
 
         filters.add(env_highpass);
         filters.add(env_lowpass);
