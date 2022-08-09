@@ -166,7 +166,7 @@ div.group {
   font-size: 14px;
   border: solid 1px black;
   border-radius: 5px;
-  padding: 2px;
+  padding: 1px;
   margin: 1px auto;
 }
 
@@ -332,7 +332,7 @@ input.fader::-ms-thumb {
 
 select {
   background: #000;
-  width: 90px;
+  width: 86px;
   font-size: 12px;
   border: inset 1px #445;
   padding: 1px 0;
@@ -809,7 +809,8 @@ div.color-9 { background-color: #410; }
 
     "use strict";
 
-    var WAVEFORMS = {
+    var PATCH_VERSION = "2",
+        WAVEFORMS = {
             "sawtooth": "sawtooth",
             "invsaw": "inverse sawtooth",
             "sine": "sine",
@@ -1164,7 +1165,7 @@ div.color-9 { background-color: #410; }
         LFO_FREQ_MIN = 0.01,
         LFO_FREQ_DEF = 2.0,
         FILTER_Q_MIN = 0.0,
-        FILTER_Q_MAX = 20.0,
+        FILTER_Q_MAX = 30.0,
         FILTER_Q_DEF = 1.0,
         QWERTY = {
             "KeyZ":         [48, "zZ",  "white", "C3"],
@@ -1194,6 +1195,8 @@ div.color-9 { background-color: #410; }
             "Semicolon":    [72, ";:",  "white", "C5"],
         },
         DEFAULT_PRESET = "p7",
+        CTL_DST_STEEPNESS_MIN = 3.0,
+        CTL_DST_STEEPNESS_SCALE = 12.0,
         FOLD_THRESHOLD = 0.125,
         FOLD_MAX = 0.875,
         FOLD_CURVE = new Float32Array(
@@ -1666,7 +1669,7 @@ div.color-9 { background-color: #410; }
         Observer.call(this);
 
         this._params = [];
-        this._param_keys = {};
+        this._params_by_key = {};
         this._update_dirty_custom_waves_timeout = null;
         this._update_dirty_custom_waves_func = null;
 
@@ -1847,12 +1850,12 @@ div.color-9 { background-color: #410; }
     {
         var key;
 
-        if (this._param_keys.hasOwnProperty(key = param.key)) {
+        if (this._params_by_key.hasOwnProperty(key = param.key)) {
             throw "Programming error: duplicate parameter key: " + param.key;
         }
 
         this._params.push(param);
-        this._param_keys[key] = true;
+        this._params_by_key[key] = param;
     };
 
     Synth.prototype.update = function (observable, arg)
@@ -1882,7 +1885,7 @@ div.color-9 { background-color: #410; }
 
     Synth.prototype.export_patch = function ()
     {
-        var result = {},
+        var result = {"version": PATCH_VERSION},
             params = this._params,
             i, l, param;
 
@@ -1899,12 +1902,17 @@ div.color-9 { background-color: #410; }
         var params = this._params,
             i, l, param, key, t, v, c, m;
 
+        exported = this._upgrade_patch(exported);
+
         for (i = 0, l = params.length; i < l; ++i) {
             param = params[i];
+            param.disconnect();
+
             key = param.key;
 
             if (!exported.hasOwnProperty(key)) {
-                console.log("Value for param " + key + " not found");
+                console.log("Value or controller for param " + key + " not found or invalid, using the default value");
+                param.set_value(param.default_value);
                 continue;
             }
 
@@ -1915,33 +1923,37 @@ div.color-9 { background-color: #410; }
                 continue;
             }
 
-            t = exported[key];
+            t = this._parse_exported_param(exported, key);
 
-            if (!Array.isArray(t)) {
-                console.log("Ignoring " + key + " because it is not an array of 2 elements");
+            if (t === null) {
+                console.log("Ignoring " + key + " because it is not an array of 2 elements, or it refers to an unknown controller");
+                param.set_value(param.default_value);
                 continue;
             }
 
             c = t[1];
 
-            if (c !== "none" && (!this.controllers.hasOwnProperty(c))) {
-                console.log("Ignoring " + key + " because it refers to an unknown controller");
-                continue;
+            if (c.substring(0, 3) === "lfo") {
+                if (!param.connect_lfo_ctl) {
+                    console.log("Ignoring controller for " + key + " because it is not compatible with LFOs");
+                    c = "none";
+                }
+            } else if (c !== "none" && !param.connect_midi_ctl) {
+                console.log("Ignoring controller for " + key + " because it cannot be controlled");
+                c = "none";
             }
 
             v = param.validate(t[0]);
 
             if (v === null) {
-                console.log("Ignoring " + key + " because its value is invalid");
-                continue;
+                console.log("Ignoring value of " + key + " because its value is invalid");
+                v = param.default_value;
             }
 
             param.set_value(v);
 
             if (c !== "none") {
                 this.connect(param, c);
-            } else {
-                param.disconnect();
             }
         }
 
@@ -1957,6 +1969,205 @@ div.color-9 { background-color: #410; }
         this._note_ctl.control_params();
         this._velocity_ctl.control_params();
     };
+
+    Synth.prototype._upgrade_patch = function (patch)
+    {
+        var upgraded = {},
+            param, key, value, ctl;
+
+        if (patch.hasOwnProperty("version") && patch["version"] === PATCH_VERSION) {
+            return patch;
+        }
+
+        upgraded["version"] = PATCH_VERSION;
+
+        for (key in patch) {
+            param = this._parse_exported_param(patch, key);
+
+            if (param === null) {
+                continue;
+            }
+
+            upgraded[key] = param;
+        }
+
+        upgraded["mcs1_ds"] = this._copy_or_default("mcs1_ds", patch, null);
+        upgraded["mcs2_ds"] = this._copy_or_default("mcs2_ds", patch, null);
+        upgraded["mcs3_ds"] = this._copy_or_default("mcs3_ds", patch, null);
+        upgraded["mcs4_ds"] = this._copy_or_default("mcs4_ds", patch, null);
+        upgraded["mcs5_ds"] = this._copy_or_default("mcs5_ds", patch, null);
+        upgraded["mcs6_ds"] = this._copy_or_default("mcs6_ds", patch, null);
+        upgraded["mcs7_ds"] = this._copy_or_default("mcs7_ds", patch, null);
+        upgraded["mcs8_ds"] = this._copy_or_default("mcs8_ds", patch, null);
+        upgraded["mcs9_ds"] = this._copy_or_default("mcs9_ds", patch, null);
+        upgraded["mcs10_ds"] = this._copy_or_default("mcs10_ds", patch, null);
+        upgraded["mcs11_ds"] = this._copy_or_default("mcs11_ds", patch, null);
+        upgraded["mcs12_ds"] = this._copy_or_default("mcs12_ds", patch, null);
+        upgraded["mcs13_ds"] = this._copy_or_default("mcs13_ds", patch, null);
+        upgraded["mcs14_ds"] = this._copy_or_default("mcs14_ds", patch, null);
+        upgraded["mcs15_ds"] = this._copy_or_default("mcs15_ds", patch, null);
+        upgraded["mcs16_ds"] = this._copy_or_default("mcs16_ds", patch, null);
+        upgraded["mcs17_ds"] = this._copy_or_default("mcs17_ds", patch, null);
+        upgraded["mcs18_ds"] = this._copy_or_default("mcs18_ds", patch, null);
+        upgraded["mcs19_ds"] = this._copy_or_default("mcs19_ds", patch, null);
+        upgraded["mcs20_ds"] = this._copy_or_default("mcs20_ds", patch, null);
+        upgraded["mcs21_ds"] = this._copy_or_default("mcs21_ds", patch, null);
+        upgraded["mcs22_ds"] = this._copy_or_default("mcs22_ds", patch, null);
+        upgraded["mcs23_ds"] = this._copy_or_default("mcs23_ds", patch, null);
+        upgraded["mcs24_ds"] = this._copy_or_default("mcs24_ds", patch, null);
+
+        upgraded["lfo1_ds"] = this._copy_or_default("lfo1_ds", patch, null);
+        upgraded["lfo2_ds"] = this._copy_or_default("lfo2_ds", patch, null);
+        upgraded["lfo3_ds"] = this._copy_or_default("lfo3_ds", patch, null);
+        upgraded["lfo4_ds"] = this._copy_or_default("lfo4_ds", patch, null);
+        upgraded["lfo5_ds"] = this._copy_or_default("lfo5_ds", patch, null);
+        upgraded["lfo6_ds"] = this._copy_or_default("lfo6_ds", patch, null);
+        upgraded["lfo7_ds"] = this._copy_or_default("lfo7_ds", patch, null);
+        upgraded["lfo8_ds"] = this._copy_or_default("lfo8_ds", patch, null);
+
+        upgraded["midi_o1_ehqi"] = this._copy_or_default("midi_o1_ehqi", patch, "midi_o1_ehq");
+        upgraded["midi_o1_ehqdlt"] = this._copy_or_default("midi_o1_ehqdlt", patch, null);
+        upgraded["midi_o1_ehqat"] = this._copy_or_default("midi_o1_ehqat", patch, null);
+        upgraded["midi_o1_ehqp"] = this._copy_or_default("midi_o1_ehqp", patch, "midi_o1_ehq");
+        upgraded["midi_o1_ehqht"] = this._copy_or_default("midi_o1_ehqht", patch, null);
+        upgraded["midi_o1_ehqdt"] = this._copy_or_default("midi_o1_ehqdt", patch, null);
+        upgraded["midi_o1_ehqs"] = this._copy_or_default("midi_o1_ehqs", patch, "midi_o1_ehq");
+        upgraded["midi_o1_ehqrt"] = this._copy_or_default("midi_o1_ehqrt", patch, null);
+        upgraded["midi_o1_ehqr"] = this._copy_or_default("midi_o1_ehqr", patch, "midi_o1_ehq");
+
+        upgraded["midi_o1_elqi"] = this._copy_or_default("midi_o1_elqi", patch, "midi_o1_elq");
+        upgraded["midi_o1_elqdlt"] = this._copy_or_default("midi_o1_elqdlt", patch, null);
+        upgraded["midi_o1_elqat"] = this._copy_or_default("midi_o1_elqat", patch, null);
+        upgraded["midi_o1_elqp"] = this._copy_or_default("midi_o1_elqp", patch, "midi_o1_elq");
+        upgraded["midi_o1_elqht"] = this._copy_or_default("midi_o1_elqht", patch, null);
+        upgraded["midi_o1_elqdt"] = this._copy_or_default("midi_o1_elqdt", patch, null);
+        upgraded["midi_o1_elqs"] = this._copy_or_default("midi_o1_elqs", patch, "midi_o1_elq");
+        upgraded["midi_o1_elqrt"] = this._copy_or_default("midi_o1_elqrt", patch, null);
+        upgraded["midi_o1_elqr"] = this._copy_or_default("midi_o1_elqr", patch, "midi_o1_elq");
+
+        upgraded["midi_o2_ehqi"] = this._copy_or_default("midi_o2_ehqi", patch, "midi_o2_ehq");
+        upgraded["midi_o2_ehqdlt"] = this._copy_or_default("midi_o2_ehqdlt", patch, null);
+        upgraded["midi_o2_ehqat"] = this._copy_or_default("midi_o2_ehqat", patch, null);
+        upgraded["midi_o2_ehqp"] = this._copy_or_default("midi_o2_ehqp", patch, "midi_o2_ehq");
+        upgraded["midi_o2_ehqht"] = this._copy_or_default("midi_o2_ehqht", patch, null);
+        upgraded["midi_o2_ehqdt"] = this._copy_or_default("midi_o2_ehqdt", patch, null);
+        upgraded["midi_o2_ehqs"] = this._copy_or_default("midi_o2_ehqs", patch, "midi_o2_ehq");
+        upgraded["midi_o2_ehqrt"] = this._copy_or_default("midi_o2_ehqrt", patch, null);
+        upgraded["midi_o2_ehqr"] = this._copy_or_default("midi_o2_ehqr", patch, "midi_o2_ehq");
+
+        upgraded["midi_o2_elqi"] = this._copy_or_default("midi_o2_elqi", patch, "midi_o2_elq");
+        upgraded["midi_o2_elqdlt"] = this._copy_or_default("midi_o2_elqdlt", patch, null);
+        upgraded["midi_o2_elqat"] = this._copy_or_default("midi_o2_elqat", patch, null);
+        upgraded["midi_o2_elqp"] = this._copy_or_default("midi_o2_elqp", patch, "midi_o2_elq");
+        upgraded["midi_o2_elqht"] = this._copy_or_default("midi_o2_elqht", patch, null);
+        upgraded["midi_o2_elqdt"] = this._copy_or_default("midi_o2_elqdt", patch, null);
+        upgraded["midi_o2_elqs"] = this._copy_or_default("midi_o2_elqs", patch, "midi_o2_elq");
+        upgraded["midi_o2_elqrt"] = this._copy_or_default("midi_o2_elqrt", patch, null);
+        upgraded["midi_o2_elqr"] = this._copy_or_default("midi_o2_elqr", patch, "midi_o2_elq");
+
+        upgraded["cmp_o1_ehqi"] = this._copy_or_default("cmp_o1_ehqi", patch, "cmp_o1_ehq");
+        upgraded["cmp_o1_ehqdlt"] = this._copy_or_default("cmp_o1_ehqdlt", patch, null);
+        upgraded["cmp_o1_ehqat"] = this._copy_or_default("cmp_o1_ehqat", patch, null);
+        upgraded["cmp_o1_ehqp"] = this._copy_or_default("cmp_o1_ehqp", patch, "cmp_o1_ehq");
+        upgraded["cmp_o1_ehqht"] = this._copy_or_default("cmp_o1_ehqht", patch, null);
+        upgraded["cmp_o1_ehqdt"] = this._copy_or_default("cmp_o1_ehqdt", patch, null);
+        upgraded["cmp_o1_ehqs"] = this._copy_or_default("cmp_o1_ehqs", patch, "cmp_o1_ehq");
+        upgraded["cmp_o1_ehqrt"] = this._copy_or_default("cmp_o1_ehqrt", patch, null);
+        upgraded["cmp_o1_ehqr"] = this._copy_or_default("cmp_o1_ehqr", patch, "cmp_o1_ehq");
+
+        upgraded["cmp_o1_elqi"] = this._copy_or_default("cmp_o1_elqi", patch, "cmp_o1_elq");
+        upgraded["cmp_o1_elqdlt"] = this._copy_or_default("cmp_o1_elqdlt", patch, null);
+        upgraded["cmp_o1_elqat"] = this._copy_or_default("cmp_o1_elqat", patch, null);
+        upgraded["cmp_o1_elqp"] = this._copy_or_default("cmp_o1_elqp", patch, "cmp_o1_elq");
+        upgraded["cmp_o1_elqht"] = this._copy_or_default("cmp_o1_elqht", patch, null);
+        upgraded["cmp_o1_elqdt"] = this._copy_or_default("cmp_o1_elqdt", patch, null);
+        upgraded["cmp_o1_elqs"] = this._copy_or_default("cmp_o1_elqs", patch, "cmp_o1_elq");
+        upgraded["cmp_o1_elqrt"] = this._copy_or_default("cmp_o1_elqrt", patch, null);
+        upgraded["cmp_o1_elqr"] = this._copy_or_default("cmp_o1_elqr", patch, "cmp_o1_elq");
+
+        upgraded["cmp_o2_ehqi"] = this._copy_or_default("cmp_o2_ehqi", patch, "cmp_o2_ehq");
+        upgraded["cmp_o2_ehqdlt"] = this._copy_or_default("cmp_o2_ehqdlt", patch, null);
+        upgraded["cmp_o2_ehqat"] = this._copy_or_default("cmp_o2_ehqat", patch, null);
+        upgraded["cmp_o2_ehqp"] = this._copy_or_default("cmp_o2_ehqp", patch, "cmp_o2_ehq");
+        upgraded["cmp_o2_ehqht"] = this._copy_or_default("cmp_o2_ehqht", patch, null);
+        upgraded["cmp_o2_ehqdt"] = this._copy_or_default("cmp_o2_ehqdt", patch, null);
+        upgraded["cmp_o2_ehqs"] = this._copy_or_default("cmp_o2_ehqs", patch, "cmp_o2_ehq");
+        upgraded["cmp_o2_ehqrt"] = this._copy_or_default("cmp_o2_ehqrt", patch, null);
+        upgraded["cmp_o2_ehqr"] = this._copy_or_default("cmp_o2_ehqr", patch, "cmp_o2_ehq");
+
+        upgraded["cmp_o2_elqi"] = this._copy_or_default("cmp_o2_elqi", patch, "cmp_o2_elq");
+        upgraded["cmp_o2_elqdlt"] = this._copy_or_default("cmp_o2_elqdlt", patch, null);
+        upgraded["cmp_o2_elqat"] = this._copy_or_default("cmp_o2_elqat", patch, null);
+        upgraded["cmp_o2_elqp"] = this._copy_or_default("cmp_o2_elqp", patch, "cmp_o2_elq");
+        upgraded["cmp_o2_elqht"] = this._copy_or_default("cmp_o2_elqht", patch, null);
+        upgraded["cmp_o2_elqdt"] = this._copy_or_default("cmp_o2_elqdt", patch, null);
+        upgraded["cmp_o2_elqs"] = this._copy_or_default("cmp_o2_elqs", patch, "cmp_o2_elq");
+        upgraded["cmp_o2_elqrt"] = this._copy_or_default("cmp_o2_elqrt", patch, null);
+        upgraded["cmp_o2_elqr"] = this._copy_or_default("cmp_o2_elqr", patch, "cmp_o2_elq");
+
+        upgraded["th_ehqi"] = this._copy_or_default("th_ehqi", patch, "th_ehq");
+        upgraded["th_ehqdlt"] = this._copy_or_default("th_ehqdlt", patch, null);
+        upgraded["th_ehqat"] = this._copy_or_default("th_ehqat", patch, null);
+        upgraded["th_ehqp"] = this._copy_or_default("th_ehqp", patch, "th_ehq");
+        upgraded["th_ehqht"] = this._copy_or_default("th_ehqht", patch, null);
+        upgraded["th_ehqdt"] = this._copy_or_default("th_ehqdt", patch, null);
+        upgraded["th_ehqs"] = this._copy_or_default("th_ehqs", patch, "th_ehq");
+        upgraded["th_ehqrt"] = this._copy_or_default("th_ehqrt", patch, null);
+        upgraded["th_ehqr"] = this._copy_or_default("th_ehqr", patch, "th_ehq");
+
+        upgraded["th_elqi"] = this._copy_or_default("th_elqi", patch, "th_elq");
+        upgraded["th_elqdlt"] = this._copy_or_default("th_elqdlt", patch, null);
+        upgraded["th_elqat"] = this._copy_or_default("th_elqat", patch, null);
+        upgraded["th_elqp"] = this._copy_or_default("th_elqp", patch, "th_elq");
+        upgraded["th_elqht"] = this._copy_or_default("th_elqht", patch, null);
+        upgraded["th_elqdt"] = this._copy_or_default("th_elqdt", patch, null);
+        upgraded["th_elqs"] = this._copy_or_default("th_elqs", patch, "th_elq");
+        upgraded["th_elqrt"] = this._copy_or_default("th_elqrt", patch, null);
+        upgraded["th_elqr"] = this._copy_or_default("th_elqr", patch, "th_elq");
+
+        upgraded["th_fd"] = this._copy_or_default("th_fd", patch, null);
+
+        return upgraded;
+    };
+
+    Synth.prototype._copy_or_default = function (param_key, patch, copy_from)
+    {
+        var param = this._params_by_key[param_key],
+            exported = null;
+
+        if (copy_from !== null) {
+            exported = this._parse_exported_param(patch, copy_from);
+        }
+
+        if (exported === null) {
+            return [param.default_value, "none"];
+        }
+
+        return exported;
+    };
+
+    Synth.prototype._parse_exported_param = function (patch, key)
+    {
+        var exported, ctl;
+
+        if (!patch.hasOwnProperty(key)) {
+            return null;
+        }
+
+        exported = patch[key];
+
+        if ((!Array.isArray(exported)) && (exported.length !== 2)) {
+            return null;
+        }
+
+        ctl = String(exported[1]);
+
+        if (ctl !== "none" && (!this.controllers.hasOwnProperty(ctl))) {
+            return null;
+        }
+
+        return exported;
+    }
 
     Synth.prototype.handle_midi_message = function (message)
     {
@@ -2942,13 +3153,14 @@ div.color-9 { background-color: #410; }
             dry_gain = new GainNode(synth.audio_ctx, {"gain": 1.0}),
             inv_gain = new GainNode(synth.audio_ctx, {"gain": -1.0}),
             wet_gain = new GainNode(synth.audio_ctx, {"gain": 0.0}),
+            exp = Math.exp,
             ws, i, l;
 
         Effect.call(this, synth, key, output);
 
         for (i = 0; i < 5000; ++i) {
             curve.push(
-                2.0 / (1.0 + Math.exp((-steepness * (i - 2500.0)) / 2500.0)) - 1.0
+                2.0 / (1.0 + exp((-steepness * (i - 2500.0)) / 2500.0)) - 1.0
             );
         }
 
@@ -3404,7 +3616,16 @@ div.color-9 { background-color: #410; }
             new MIDIControllableParam(synth, key + "_ehsf", SND_FREQ_MIN, SND_FREQ_MAX, SND_FREQ_MIN),
             new MIDIControllableParam(synth, key + "_ehrt", ENV_REL_MIN, ENV_REL_MAX, ENV_REL_DEF),
             new MIDIControllableParam(synth, key + "_ehrf", SND_FREQ_MIN, SND_FREQ_MAX, SND_FREQ_MIN),
-            new MIDIControllableParam(synth, key + "_ehq", FILTER_Q_MIN, FILTER_Q_MAX, FILTER_Q_DEF)
+
+            new MIDIControllableParam(synth, key + "_ehqi", FILTER_Q_MIN, FILTER_Q_MAX, FILTER_Q_DEF),
+            new MIDIControllableParam(synth, key + "_ehqdlt", ENV_DEL_MIN, ENV_DEL_MAX, ENV_DEL_DEF),
+            new MIDIControllableParam(synth, key + "_ehqat", ENV_ATK_MIN, ENV_ATK_MAX, ENV_ATK_DEF),
+            new MIDIControllableParam(synth, key + "_ehqp", FILTER_Q_MIN, FILTER_Q_MAX, FILTER_Q_DEF),
+            new MIDIControllableParam(synth, key + "_ehqht", ENV_HLD_MIN, ENV_HLD_MAX, ENV_HLD_DEF),
+            new MIDIControllableParam(synth, key + "_ehqdt", ENV_DEC_MIN, ENV_DEC_MAX, ENV_DEC_DEF),
+            new MIDIControllableParam(synth, key + "_ehqs", FILTER_Q_MIN, FILTER_Q_MAX, FILTER_Q_DEF),
+            new MIDIControllableParam(synth, key + "_ehqrt", ENV_REL_MIN, ENV_REL_MAX, ENV_REL_DEF),
+            new MIDIControllableParam(synth, key + "_ehqr", FILTER_Q_MIN, FILTER_Q_MAX, FILTER_Q_DEF)
         ];
 
         elp_onoff_key = key + "_elo";
@@ -3420,7 +3641,16 @@ div.color-9 { background-color: #410; }
             new MIDIControllableParam(synth, key + "_elsf", SND_FREQ_MIN, SND_FREQ_MAX, SND_FREQ_MAX),
             new MIDIControllableParam(synth, key + "_elrt", ENV_REL_MIN, ENV_REL_MAX, ENV_REL_DEF),
             new MIDIControllableParam(synth, key + "_elrf", SND_FREQ_MIN, SND_FREQ_MAX, SND_FREQ_MAX),
-            new MIDIControllableParam(synth, key + "_elq", FILTER_Q_MIN, FILTER_Q_MAX, FILTER_Q_DEF)
+
+            new MIDIControllableParam(synth, key + "_elqi", FILTER_Q_MIN, FILTER_Q_MAX, FILTER_Q_DEF),
+            new MIDIControllableParam(synth, key + "_elqdlt", ENV_DEL_MIN, ENV_DEL_MAX, ENV_DEL_DEF),
+            new MIDIControllableParam(synth, key + "_elqat", ENV_ATK_MIN, ENV_ATK_MAX, ENV_ATK_DEF),
+            new MIDIControllableParam(synth, key + "_elqp", FILTER_Q_MIN, FILTER_Q_MAX, FILTER_Q_DEF),
+            new MIDIControllableParam(synth, key + "_elqht", ENV_HLD_MIN, ENV_HLD_MAX, ENV_HLD_DEF),
+            new MIDIControllableParam(synth, key + "_elqdt", ENV_DEC_MIN, ENV_DEC_MAX, ENV_DEC_DEF),
+            new MIDIControllableParam(synth, key + "_elqs", FILTER_Q_MIN, FILTER_Q_MAX, FILTER_Q_DEF),
+            new MIDIControllableParam(synth, key + "_elqrt", ENV_REL_MIN, ENV_REL_MAX, ENV_REL_DEF),
+            new MIDIControllableParam(synth, key + "_elqr", FILTER_Q_MIN, FILTER_Q_MAX, FILTER_Q_DEF)
         ];
 
         env_highpass_onoff.observers.push(this);
@@ -3852,6 +4082,7 @@ div.color-9 { background-color: #410; }
         this.effects = effects;
         this.min_freq = new MIDIControllableParam(synth, "th_min", SND_FREQ_MIN, SND_FREQ_MAX, 110);
         this.max_freq = new MIDIControllableParam(synth, "th_max", SND_FREQ_MIN, SND_FREQ_MAX, 7040);
+        this.fine_detune = new LFOControllableParam(synth, "th_fd", note.fine_detune, -400.0, 400.0, 0.0);
         this.resolution = new MIDIControllableParam(synth, "th_res", 1, 189, 1);
     }
 
@@ -4021,22 +4252,34 @@ div.color-9 { background-color: #410; }
         this._env_lowpass = env_lowpass;
 
         this._is_triggered = false;
+
         this._amp_sustain_start = null;
         this._amp_sustain_level = null;
         this._amp_release_time = null;
-        this._ehp_sustain_start = null;
-        this._ehp_sustain_level = null;
-        this._ehp_release_time = null
-        this._ehp_release_freq = null
-        this._elp_sustain_start = null;
-        this._elp_sustain_level = null;
-        this._elp_release_time = null
-        this._elp_release_freq = null
+
+        this._ehp_f_sustain_start = null;
+        this._ehp_f_sustain_level = null;
+        this._ehp_f_release_time = null
+        this._ehp_f_release_level = null
+        this._ehp_q_sustain_start = null;
+        this._ehp_q_sustain_level = null;
+        this._ehp_q_release_time = null
+        this._ehp_q_release_level = null
+
+        this._elp_f_sustain_start = null;
+        this._elp_f_sustain_level = null;
+        this._elp_f_release_time = null
+        this._elp_f_release_level = null
+        this._elp_q_sustain_start = null;
+        this._elp_q_sustain_level = null;
+        this._elp_q_release_time = null
+        this._elp_q_release_level = null
 
         this.frequency = osc.frequency;
         this.pan = pan;
         this.osc_vol = osc_vol;
         this.folding_cns_target = fold_threshold.gain;
+        this.fine_detune = osc.detune;
 
         this._chain_mask = 0;
         this._chain_mask_when_triggered = 0;
@@ -4088,8 +4331,6 @@ div.color-9 { background-color: #410; }
             amp_env_params, env_highpass_params, env_lowpass_params
     ) {
         var g = this._vel_vol.gain,
-            hq = this._env_highpass.Q,
-            lq = this._env_lowpass.Q,
             f = this.frequency,
             p = this.pan.pan,
             chain_mask = this._chain_mask;
@@ -4104,12 +4345,6 @@ div.color-9 { background-color: #410; }
             f.setValueAtTime(prt_start_freq, when);
             f.linearRampToValueAtTime(freq, when + prt_time);
         }
-
-        hq.cancelAndHoldAtTime(when);
-        hq.setValueAtTime(env_highpass_params[9].value, when);
-
-        lq.cancelAndHoldAtTime(when);
-        lq.setValueAtTime(env_lowpass_params[9].value, when);
 
         p.cancelAndHoldAtTime(when);
         p.setValueAtTime(pan, when);
@@ -4131,7 +4366,7 @@ div.color-9 { background-color: #410; }
         this._chain_mask_when_triggered = chain_mask;
 
         if (0 < (chain_mask & 1)) {
-            this._ehp_sustain_start = this._apply_envelope_dahds(
+            this._ehp_f_sustain_start = this._apply_envelope_dahds(
                 this._env_highpass.frequency,
                 now,
                 when,
@@ -4141,17 +4376,32 @@ div.color-9 { background-color: #410; }
                 env_highpass_params[3].value,
                 env_highpass_params[4].value,
                 env_highpass_params[5].value,
-                this._ehp_sustain_level = env_highpass_params[6].value
+                this._ehp_f_sustain_level = env_highpass_params[6].value
+            );
+            this._ehp_q_sustain_start = this._apply_envelope_dahds(
+                this._env_highpass.Q,
+                now,
+                when,
+                env_highpass_params[9].value,
+                env_highpass_params[10].value,
+                env_highpass_params[11].value,
+                env_highpass_params[12].value,
+                env_highpass_params[13].value,
+                env_highpass_params[14].value,
+                this._ehp_q_sustain_level = env_highpass_params[15].value
             );
         } else {
-            this._ehp_sustain_level = env_highpass_params[6].value;
+            this._ehp_f_sustain_level = env_highpass_params[6].value;
+            this._ehp_q_sustain_level = env_highpass_params[15].value;
         }
 
-        this._ehp_release_time = env_highpass_params[7].value;
-        this._ehp_release_freq = env_highpass_params[8].value;
+        this._ehp_f_release_time = env_highpass_params[7].value;
+        this._ehp_f_release_level = env_highpass_params[8].value;
+        this._ehp_q_release_time = env_highpass_params[16].value;
+        this._ehp_q_release_level = env_highpass_params[17].value;
 
         if (0 < (chain_mask & 2)) {
-            this._elp_sustain_start = this._apply_envelope_dahds(
+            this._elp_f_sustain_start = this._apply_envelope_dahds(
                 this._env_lowpass.frequency,
                 now,
                 when,
@@ -4161,14 +4411,29 @@ div.color-9 { background-color: #410; }
                 env_lowpass_params[3].value,
                 env_lowpass_params[4].value,
                 env_lowpass_params[5].value,
-                this._elp_sustain_level = env_lowpass_params[6].value
+                this._elp_f_sustain_level = env_lowpass_params[6].value
+            );
+            this._elp_q_sustain_start = this._apply_envelope_dahds(
+                this._env_lowpass.Q,
+                now,
+                when,
+                env_lowpass_params[9].value,
+                env_lowpass_params[10].value,
+                env_lowpass_params[11].value,
+                env_lowpass_params[12].value,
+                env_lowpass_params[13].value,
+                env_lowpass_params[14].value,
+                this._elp_q_sustain_level = env_lowpass_params[15].value
             );
         } else {
-            this._elp_sustain_level = env_lowpass_params[6].value;
+            this._elp_f_sustain_level = env_lowpass_params[6].value;
+            this._elp_q_sustain_level = env_lowpass_params[15].value;
         }
 
-        this._elp_release_time = env_lowpass_params[7].value;
-        this._elp_release_freq = env_lowpass_params[8].value;
+        this._elp_f_release_time = env_lowpass_params[7].value;
+        this._elp_f_release_level = env_lowpass_params[8].value;
+        this._elp_q_release_time = env_lowpass_params[16].value;
+        this._elp_q_release_level = env_lowpass_params[17].value;
     };
 
     // initial-l ==delay-t==> initial-l ==attack-t==> peak-l ==hold-t==> peak-l ==decay-t==> sustain-l
@@ -4214,10 +4479,18 @@ div.color-9 { background-color: #410; }
                 this._apply_envelope_r(
                     this._env_highpass.frequency,
                     when,
-                    this._ehp_sustain_start,
-                    this._ehp_sustain_level,
-                    this._ehp_release_time,
-                    this._ehp_release_freq
+                    this._ehp_f_sustain_start,
+                    this._ehp_f_sustain_level,
+                    this._ehp_f_release_time,
+                    this._ehp_f_release_level
+                );
+                this._apply_envelope_r(
+                    this._env_highpass.Q,
+                    when,
+                    this._ehp_q_sustain_start,
+                    this._ehp_q_sustain_level,
+                    this._ehp_q_release_time,
+                    this._ehp_q_release_level
                 );
             }
 
@@ -4225,10 +4498,18 @@ div.color-9 { background-color: #410; }
                 this._apply_envelope_r(
                     this._env_lowpass.frequency,
                     when,
-                    this._elp_sustain_start,
-                    this._elp_sustain_level,
-                    this._elp_release_time,
-                    this._elp_release_freq
+                    this._elp_f_sustain_start,
+                    this._elp_f_sustain_level,
+                    this._elp_f_release_time,
+                    this._elp_f_release_level
+                );
+                this._apply_envelope_r(
+                    this._env_lowpass.Q,
+                    when,
+                    this._elp_q_sustain_start,
+                    this._elp_q_sustain_level,
+                    this._elp_q_release_time,
+                    this._elp_q_release_level
                 );
             }
         }
@@ -4268,10 +4549,18 @@ div.color-9 { background-color: #410; }
                 this._apply_envelope_r(
                     this._env_highpass.frequency,
                     when,
-                    this._ehp_sustain_start,
-                    this._ehp_sustain_level,
+                    this._ehp_f_sustain_start,
+                    this._ehp_f_sustain_level,
                     0.0,
-                    this._ehp_release_freq
+                    this._ehp_f_release_level
+                );
+                this._apply_envelope_r(
+                    this._env_highpass.Q,
+                    when,
+                    this._ehp_q_sustain_start,
+                    this._ehp_q_sustain_level,
+                    0.0,
+                    this._ehp_q_release_level
                 );
             }
 
@@ -4279,10 +4568,18 @@ div.color-9 { background-color: #410; }
                 this._apply_envelope_r(
                     this._env_lowpass.frequency,
                     when,
-                    this._elp_sustain_start,
-                    this._elp_sustain_level,
+                    this._elp_f_sustain_start,
+                    this._elp_f_sustain_level,
                     0.0,
-                    this._elp_release_freq
+                    this._elp_f_release_level
+                );
+                this._apply_envelope_r(
+                    this._env_lowpass.Q,
+                    when,
+                    this._elp_q_sustain_start,
+                    this._elp_q_sustain_level,
+                    0.0,
+                    this._elp_q_release_level
                 );
             }
         }
@@ -4953,7 +5250,9 @@ div.color-9 { background-color: #410; }
         this.amt = new LFOControllableParam(synth, key + "_am", gain.gain, 0.0, 1.0, 1.0);
         this.min = new LFOControllerParam(synth, key + "_mi", this, 0.0, 1.0, 0.0);
         this.max = new LFOControllerParam(synth, key + "_ma", this, 0.0, 1.0, 1.0);
+        this.distortion = new LFOControllerParam(synth, key + "_ds", this, 0.0, 1.0, 0.0);
         this.rnd = new LFOControllerParam(synth, key + "_rn", this, 0.0, 1.0, 0.0);
+
         this.output = ws_min_max;
     }
 
@@ -4981,11 +5280,36 @@ div.color-9 { background-color: #410; }
     {
         var min = this.min.value,
             max = this.max.value,
+            distortion = this.distortion.value,
             rnd_weight = this.rnd.value,
-            curve, delta, inv_rnd_weight, i, l, r;
+            curve, delta, exp, i, l, r, v, s1, s2;
 
         if (rnd_weight < 0.0001) {
-            this._wave_shaper_min_max.curve = new Float32Array([min, min, max]);
+            if (distortion > 0.0) {
+                r = (l = RANDOMS) - 1;
+                curve = new Float32Array(l * 2 - 1);
+
+                for (i = 0; i < r; ++i) {
+                    curve[i] = min;
+                }
+
+                delta = max - min;
+
+                exp = Math.exp;
+                s1 = - (CTL_DST_STEEPNESS_MIN + distortion * CTL_DST_STEEPNESS_SCALE);
+                s2 = 1.0 - distortion;
+
+                for (i = 0; i < l; ++i) {
+                    v = i / r;
+                    v = (
+                        distortion / (1.0 + exp(s1 * (2.0 * v - 1.0)))
+                        + s2 * v
+                    );
+                    curve[i + r] = min + delta * v;
+                }
+            } else {
+                curve = new Float32Array([min, min, max]);
+            }
         } else {
             r = (l = RANDOMS) - 1;
             curve = new Float32Array(l * 2 - 1);
@@ -4995,19 +5319,39 @@ div.color-9 { background-color: #410; }
             }
 
             delta = max - min;
-            inv_rnd_weight = 1.0 - rnd_weight;
 
-            for (i = 0; i < l; ++i) {
-                curve[i + r] = (
-                    min + delta * (
-                        rnd_weight * random_numbers[i]
-                        + inv_rnd_weight * (i / r)
-                    )
-                );
+            if (distortion > 0.0) {
+                exp = Math.exp;
+                s1 = - (CTL_DST_STEEPNESS_MIN + distortion * CTL_DST_STEEPNESS_SCALE);
+                s2 = 1.0 - distortion;
+
+                for (i = 0; i < l; ++i) {
+                    v = i / r;
+                    v = (
+                        distortion / (1.0 + exp(s1 * (2.0 * v - 1.0)))
+                        + s2 * v
+                    );
+                    curve[i + r] = (
+                        min + delta * (
+                            // (1.0 - rnd_weight) * v + rnd_weight * random_numbers[i]
+                            v + rnd_weight * (random_numbers[i] - v)
+                        )
+                    );
+                }
+            } else {
+                for (i = 0; i < l; ++i) {
+                    v = i / r;
+                    curve[i + r] = (
+                        min + delta * (
+                            // (1.0 - rnd_weight) * v + rnd_weight * random_numbers[i]
+                            v + rnd_weight * (random_numbers[i] - v)
+                        )
+                    );
+                }
             }
-
-            this._wave_shaper_min_max.curve = curve;
         }
+
+        this._wave_shaper_min_max.curve = curve;
     };
 
     function LFOControllerParam(synth, key, lfo_ctl, min, max, default_value)
@@ -5130,6 +5474,7 @@ div.color-9 { background-color: #410; }
         this.amt = new MIDIControllableParam(synth, key + "_am", 0.0, 1.0, 1.0);
         this.min = new MIDIControllableParam(synth, key + "_mi", 0.0, 1.0, 0.0);
         this.max = new MIDIControllableParam(synth, key + "_ma", 0.0, 1.0, 1.0);
+        this.distortion = new MIDIControllableParam(synth, key + "_ds", 0.0, 1.0, 0.0);
         this.rnd = new MIDIControllableParam(synth, key + "_rn", 0.0, 1.0, 0.0);
 
         inputs[input_1.key] = input_1;
@@ -5160,13 +5505,27 @@ div.color-9 { background-color: #410; }
     MIDIControllerShaper.prototype.update = function (param, new_value)
     {
         var min = this.min.value,
+            distortion = this.distortion.value,
             rnd_weight = this.rnd.value,
-            in_value, rnd_value, key_infix;
+            in_value, rnd_value;
 
         if (this._inputs.hasOwnProperty(param.key) && param.controller !== "none") {
             this._last_input_value = in_value = param.value;
         } else {
             in_value = this._last_input_value;
+        }
+
+        if (distortion > 0.0) {
+            in_value = (
+                distortion / (
+                    1.0
+                    + Math.exp(
+                        - (CTL_DST_STEEPNESS_MIN + distortion * CTL_DST_STEEPNESS_SCALE)
+                        * (2.0 * in_value - 1.0)
+                    )
+                )
+                + (1.0 - distortion) * in_value
+            );
         }
 
         if (rnd_weight < 0.0001) {
@@ -5506,23 +5865,37 @@ div.color-9 { background-color: #410; }
 
     function EnvelopeBiquadFilterUI(name, onoff_param, params, synth)
     {
-        var onoff = new OnOffSwitch(onoff_param);
+        var onoff = new OnOffSwitch(onoff_param),
+            freq = new UIWidgetGroup("vertical"),
+            q = new UIWidgetGroup("vertical");
 
         NamedUIWidgetGroup.call(this, name, "vertical");
 
         this._name.appendChild(onoff.dom_node);
         this._onoff = onoff;
 
-        this.add(new FaderUI("IF", "Initial frequency", "Hz", 1, 1, MIDI_CONTROLS, params[0], synth));
-        this.add(new FaderUI("DEL", "Delay", "s", 1000, 1000, MIDI_CONTROLS, params[1], synth));
-        this.add(new FaderUI("ATK", "Attack", "s", 1000, 1000, MIDI_CONTROLS, params[2], synth));
-        this.add(new FaderUI("PF", "Peak frequency", "Hz", 1, 1, MIDI_CONTROLS, params[3], synth));
-        this.add(new FaderUI("HLD", "Hold", "s", 1000, 1000, MIDI_CONTROLS, params[4], synth));
-        this.add(new FaderUI("DEC", "Decay", "s", 1000, 1000, MIDI_CONTROLS, params[5], synth));
-        this.add(new FaderUI("SF", "Sustain frequency", "Hz", 1, 1, MIDI_CONTROLS, params[6], synth));
-        this.add(new FaderUI("REL", "Release", "s", 1000, 1000, MIDI_CONTROLS, params[7], synth));
-        this.add(new FaderUI("RF", "Release frequency", "Hz", 1, 1, MIDI_CONTROLS, params[8], synth));
-        this.add(new FaderUI("Q", "Q factor", "", 100, 100, MIDI_CONTROLS, params[9], synth));
+        freq.add(new FaderUI("IF", "Initial frequency", "Hz", 1, 1, MIDI_CONTROLS, params[0], synth));
+        freq.add(new FaderUI("DEL", "Delay", "s", 1000, 1000, MIDI_CONTROLS, params[1], synth));
+        freq.add(new FaderUI("ATK", "Attack", "s", 1000, 1000, MIDI_CONTROLS, params[2], synth));
+        freq.add(new FaderUI("PF", "Peak frequency", "Hz", 1, 1, MIDI_CONTROLS, params[3], synth));
+        freq.add(new FaderUI("HLD", "Hold", "s", 1000, 1000, MIDI_CONTROLS, params[4], synth));
+        freq.add(new FaderUI("DEC", "Decay", "s", 1000, 1000, MIDI_CONTROLS, params[5], synth));
+        freq.add(new FaderUI("SF", "Sustain frequency", "Hz", 1, 1, MIDI_CONTROLS, params[6], synth));
+        freq.add(new FaderUI("REL", "Release", "s", 1000, 1000, MIDI_CONTROLS, params[7], synth));
+        freq.add(new FaderUI("RF", "Release frequency", "Hz", 1, 1, MIDI_CONTROLS, params[8], synth));
+
+        q.add(new FaderUI("IQ", "Initial Q factor", "", 100, 100, MIDI_CONTROLS, params[9], synth));
+        q.add(new FaderUI("DEL", "Delay", "s", 1000, 1000, MIDI_CONTROLS, params[10], synth));
+        q.add(new FaderUI("ATK", "Attack", "s", 1000, 1000, MIDI_CONTROLS, params[11], synth));
+        q.add(new FaderUI("PQ", "Peak Q factor", "", 100, 100, MIDI_CONTROLS, params[12], synth));
+        q.add(new FaderUI("HLD", "Hold", "s", 1000, 1000, MIDI_CONTROLS, params[13], synth));
+        q.add(new FaderUI("DEC", "Decay", "s", 1000, 1000, MIDI_CONTROLS, params[14], synth));
+        q.add(new FaderUI("SQ", "Sustain Q factor", "", 100, 100, MIDI_CONTROLS, params[15], synth));
+        q.add(new FaderUI("REL", "Release", "s", 1000, 1000, MIDI_CONTROLS, params[16], synth));
+        q.add(new FaderUI("RQ", "Release Q factor", "", 100, 100, MIDI_CONTROLS, params[17], synth));
+
+        this.add(freq);
+        this.add(q);
     }
 
     EnvelopeBiquadFilterUI.prototype.update = NamedUIWidgetGroup.prototype.update;
@@ -5650,6 +6023,7 @@ div.color-9 { background-color: #410; }
             amt = new FaderUI("AMT", "Amount", "%", 10000, 100, MIDI_CONTROLS, midi_ctl_shaper_ctl.amt, synth),
             min = new FaderUI("MIN", "Minimum value", "%", 10000, 100, MIDI_CONTROLS, midi_ctl_shaper_ctl.min, synth),
             max = new FaderUI("MAX", "Maximum value", "%", 10000, 100, MIDI_CONTROLS, midi_ctl_shaper_ctl.max, synth),
+            distortion = new FaderUI("DST", "Distortion", "%", 500, 5, MIDI_CONTROLS, midi_ctl_shaper_ctl.distortion, synth),
             rnd = new FaderUI("RND", "Randomness", "%", 10000, 100, MIDI_CONTROLS, midi_ctl_shaper_ctl.rnd, synth);
 
         NamedUIWidgetGroup.call(this, name, "horizontal mcs color-6");
@@ -5662,6 +6036,7 @@ div.color-9 { background-color: #410; }
         this.add(amt);
         this.add(min);
         this.add(max);
+        this.add(distortion);
         this.add(rnd);
     }
 
@@ -5676,6 +6051,7 @@ div.color-9 { background-color: #410; }
             amt = new FaderUI("AMT", "Amount", "%", 5000, 50, ALL_CONTROLS, lfo_ctl.amt, synth),
             min = new FaderUI("MIN", "Minimum value", "%", 5000, 50, MIDI_CONTROLS, lfo_ctl.min, synth),
             max = new FaderUI("MAX", "Maximum value", "%", 5000, 50, MIDI_CONTROLS, lfo_ctl.max, synth),
+            distortion = new FaderUI("DST", "Distortion", "%", 500, 5, MIDI_CONTROLS, lfo_ctl.distortion, synth),
             rnd = new FaderUI("RND", "Randomness", "%", 5000, 50, MIDI_CONTROLS, lfo_ctl.rnd, synth);
 
         NamedUIWidgetGroup.call(this, name, "horizontal lfo color-8");
@@ -5687,6 +6063,7 @@ div.color-9 { background-color: #410; }
         this.add(amt);
         this.add(min);
         this.add(max);
+        this.add(distortion);
         this.add(rnd);
     }
 
@@ -6526,6 +6903,7 @@ div.color-9 { background-color: #410; }
         params.add(new FaderUI("ATK", "Attack time", "s", 1000, 1000, MIDI_CONTROLS, theremin.amp_env_params[1], synth));
         params.add(new FaderUI("REL", "Release time", "s", 1000, 1000, MIDI_CONTROLS, theremin.amp_env_params[6], synth));
         params.add(new FaderUI("FLD", "Folding", "%", 1000 / FOLD_MAX, 10, ALL_CONTROLS, theremin.folding, synth));
+        params.add(new FaderUI("FIN", "Fine detune (cents)", "c", 10, 10, ALL_CONTROLS, theremin.fine_detune, synth));
 
         filters.add(env_highpass);
         filters.add(env_lowpass);
