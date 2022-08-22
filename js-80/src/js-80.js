@@ -2,7 +2,7 @@
 
     "use strict";
 
-    var PATCH_VERSION = "2",
+    var PATCH_VERSION = "3",
         WAVEFORMS = {
             "sawtooth": "sawtooth",
             "invsaw": "inverse sawtooth",
@@ -1179,13 +1179,13 @@
     Synth.prototype._upgrade_patch = function (patch)
     {
         var upgraded = {},
-            param, key, value, ctl;
+            version, param, key, value, ctl;
 
-        if (patch.hasOwnProperty("version") && patch["version"] === PATCH_VERSION) {
+        version = patch.hasOwnProperty("version") ? String(patch["version"]) : "1";
+
+        if (version === PATCH_VERSION) {
             return patch;
         }
-
-        upgraded["version"] = PATCH_VERSION;
 
         for (key in patch) {
             param = this._parse_exported_param(patch, key);
@@ -1197,141 +1197,206 @@
             upgraded[key] = param;
         }
 
-        upgraded["mcs1_ds"] = this._copy_or_default("mcs1_ds", patch, null);
-        upgraded["mcs2_ds"] = this._copy_or_default("mcs2_ds", patch, null);
-        upgraded["mcs3_ds"] = this._copy_or_default("mcs3_ds", patch, null);
-        upgraded["mcs4_ds"] = this._copy_or_default("mcs4_ds", patch, null);
-        upgraded["mcs5_ds"] = this._copy_or_default("mcs5_ds", patch, null);
-        upgraded["mcs6_ds"] = this._copy_or_default("mcs6_ds", patch, null);
-        upgraded["mcs7_ds"] = this._copy_or_default("mcs7_ds", patch, null);
-        upgraded["mcs8_ds"] = this._copy_or_default("mcs8_ds", patch, null);
-        upgraded["mcs9_ds"] = this._copy_or_default("mcs9_ds", patch, null);
-        upgraded["mcs10_ds"] = this._copy_or_default("mcs10_ds", patch, null);
-        upgraded["mcs11_ds"] = this._copy_or_default("mcs11_ds", patch, null);
-        upgraded["mcs12_ds"] = this._copy_or_default("mcs12_ds", patch, null);
-        upgraded["mcs13_ds"] = this._copy_or_default("mcs13_ds", patch, null);
-        upgraded["mcs14_ds"] = this._copy_or_default("mcs14_ds", patch, null);
-        upgraded["mcs15_ds"] = this._copy_or_default("mcs15_ds", patch, null);
-        upgraded["mcs16_ds"] = this._copy_or_default("mcs16_ds", patch, null);
-        upgraded["mcs17_ds"] = this._copy_or_default("mcs17_ds", patch, null);
-        upgraded["mcs18_ds"] = this._copy_or_default("mcs18_ds", patch, null);
-        upgraded["mcs19_ds"] = this._copy_or_default("mcs19_ds", patch, null);
-        upgraded["mcs20_ds"] = this._copy_or_default("mcs20_ds", patch, null);
-        upgraded["mcs21_ds"] = this._copy_or_default("mcs21_ds", patch, null);
-        upgraded["mcs22_ds"] = this._copy_or_default("mcs22_ds", patch, null);
-        upgraded["mcs23_ds"] = this._copy_or_default("mcs23_ds", patch, null);
-        upgraded["mcs24_ds"] = this._copy_or_default("mcs24_ds", patch, null);
+        switch (version) {
+            case "1":
+                upgraded["mcs1_ds"] = this._copy_or_default("mcs1_ds", patch, null);
+                upgraded["mcs2_ds"] = this._copy_or_default("mcs2_ds", patch, null);
+                upgraded["mcs3_ds"] = this._copy_or_default("mcs3_ds", patch, null);
+                upgraded["mcs4_ds"] = this._copy_or_default("mcs4_ds", patch, null);
+                upgraded["mcs5_ds"] = this._copy_or_default("mcs5_ds", patch, null);
+                upgraded["mcs6_ds"] = this._copy_or_default("mcs6_ds", patch, null);
+                upgraded["mcs7_ds"] = this._copy_or_default("mcs7_ds", patch, null);
+                upgraded["mcs8_ds"] = this._copy_or_default("mcs8_ds", patch, null);
+                upgraded["mcs9_ds"] = this._copy_or_default("mcs9_ds", patch, null);
+                upgraded["mcs10_ds"] = this._copy_or_default("mcs10_ds", patch, null);
+                upgraded["mcs11_ds"] = this._copy_or_default("mcs11_ds", patch, null);
+                upgraded["mcs12_ds"] = this._copy_or_default("mcs12_ds", patch, null);
+                upgraded["mcs13_ds"] = this._copy_or_default("mcs13_ds", patch, null);
+                upgraded["mcs14_ds"] = this._copy_or_default("mcs14_ds", patch, null);
+                upgraded["mcs15_ds"] = this._copy_or_default("mcs15_ds", patch, null);
+                upgraded["mcs16_ds"] = this._copy_or_default("mcs16_ds", patch, null);
+                upgraded["mcs17_ds"] = this._copy_or_default("mcs17_ds", patch, null);
+                upgraded["mcs18_ds"] = this._copy_or_default("mcs18_ds", patch, null);
+                upgraded["mcs19_ds"] = this._copy_or_default("mcs19_ds", patch, null);
+                upgraded["mcs20_ds"] = this._copy_or_default("mcs20_ds", patch, null);
+                upgraded["mcs21_ds"] = this._copy_or_default("mcs21_ds", patch, null);
+                upgraded["mcs22_ds"] = this._copy_or_default("mcs22_ds", patch, null);
+                upgraded["mcs23_ds"] = this._copy_or_default("mcs23_ds", patch, null);
+                upgraded["mcs24_ds"] = this._copy_or_default("mcs24_ds", patch, null);
 
-        upgraded["lfo1_ds"] = this._copy_or_default("lfo1_ds", patch, null);
-        upgraded["lfo2_ds"] = this._copy_or_default("lfo2_ds", patch, null);
-        upgraded["lfo3_ds"] = this._copy_or_default("lfo3_ds", patch, null);
-        upgraded["lfo4_ds"] = this._copy_or_default("lfo4_ds", patch, null);
-        upgraded["lfo5_ds"] = this._copy_or_default("lfo5_ds", patch, null);
-        upgraded["lfo6_ds"] = this._copy_or_default("lfo6_ds", patch, null);
-        upgraded["lfo7_ds"] = this._copy_or_default("lfo7_ds", patch, null);
-        upgraded["lfo8_ds"] = this._copy_or_default("lfo8_ds", patch, null);
+                upgraded["lfo1_ds"] = this._copy_or_default("lfo1_ds", patch, null);
+                upgraded["lfo2_ds"] = this._copy_or_default("lfo2_ds", patch, null);
+                upgraded["lfo3_ds"] = this._copy_or_default("lfo3_ds", patch, null);
+                upgraded["lfo4_ds"] = this._copy_or_default("lfo4_ds", patch, null);
+                upgraded["lfo5_ds"] = this._copy_or_default("lfo5_ds", patch, null);
+                upgraded["lfo6_ds"] = this._copy_or_default("lfo6_ds", patch, null);
+                upgraded["lfo7_ds"] = this._copy_or_default("lfo7_ds", patch, null);
+                upgraded["lfo8_ds"] = this._copy_or_default("lfo8_ds", patch, null);
 
-        upgraded["midi_o1_ehqi"] = this._copy_or_default("midi_o1_ehqi", patch, "midi_o1_ehq");
-        upgraded["midi_o1_ehqdlt"] = this._copy_or_default("midi_o1_ehqdlt", patch, null);
-        upgraded["midi_o1_ehqat"] = this._copy_or_default("midi_o1_ehqat", patch, null);
-        upgraded["midi_o1_ehqp"] = this._copy_or_default("midi_o1_ehqp", patch, "midi_o1_ehq");
-        upgraded["midi_o1_ehqht"] = this._copy_or_default("midi_o1_ehqht", patch, null);
-        upgraded["midi_o1_ehqdt"] = this._copy_or_default("midi_o1_ehqdt", patch, null);
-        upgraded["midi_o1_ehqs"] = this._copy_or_default("midi_o1_ehqs", patch, "midi_o1_ehq");
-        upgraded["midi_o1_ehqrt"] = this._copy_or_default("midi_o1_ehqrt", patch, null);
-        upgraded["midi_o1_ehqr"] = this._copy_or_default("midi_o1_ehqr", patch, "midi_o1_ehq");
+                upgraded["midi_o1_ehqi"] = this._copy_or_default("midi_o1_ehqi", patch, "midi_o1_ehq");
+                upgraded["midi_o1_ehqdlt"] = this._copy_or_default("midi_o1_ehqdlt", patch, null);
+                upgraded["midi_o1_ehqat"] = this._copy_or_default("midi_o1_ehqat", patch, null);
+                upgraded["midi_o1_ehqp"] = this._copy_or_default("midi_o1_ehqp", patch, "midi_o1_ehq");
+                upgraded["midi_o1_ehqht"] = this._copy_or_default("midi_o1_ehqht", patch, null);
+                upgraded["midi_o1_ehqdt"] = this._copy_or_default("midi_o1_ehqdt", patch, null);
+                upgraded["midi_o1_ehqs"] = this._copy_or_default("midi_o1_ehqs", patch, "midi_o1_ehq");
+                upgraded["midi_o1_ehqrt"] = this._copy_or_default("midi_o1_ehqrt", patch, null);
+                upgraded["midi_o1_ehqr"] = this._copy_or_default("midi_o1_ehqr", patch, "midi_o1_ehq");
 
-        upgraded["midi_o1_elqi"] = this._copy_or_default("midi_o1_elqi", patch, "midi_o1_elq");
-        upgraded["midi_o1_elqdlt"] = this._copy_or_default("midi_o1_elqdlt", patch, null);
-        upgraded["midi_o1_elqat"] = this._copy_or_default("midi_o1_elqat", patch, null);
-        upgraded["midi_o1_elqp"] = this._copy_or_default("midi_o1_elqp", patch, "midi_o1_elq");
-        upgraded["midi_o1_elqht"] = this._copy_or_default("midi_o1_elqht", patch, null);
-        upgraded["midi_o1_elqdt"] = this._copy_or_default("midi_o1_elqdt", patch, null);
-        upgraded["midi_o1_elqs"] = this._copy_or_default("midi_o1_elqs", patch, "midi_o1_elq");
-        upgraded["midi_o1_elqrt"] = this._copy_or_default("midi_o1_elqrt", patch, null);
-        upgraded["midi_o1_elqr"] = this._copy_or_default("midi_o1_elqr", patch, "midi_o1_elq");
+                upgraded["midi_o1_elqi"] = this._copy_or_default("midi_o1_elqi", patch, "midi_o1_elq");
+                upgraded["midi_o1_elqdlt"] = this._copy_or_default("midi_o1_elqdlt", patch, null);
+                upgraded["midi_o1_elqat"] = this._copy_or_default("midi_o1_elqat", patch, null);
+                upgraded["midi_o1_elqp"] = this._copy_or_default("midi_o1_elqp", patch, "midi_o1_elq");
+                upgraded["midi_o1_elqht"] = this._copy_or_default("midi_o1_elqht", patch, null);
+                upgraded["midi_o1_elqdt"] = this._copy_or_default("midi_o1_elqdt", patch, null);
+                upgraded["midi_o1_elqs"] = this._copy_or_default("midi_o1_elqs", patch, "midi_o1_elq");
+                upgraded["midi_o1_elqrt"] = this._copy_or_default("midi_o1_elqrt", patch, null);
+                upgraded["midi_o1_elqr"] = this._copy_or_default("midi_o1_elqr", patch, "midi_o1_elq");
 
-        upgraded["midi_o2_ehqi"] = this._copy_or_default("midi_o2_ehqi", patch, "midi_o2_ehq");
-        upgraded["midi_o2_ehqdlt"] = this._copy_or_default("midi_o2_ehqdlt", patch, null);
-        upgraded["midi_o2_ehqat"] = this._copy_or_default("midi_o2_ehqat", patch, null);
-        upgraded["midi_o2_ehqp"] = this._copy_or_default("midi_o2_ehqp", patch, "midi_o2_ehq");
-        upgraded["midi_o2_ehqht"] = this._copy_or_default("midi_o2_ehqht", patch, null);
-        upgraded["midi_o2_ehqdt"] = this._copy_or_default("midi_o2_ehqdt", patch, null);
-        upgraded["midi_o2_ehqs"] = this._copy_or_default("midi_o2_ehqs", patch, "midi_o2_ehq");
-        upgraded["midi_o2_ehqrt"] = this._copy_or_default("midi_o2_ehqrt", patch, null);
-        upgraded["midi_o2_ehqr"] = this._copy_or_default("midi_o2_ehqr", patch, "midi_o2_ehq");
+                upgraded["midi_o2_ehqi"] = this._copy_or_default("midi_o2_ehqi", patch, "midi_o2_ehq");
+                upgraded["midi_o2_ehqdlt"] = this._copy_or_default("midi_o2_ehqdlt", patch, null);
+                upgraded["midi_o2_ehqat"] = this._copy_or_default("midi_o2_ehqat", patch, null);
+                upgraded["midi_o2_ehqp"] = this._copy_or_default("midi_o2_ehqp", patch, "midi_o2_ehq");
+                upgraded["midi_o2_ehqht"] = this._copy_or_default("midi_o2_ehqht", patch, null);
+                upgraded["midi_o2_ehqdt"] = this._copy_or_default("midi_o2_ehqdt", patch, null);
+                upgraded["midi_o2_ehqs"] = this._copy_or_default("midi_o2_ehqs", patch, "midi_o2_ehq");
+                upgraded["midi_o2_ehqrt"] = this._copy_or_default("midi_o2_ehqrt", patch, null);
+                upgraded["midi_o2_ehqr"] = this._copy_or_default("midi_o2_ehqr", patch, "midi_o2_ehq");
 
-        upgraded["midi_o2_elqi"] = this._copy_or_default("midi_o2_elqi", patch, "midi_o2_elq");
-        upgraded["midi_o2_elqdlt"] = this._copy_or_default("midi_o2_elqdlt", patch, null);
-        upgraded["midi_o2_elqat"] = this._copy_or_default("midi_o2_elqat", patch, null);
-        upgraded["midi_o2_elqp"] = this._copy_or_default("midi_o2_elqp", patch, "midi_o2_elq");
-        upgraded["midi_o2_elqht"] = this._copy_or_default("midi_o2_elqht", patch, null);
-        upgraded["midi_o2_elqdt"] = this._copy_or_default("midi_o2_elqdt", patch, null);
-        upgraded["midi_o2_elqs"] = this._copy_or_default("midi_o2_elqs", patch, "midi_o2_elq");
-        upgraded["midi_o2_elqrt"] = this._copy_or_default("midi_o2_elqrt", patch, null);
-        upgraded["midi_o2_elqr"] = this._copy_or_default("midi_o2_elqr", patch, "midi_o2_elq");
+                upgraded["midi_o2_elqi"] = this._copy_or_default("midi_o2_elqi", patch, "midi_o2_elq");
+                upgraded["midi_o2_elqdlt"] = this._copy_or_default("midi_o2_elqdlt", patch, null);
+                upgraded["midi_o2_elqat"] = this._copy_or_default("midi_o2_elqat", patch, null);
+                upgraded["midi_o2_elqp"] = this._copy_or_default("midi_o2_elqp", patch, "midi_o2_elq");
+                upgraded["midi_o2_elqht"] = this._copy_or_default("midi_o2_elqht", patch, null);
+                upgraded["midi_o2_elqdt"] = this._copy_or_default("midi_o2_elqdt", patch, null);
+                upgraded["midi_o2_elqs"] = this._copy_or_default("midi_o2_elqs", patch, "midi_o2_elq");
+                upgraded["midi_o2_elqrt"] = this._copy_or_default("midi_o2_elqrt", patch, null);
+                upgraded["midi_o2_elqr"] = this._copy_or_default("midi_o2_elqr", patch, "midi_o2_elq");
 
-        upgraded["cmp_o1_ehqi"] = this._copy_or_default("cmp_o1_ehqi", patch, "cmp_o1_ehq");
-        upgraded["cmp_o1_ehqdlt"] = this._copy_or_default("cmp_o1_ehqdlt", patch, null);
-        upgraded["cmp_o1_ehqat"] = this._copy_or_default("cmp_o1_ehqat", patch, null);
-        upgraded["cmp_o1_ehqp"] = this._copy_or_default("cmp_o1_ehqp", patch, "cmp_o1_ehq");
-        upgraded["cmp_o1_ehqht"] = this._copy_or_default("cmp_o1_ehqht", patch, null);
-        upgraded["cmp_o1_ehqdt"] = this._copy_or_default("cmp_o1_ehqdt", patch, null);
-        upgraded["cmp_o1_ehqs"] = this._copy_or_default("cmp_o1_ehqs", patch, "cmp_o1_ehq");
-        upgraded["cmp_o1_ehqrt"] = this._copy_or_default("cmp_o1_ehqrt", patch, null);
-        upgraded["cmp_o1_ehqr"] = this._copy_or_default("cmp_o1_ehqr", patch, "cmp_o1_ehq");
+                upgraded["cmp_o1_ehqi"] = this._copy_or_default("cmp_o1_ehqi", patch, "cmp_o1_ehq");
+                upgraded["cmp_o1_ehqdlt"] = this._copy_or_default("cmp_o1_ehqdlt", patch, null);
+                upgraded["cmp_o1_ehqat"] = this._copy_or_default("cmp_o1_ehqat", patch, null);
+                upgraded["cmp_o1_ehqp"] = this._copy_or_default("cmp_o1_ehqp", patch, "cmp_o1_ehq");
+                upgraded["cmp_o1_ehqht"] = this._copy_or_default("cmp_o1_ehqht", patch, null);
+                upgraded["cmp_o1_ehqdt"] = this._copy_or_default("cmp_o1_ehqdt", patch, null);
+                upgraded["cmp_o1_ehqs"] = this._copy_or_default("cmp_o1_ehqs", patch, "cmp_o1_ehq");
+                upgraded["cmp_o1_ehqrt"] = this._copy_or_default("cmp_o1_ehqrt", patch, null);
+                upgraded["cmp_o1_ehqr"] = this._copy_or_default("cmp_o1_ehqr", patch, "cmp_o1_ehq");
 
-        upgraded["cmp_o1_elqi"] = this._copy_or_default("cmp_o1_elqi", patch, "cmp_o1_elq");
-        upgraded["cmp_o1_elqdlt"] = this._copy_or_default("cmp_o1_elqdlt", patch, null);
-        upgraded["cmp_o1_elqat"] = this._copy_or_default("cmp_o1_elqat", patch, null);
-        upgraded["cmp_o1_elqp"] = this._copy_or_default("cmp_o1_elqp", patch, "cmp_o1_elq");
-        upgraded["cmp_o1_elqht"] = this._copy_or_default("cmp_o1_elqht", patch, null);
-        upgraded["cmp_o1_elqdt"] = this._copy_or_default("cmp_o1_elqdt", patch, null);
-        upgraded["cmp_o1_elqs"] = this._copy_or_default("cmp_o1_elqs", patch, "cmp_o1_elq");
-        upgraded["cmp_o1_elqrt"] = this._copy_or_default("cmp_o1_elqrt", patch, null);
-        upgraded["cmp_o1_elqr"] = this._copy_or_default("cmp_o1_elqr", patch, "cmp_o1_elq");
+                upgraded["cmp_o1_elqi"] = this._copy_or_default("cmp_o1_elqi", patch, "cmp_o1_elq");
+                upgraded["cmp_o1_elqdlt"] = this._copy_or_default("cmp_o1_elqdlt", patch, null);
+                upgraded["cmp_o1_elqat"] = this._copy_or_default("cmp_o1_elqat", patch, null);
+                upgraded["cmp_o1_elqp"] = this._copy_or_default("cmp_o1_elqp", patch, "cmp_o1_elq");
+                upgraded["cmp_o1_elqht"] = this._copy_or_default("cmp_o1_elqht", patch, null);
+                upgraded["cmp_o1_elqdt"] = this._copy_or_default("cmp_o1_elqdt", patch, null);
+                upgraded["cmp_o1_elqs"] = this._copy_or_default("cmp_o1_elqs", patch, "cmp_o1_elq");
+                upgraded["cmp_o1_elqrt"] = this._copy_or_default("cmp_o1_elqrt", patch, null);
+                upgraded["cmp_o1_elqr"] = this._copy_or_default("cmp_o1_elqr", patch, "cmp_o1_elq");
 
-        upgraded["cmp_o2_ehqi"] = this._copy_or_default("cmp_o2_ehqi", patch, "cmp_o2_ehq");
-        upgraded["cmp_o2_ehqdlt"] = this._copy_or_default("cmp_o2_ehqdlt", patch, null);
-        upgraded["cmp_o2_ehqat"] = this._copy_or_default("cmp_o2_ehqat", patch, null);
-        upgraded["cmp_o2_ehqp"] = this._copy_or_default("cmp_o2_ehqp", patch, "cmp_o2_ehq");
-        upgraded["cmp_o2_ehqht"] = this._copy_or_default("cmp_o2_ehqht", patch, null);
-        upgraded["cmp_o2_ehqdt"] = this._copy_or_default("cmp_o2_ehqdt", patch, null);
-        upgraded["cmp_o2_ehqs"] = this._copy_or_default("cmp_o2_ehqs", patch, "cmp_o2_ehq");
-        upgraded["cmp_o2_ehqrt"] = this._copy_or_default("cmp_o2_ehqrt", patch, null);
-        upgraded["cmp_o2_ehqr"] = this._copy_or_default("cmp_o2_ehqr", patch, "cmp_o2_ehq");
+                upgraded["cmp_o2_ehqi"] = this._copy_or_default("cmp_o2_ehqi", patch, "cmp_o2_ehq");
+                upgraded["cmp_o2_ehqdlt"] = this._copy_or_default("cmp_o2_ehqdlt", patch, null);
+                upgraded["cmp_o2_ehqat"] = this._copy_or_default("cmp_o2_ehqat", patch, null);
+                upgraded["cmp_o2_ehqp"] = this._copy_or_default("cmp_o2_ehqp", patch, "cmp_o2_ehq");
+                upgraded["cmp_o2_ehqht"] = this._copy_or_default("cmp_o2_ehqht", patch, null);
+                upgraded["cmp_o2_ehqdt"] = this._copy_or_default("cmp_o2_ehqdt", patch, null);
+                upgraded["cmp_o2_ehqs"] = this._copy_or_default("cmp_o2_ehqs", patch, "cmp_o2_ehq");
+                upgraded["cmp_o2_ehqrt"] = this._copy_or_default("cmp_o2_ehqrt", patch, null);
+                upgraded["cmp_o2_ehqr"] = this._copy_or_default("cmp_o2_ehqr", patch, "cmp_o2_ehq");
 
-        upgraded["cmp_o2_elqi"] = this._copy_or_default("cmp_o2_elqi", patch, "cmp_o2_elq");
-        upgraded["cmp_o2_elqdlt"] = this._copy_or_default("cmp_o2_elqdlt", patch, null);
-        upgraded["cmp_o2_elqat"] = this._copy_or_default("cmp_o2_elqat", patch, null);
-        upgraded["cmp_o2_elqp"] = this._copy_or_default("cmp_o2_elqp", patch, "cmp_o2_elq");
-        upgraded["cmp_o2_elqht"] = this._copy_or_default("cmp_o2_elqht", patch, null);
-        upgraded["cmp_o2_elqdt"] = this._copy_or_default("cmp_o2_elqdt", patch, null);
-        upgraded["cmp_o2_elqs"] = this._copy_or_default("cmp_o2_elqs", patch, "cmp_o2_elq");
-        upgraded["cmp_o2_elqrt"] = this._copy_or_default("cmp_o2_elqrt", patch, null);
-        upgraded["cmp_o2_elqr"] = this._copy_or_default("cmp_o2_elqr", patch, "cmp_o2_elq");
+                upgraded["cmp_o2_elqi"] = this._copy_or_default("cmp_o2_elqi", patch, "cmp_o2_elq");
+                upgraded["cmp_o2_elqdlt"] = this._copy_or_default("cmp_o2_elqdlt", patch, null);
+                upgraded["cmp_o2_elqat"] = this._copy_or_default("cmp_o2_elqat", patch, null);
+                upgraded["cmp_o2_elqp"] = this._copy_or_default("cmp_o2_elqp", patch, "cmp_o2_elq");
+                upgraded["cmp_o2_elqht"] = this._copy_or_default("cmp_o2_elqht", patch, null);
+                upgraded["cmp_o2_elqdt"] = this._copy_or_default("cmp_o2_elqdt", patch, null);
+                upgraded["cmp_o2_elqs"] = this._copy_or_default("cmp_o2_elqs", patch, "cmp_o2_elq");
+                upgraded["cmp_o2_elqrt"] = this._copy_or_default("cmp_o2_elqrt", patch, null);
+                upgraded["cmp_o2_elqr"] = this._copy_or_default("cmp_o2_elqr", patch, "cmp_o2_elq");
 
-        upgraded["th_ehqi"] = this._copy_or_default("th_ehqi", patch, "th_ehq");
-        upgraded["th_ehqdlt"] = this._copy_or_default("th_ehqdlt", patch, null);
-        upgraded["th_ehqat"] = this._copy_or_default("th_ehqat", patch, null);
-        upgraded["th_ehqp"] = this._copy_or_default("th_ehqp", patch, "th_ehq");
-        upgraded["th_ehqht"] = this._copy_or_default("th_ehqht", patch, null);
-        upgraded["th_ehqdt"] = this._copy_or_default("th_ehqdt", patch, null);
-        upgraded["th_ehqs"] = this._copy_or_default("th_ehqs", patch, "th_ehq");
-        upgraded["th_ehqrt"] = this._copy_or_default("th_ehqrt", patch, null);
-        upgraded["th_ehqr"] = this._copy_or_default("th_ehqr", patch, "th_ehq");
+                upgraded["th_ehqi"] = this._copy_or_default("th_ehqi", patch, "th_ehq");
+                upgraded["th_ehqdlt"] = this._copy_or_default("th_ehqdlt", patch, null);
+                upgraded["th_ehqat"] = this._copy_or_default("th_ehqat", patch, null);
+                upgraded["th_ehqp"] = this._copy_or_default("th_ehqp", patch, "th_ehq");
+                upgraded["th_ehqht"] = this._copy_or_default("th_ehqht", patch, null);
+                upgraded["th_ehqdt"] = this._copy_or_default("th_ehqdt", patch, null);
+                upgraded["th_ehqs"] = this._copy_or_default("th_ehqs", patch, "th_ehq");
+                upgraded["th_ehqrt"] = this._copy_or_default("th_ehqrt", patch, null);
+                upgraded["th_ehqr"] = this._copy_or_default("th_ehqr", patch, "th_ehq");
 
-        upgraded["th_elqi"] = this._copy_or_default("th_elqi", patch, "th_elq");
-        upgraded["th_elqdlt"] = this._copy_or_default("th_elqdlt", patch, null);
-        upgraded["th_elqat"] = this._copy_or_default("th_elqat", patch, null);
-        upgraded["th_elqp"] = this._copy_or_default("th_elqp", patch, "th_elq");
-        upgraded["th_elqht"] = this._copy_or_default("th_elqht", patch, null);
-        upgraded["th_elqdt"] = this._copy_or_default("th_elqdt", patch, null);
-        upgraded["th_elqs"] = this._copy_or_default("th_elqs", patch, "th_elq");
-        upgraded["th_elqrt"] = this._copy_or_default("th_elqrt", patch, null);
-        upgraded["th_elqr"] = this._copy_or_default("th_elqr", patch, "th_elq");
+                upgraded["th_elqi"] = this._copy_or_default("th_elqi", patch, "th_elq");
+                upgraded["th_elqdlt"] = this._copy_or_default("th_elqdlt", patch, null);
+                upgraded["th_elqat"] = this._copy_or_default("th_elqat", patch, null);
+                upgraded["th_elqp"] = this._copy_or_default("th_elqp", patch, "th_elq");
+                upgraded["th_elqht"] = this._copy_or_default("th_elqht", patch, null);
+                upgraded["th_elqdt"] = this._copy_or_default("th_elqdt", patch, null);
+                upgraded["th_elqs"] = this._copy_or_default("th_elqs", patch, "th_elq");
+                upgraded["th_elqrt"] = this._copy_or_default("th_elqrt", patch, null);
+                upgraded["th_elqr"] = this._copy_or_default("th_elqr", patch, "th_elq");
 
-        upgraded["th_fd"] = this._copy_or_default("th_fd", patch, null);
+                upgraded["th_fd"] = this._copy_or_default("th_fd", patch, null);
+
+                version = "2";
+
+            case "2":
+                upgraded["midi_o1_pfia"] = this._copy_or_default("midi_o1_pfia", patch, null);
+                upgraded["midi_o1_pfdlt"] = this._copy_or_default("midi_o1_pfdlt", patch, null);
+                upgraded["midi_o1_pfat"] = this._copy_or_default("midi_o1_pfat", patch, null);
+                upgraded["midi_o1_pfpa"] = this._copy_or_default("midi_o1_pfpa", patch, null);
+                upgraded["midi_o1_pfht"] = this._copy_or_default("midi_o1_pfht", patch, null);
+                upgraded["midi_o1_pfdt"] = this._copy_or_default("midi_o1_pfdt", patch, null);
+                upgraded["midi_o1_pfsa"] = this._copy_or_default("midi_o1_pfsa", patch, null);
+                upgraded["midi_o1_pfrt"] = this._copy_or_default("midi_o1_pfrt", patch, null);
+                upgraded["midi_o1_pfra"] = this._copy_or_default("midi_o1_pfra", patch, null);
+
+                upgraded["midi_o2_pfia"] = this._copy_or_default("midi_o2_pfia", patch, null);
+                upgraded["midi_o2_pfdlt"] = this._copy_or_default("midi_o2_pfdlt", patch, null);
+                upgraded["midi_o2_pfat"] = this._copy_or_default("midi_o2_pfat", patch, null);
+                upgraded["midi_o2_pfpa"] = this._copy_or_default("midi_o2_pfpa", patch, null);
+                upgraded["midi_o2_pfht"] = this._copy_or_default("midi_o2_pfht", patch, null);
+                upgraded["midi_o2_pfdt"] = this._copy_or_default("midi_o2_pfdt", patch, null);
+                upgraded["midi_o2_pfsa"] = this._copy_or_default("midi_o2_pfsa", patch, null);
+                upgraded["midi_o2_pfrt"] = this._copy_or_default("midi_o2_pfrt", patch, null);
+                upgraded["midi_o2_pfra"] = this._copy_or_default("midi_o2_pfra", patch, null);
+
+                upgraded["cmp_o1_pfia"] = this._copy_or_default("cmp_o1_pfia", patch, null);
+                upgraded["cmp_o1_pfdlt"] = this._copy_or_default("cmp_o1_pfdlt", patch, null);
+                upgraded["cmp_o1_pfat"] = this._copy_or_default("cmp_o1_pfat", patch, null);
+                upgraded["cmp_o1_pfpa"] = this._copy_or_default("cmp_o1_pfpa", patch, null);
+                upgraded["cmp_o1_pfht"] = this._copy_or_default("cmp_o1_pfht", patch, null);
+                upgraded["cmp_o1_pfdt"] = this._copy_or_default("cmp_o1_pfdt", patch, null);
+                upgraded["cmp_o1_pfsa"] = this._copy_or_default("cmp_o1_pfsa", patch, null);
+                upgraded["cmp_o1_pfrt"] = this._copy_or_default("cmp_o1_pfrt", patch, null);
+                upgraded["cmp_o1_pfra"] = this._copy_or_default("cmp_o1_pfra", patch, null);
+
+                upgraded["cmp_o2_pfia"] = this._copy_or_default("cmp_o2_pfia", patch, null);
+                upgraded["cmp_o2_pfdlt"] = this._copy_or_default("cmp_o2_pfdlt", patch, null);
+                upgraded["cmp_o2_pfat"] = this._copy_or_default("cmp_o2_pfat", patch, null);
+                upgraded["cmp_o2_pfpa"] = this._copy_or_default("cmp_o2_pfpa", patch, null);
+                upgraded["cmp_o2_pfht"] = this._copy_or_default("cmp_o2_pfht", patch, null);
+                upgraded["cmp_o2_pfdt"] = this._copy_or_default("cmp_o2_pfdt", patch, null);
+                upgraded["cmp_o2_pfsa"] = this._copy_or_default("cmp_o2_pfsa", patch, null);
+                upgraded["cmp_o2_pfrt"] = this._copy_or_default("cmp_o2_pfrt", patch, null);
+                upgraded["cmp_o2_pfra"] = this._copy_or_default("cmp_o2_pfra", patch, null);
+
+                upgraded["th_pfia"] = this._copy_or_default("th_pfia", patch, null);
+                upgraded["th_pfdlt"] = this._copy_or_default("th_pfdlt", patch, null);
+                upgraded["th_pfat"] = this._copy_or_default("th_pfat", patch, null);
+                upgraded["th_pfpa"] = this._copy_or_default("th_pfpa", patch, null);
+                upgraded["th_pfht"] = this._copy_or_default("th_pfht", patch, null);
+                upgraded["th_pfdt"] = this._copy_or_default("th_pfdt", patch, null);
+                upgraded["th_pfsa"] = this._copy_or_default("th_pfsa", patch, null);
+                upgraded["th_pfrt"] = this._copy_or_default("th_pfrt", patch, null);
+                upgraded["th_pfra"] = this._copy_or_default("th_pfra", patch, null);
+
+                version = PATCH_VERSION;
+
+                break;
+
+            default:
+                throw "Invalid patch version: " + version;
+        }
+
+        upgraded["version"] = version;
 
         return upgraded;
     };
@@ -2809,6 +2874,18 @@
             new MIDIControllableParam(synth, key + "_er", ENV_REL_MIN, ENV_REL_MAX, ENV_REL_DEF)
         ];
 
+        this.env_prefold_amp_params = [
+            new MIDIControllableParam(synth, key + "_pfia", ENV_VOL_MIN, ENV_VOL_MAX, ENV_VOL_MAX),
+            new MIDIControllableParam(synth, key + "_pfdlt", ENV_DEL_MIN, ENV_DEL_MAX, ENV_DEL_DEF),
+            new MIDIControllableParam(synth, key + "_pfat", ENV_ATK_MIN, ENV_ATK_MAX, ENV_ATK_DEF),
+            new MIDIControllableParam(synth, key + "_pfpa", ENV_VOL_MIN, ENV_VOL_MAX, ENV_VOL_MAX),
+            new MIDIControllableParam(synth, key + "_pfht", ENV_HLD_MIN, ENV_HLD_MAX, ENV_HLD_DEF),
+            new MIDIControllableParam(synth, key + "_pfdt", ENV_DEC_MIN, ENV_DEC_MAX, ENV_DEC_DEF),
+            new MIDIControllableParam(synth, key + "_pfsa", ENV_VOL_MIN, ENV_VOL_MAX, ENV_VOL_MAX),
+            new MIDIControllableParam(synth, key + "_pfrt", ENV_REL_MIN, ENV_REL_MAX, ENV_REL_DEF),
+            new MIDIControllableParam(synth, key + "_pfra", ENV_VOL_MIN, ENV_VOL_MAX, ENV_VOL_MAX)
+        ];
+
         ehp_onoff_key = key + "_eho";
         this.env_highpass_onoff = env_highpass_onoff = new OnOffParam(synth, ehp_onoff_key);
 
@@ -3042,6 +3119,7 @@
             prt_start_freq,
             this.prt_time.value,
             this.amp_env_params,
+            this.env_prefold_amp_params,
             this.env_highpass_params,
             this.env_lowpass_params
         );
@@ -3373,6 +3451,7 @@
             freq,
             0,
             this.amp_env_params,
+            this.env_prefold_amp_params,
             this.env_highpass_params,
             this.env_lowpass_params
         );
@@ -3409,6 +3488,7 @@
     function Note(synth, output, folding_cns)
     {
         var osc = new OscillatorNode(synth.audio_ctx, {"channelCount": 1}),
+            prefold_vol = new GainNode(synth.audio_ctx, {"gain": 0.0, "channelCount": 1}),
             fold_threshold = new GainNode(synth.audio_ctx, {"gain": FOLD_THRESHOLD, "channelCount": 1}),
             folder,
             osc_vol = new GainNode(synth.audio_ctx, {"channelCount": 1}),
@@ -3445,7 +3525,8 @@
             folding_cns.connect(fold_threshold.gain);
         }
 
-        osc.connect(fold_threshold);
+        osc.connect(prefold_vol);
+        prefold_vol.connect(fold_threshold);
         fold_threshold.connect(folder);
         folder.connect(osc_vol);
 
@@ -3456,6 +3537,7 @@
         }
 
         this._osc = osc;
+        this._prefold_vol = prefold_vol;
         this._fold_threshold = fold_threshold;
         this._folder = folder;
         this._fold_curve = FOLD_CURVE;
@@ -3469,6 +3551,11 @@
         this._amp_sustain_start = null;
         this._amp_sustain_level = null;
         this._amp_release_time = null;
+
+        this._pfa_sustain_start = null;
+        this._pfa_sustain_level = null;
+        this._pfa_release_time = null
+        this._pfa_release_level = null
 
         this._ehp_f_sustain_start = null;
         this._ehp_f_sustain_level = null;
@@ -3541,10 +3628,9 @@
     Note.prototype.trigger = function (
             now, when, freq, velocity, pan,
             prt_start_freq, prt_time,
-            amp_env_params, env_highpass_params, env_lowpass_params
+            amp_env_params, env_prefold_amp_params, env_highpass_params, env_lowpass_params
     ) {
-        var g = this._vel_vol.gain,
-            f = this.frequency,
+        var f = this.frequency,
             p = this.pan.pan,
             chain_mask = this._chain_mask;
 
@@ -3563,7 +3649,7 @@
         p.setValueAtTime(pan, when);
 
         this._amp_sustain_start = this._apply_envelope_dahds(
-            g,
+            this._vel_vol.gain,
             now,
             when,
             0,
@@ -3575,6 +3661,21 @@
             this._amp_sustain_level = amp_env_params[5].value * velocity
         );
         this._amp_release_time = amp_env_params[6].value;
+
+        this._pfa_sustain_start = this._apply_envelope_dahds(
+            this._prefold_vol.gain,
+            now,
+            when,
+            env_prefold_amp_params[0].value,
+            env_prefold_amp_params[1].value,
+            env_prefold_amp_params[2].value,
+            env_prefold_amp_params[3].value,
+            env_prefold_amp_params[4].value,
+            env_prefold_amp_params[5].value,
+            this._pfa_sustain_level = env_prefold_amp_params[6].value
+        );
+        this._pfa_release_time = env_prefold_amp_params[7].value;
+        this._pfa_release_level = env_prefold_amp_params[8].value;
 
         this._chain_mask_when_triggered = chain_mask;
 
@@ -3688,6 +3789,15 @@
                 0.0
             );
 
+            this._apply_envelope_r(
+                this._prefold_vol.gain,
+                when,
+                this._pfa_sustain_start,
+                this._pfa_sustain_level,
+                this._pfa_release_time,
+                this._pfa_release_level
+            );
+
             if (0 < (chain_mask & 1)) {
                 this._apply_envelope_r(
                     this._env_highpass.frequency,
@@ -3754,6 +3864,15 @@
                 when,
                 this._amp_sustain_start,
                 this._amp_sustain_level,
+                0.0,
+                0.0
+            );
+
+            this._apply_envelope_r(
+                this._prefold_vol.gain,
+                when,
+                this._pfa_sustain_start,
+                this._pfa_sustain_level,
                 0.0,
                 0.0
             );
@@ -3872,7 +3991,7 @@
     ZeroPhaseNote.prototype.trigger = function (
             now, when, freq, velocity, pan,
             prt_start_freq, prt_time,
-            amp_env_params, env_highpass_params, env_lowpass_params
+            amp_env_params, env_prefold_amp_params, env_highpass_params, env_lowpass_params
     ) {
         var osc = this._osc,
             detune = this._detune_cns,
@@ -3902,7 +4021,7 @@
         }
 
         osc.frequency.value = 0.0;
-        osc.connect(this._fold_threshold);
+        osc.connect(this._prefold_vol);
 
         freq_cns.connect(osc.frequency);
         detune.connect(osc.detune);
@@ -3914,7 +4033,7 @@
             this,
             now, when, freq, velocity, pan,
             prt_start_freq, prt_time,
-            amp_env_params, env_highpass_params, env_lowpass_params
+            amp_env_params, env_prefold_amp_params, env_highpass_params, env_lowpass_params
         );
     };
 
@@ -5002,6 +5121,7 @@
     {
         var params = new UIWidgetGroup("vertical"),
             amp_env = new NamedUIWidgetGroup("Amplitude envelope", "vertical"),
+            prefold_amp_env = new PrefoldAmpEnvUI(complex_osc),
             custom_waveform = new CustomWaveParamsUI("", complex_osc.custom_waveform, synth),
             filters = new ClosableNamedUIWidgetGroup("Filters", "filters horizontal"),
             env_highpass = new EnvelopeHighpassUI(complex_osc, synth),
@@ -5039,6 +5159,7 @@
         this.add(wav);
         this.add(params);
         this.add(amp_env);
+        this.add(prefold_amp_env);
         this.add(custom_waveform)
         this.add(filters);
 
@@ -5167,6 +5288,28 @@
     LFOCompatibleLowpassUI.prototype.update = LFOCompatibleBiquadFilterUI.prototype.update;
     LFOCompatibleLowpassUI.prototype.add = LFOCompatibleBiquadFilterUI.prototype.add;
     LFOCompatibleLowpassUI.prototype.set_description = LFOCompatibleBiquadFilterUI.prototype.set_description;
+
+    function PrefoldAmpEnvUI(complex_osc)
+    {
+        var params = complex_osc.env_prefold_amp_params;
+
+        ClosableNamedUIWidgetGroup.call(this, "Pre-fold amplitude envelope", "horizontal");
+
+        this.add(new FaderUI("DEL", "Delay", "s", 1000, 1000, MIDI_CONTROLS, params[1], synth));
+        this.add(new FaderUI("IA", "Initial amplitude", "%", 200, 2, MIDI_CONTROLS, params[0], synth));
+        this.add(new FaderUI("ATK", "Attack", "s", 1000, 1000, MIDI_CONTROLS, params[2], synth));
+        this.add(new FaderUI("PA", "Peak amplitude", "%", 200, 2, MIDI_CONTROLS, params[3], synth));
+        this.add(new FaderUI("HLD", "Hold", "s", 1000, 1000, MIDI_CONTROLS, params[4], synth));
+        this.add(new FaderUI("SA", "Sustain amplitude", "%", 200, 2, MIDI_CONTROLS, params[6], synth));
+        this.add(new FaderUI("DEC", "Decay", "s", 1000, 1000, MIDI_CONTROLS, params[5], synth));
+        this.add(new FaderUI("RA", "Release amplitude", "%", 200, 2, MIDI_CONTROLS, params[8], synth));
+        this.add(new FaderUI("REL", "Release", "s", 1000, 1000, MIDI_CONTROLS, params[7], synth));
+    }
+
+    PrefoldAmpEnvUI.prototype.update = ClosableNamedUIWidgetGroup.prototype.update;
+    PrefoldAmpEnvUI.prototype.add = ClosableNamedUIWidgetGroup.prototype.add;
+    PrefoldAmpEnvUI.prototype.set_description = ClosableNamedUIWidgetGroup.prototype.set_description;
+    PrefoldAmpEnvUI.prototype.toggle = ClosableNamedUIWidgetGroup.prototype.toggle;
 
     function ShelfFilterUI(name, class_names, shelf_filter, synth)
     {
@@ -6080,6 +6223,7 @@
     {
         var touch_area = document.createElement("div"),
             params = new UIWidgetGroup("horizontal"),
+            prefold_amp_env = new PrefoldAmpEnvUI(theremin),
             filters = new ClosableNamedUIWidgetGroup("Filters", "filters horizontal"),
             custom_waveform = new CustomWaveParamsUI("", theremin.custom_waveform, synth),
             env_highpass = new EnvelopeHighpassUI(theremin, synth),
@@ -6135,6 +6279,7 @@
         this.dom_node.appendChild(touch_area);
 
         this.add(params);
+        this.add(prefold_amp_env);
         this.add(custom_waveform);
         this.add(filters);
         this.add(effects);
