@@ -1151,11 +1151,11 @@
             }
         }
 
-        for (i = 0; i < 128; ++i) {
-            m = this._midi_ctls[i];
+        c = this.controllers;
 
-            if (m !== null) {
-                m.control_params();
+        for (i in c) {
+            if (c.hasOwnProperty(i) && (i.substring(0, 3) !== "lfo")) {
+                c[i].control_params();
             }
         }
 
