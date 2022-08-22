@@ -1093,6 +1093,7 @@
     Synth.prototype.import_patch = function (exported)
     {
         var params = this._params,
+            params_by_key = this._params_by_key,
             i, l, param, key, t, v, c, m;
 
         exported = this._upgrade_patch(exported);
@@ -1161,6 +1162,18 @@
         this._pitch_ctl.control_params();
         this._note_ctl.control_params();
         this._velocity_ctl.control_params();
+
+        params_by_key["th_edl"].disconnect();
+        params_by_key["th_ep"].disconnect();
+        params_by_key["th_eh"].disconnect();
+        params_by_key["th_ed"].disconnect();
+        params_by_key["th_es"].disconnect();
+
+        params_by_key["th_edl"].set_value(ENV_DEL_MIN);
+        params_by_key["th_ep"].set_value(ENV_VOL_MAX);
+        params_by_key["th_eh"].set_value(ENV_HLD_MIN);
+        params_by_key["th_ed"].set_value(ENV_DEC_MIN);
+        params_by_key["th_es"].set_value(ENV_VOL_MAX);
     };
 
     Synth.prototype._upgrade_patch = function (patch)
@@ -3241,7 +3254,7 @@
     {
         var effects = new Effects(synth, "th", output),
             note_vol = new GainNode(synth.audio_ctx, {"gain": 0.0, "channelCount": 1}),
-            lfo_lowpass, lfo_highpass,
+            amp_env, lfo_lowpass, lfo_highpass,
             note;
 
         note = new Note(synth, note_vol, null);
@@ -3255,6 +3268,13 @@
             [lfo_highpass.onoff, lfo_highpass.freq, lfo_highpass.q],
             [lfo_lowpass.onoff, lfo_lowpass.freq, lfo_lowpass.q]
         );
+
+        amp_env = this.amp_env_params;
+        amp_env[0].set_value(ENV_DEL_MIN);
+        amp_env[2].set_value(ENV_VOL_MAX);
+        amp_env[3].set_value(ENV_HLD_MIN);
+        amp_env[4].set_value(ENV_DEC_MIN);
+        amp_env[5].set_value(ENV_VOL_MAX);
 
         this._folding_cns.connect(note.folding_cns_target);
 
