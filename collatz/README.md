@@ -25,7 +25,7 @@ n \equiv 1 \pmod 2 \Rightarrow 3n+1 \equiv 0 \pmod 2 $$
 
 The shortcut or speedup version of the function:
 
-$$ T \colon \mathbb{N} \to \mathbb{N}, \quad T(n) =
+$$ t \colon \mathbb{N} \to \mathbb{N}, \quad t(n) =
 \begin{cases}
 \frac{n}{2} & \text{if $n \equiv 0 \pmod 2$} \\
 \frac{3n+1}{2} & \text{if $n \equiv 1 \pmod 2$}
@@ -34,26 +34,38 @@ $$ T \colon \mathbb{N} \to \mathbb{N}, \quad T(n) =
 Extending to the complex plane
 ------------------------------
 
-A common approach (see [The 3x+1 problem: An annotated bibliography
-(1963-1999)][l1] and [The 3x+1 Problem: An Annotated Bibliography, II
-(2000-2009)][l2] by Jeffrey C. Lagarias) to eliminate the branching and extend
-this function to the real or complex numbers as a continuous function is to
-find a pair of continuous functions that take the values 0 and 1, and 1 and 0
-for even and odd integers respectively, and use those as multipliers to combine
-the branched definition into a single addition. One such example uses
-$\sin^2(\frac{\pi}{2}z)$ and $\cos^2(\frac{\pi}{2}z)$:
+A common approach to eliminate the branching and extend this function to the
+real or complex numbers is to find a function $\text{mod}_2(z)$ which is $0$
+for even integers and $1$ for odd integers, and use it to combine the two
+branches of the function definition into a single expression. (See [The 3x+1
+problem: An annotated bibliography (1963-1999)][l1] and [The 3x+1 Problem: An
+Annotated Bibliography, II (2000-2009)][l2] by Jeffrey C.  Lagarias.)
+
+  [l1]: https://arxiv.org/abs/math/0309224
+  [l2]: https://arxiv.org/abs/math/0608208
+
+[One such example][ch] uses $\text{mod}_2(z) = \sin^2(\frac{\pi}{2}z)$ and
+$1 - \text{mod}_2(z) = 1 - \sin^2(\frac{\pi}{2}z) = \cos^2(\frac{\pi}{2}z)$:
 
 $$ f \colon \mathbb{C} \to \mathbb{C}, \quad f(z) =
 \frac{z}{2} \cos^2(\frac{\pi}{2}z) +
 \frac{3z+1}{2} \sin^2(\frac{\pi}{2}z) $$
 
-  [l1]: https://arxiv.org/abs/math/0309224
-  [l2]: https://arxiv.org/abs/math/0608208
+  [ch]: https://chamberland.math.grinnell.edu/3x.html
 
-A different approach might be to start from only the $\frac{3n+1}{2}$ branch,
-replace the $1$ with $\sin^2(\frac{\pi}{2}z)$ so that only odd values for $n$
-are incremented after the multiplication, and undo the multiplication for even
-numbers, by dividing by 6. This is the idea of the following extension:
+The [3-power extension of the 3x+1 function][p3] raises $3$ to the power of
+$\text{mod}_2(z)$:
+
+$$ T \colon \mathbb{C} \to \mathbb{C}, \quad T(z) =
+\frac{1}{2} \cdot (3^{\text{mod}_2(z)}z + \text{mod}_2(z)) $$
+
+  [p3]: https://webbox.lafayette.edu/~reiterc/3x%2B1/w3x%2B1_pp.pdf
+
+A different approach might be to start from only the $\frac{3n+1}{2}$ case,
+replace the $1$ with $\text{mod}_2(z) = \sin^2(\frac{\pi}{2}z)$ so that only
+odd values for $n$ are incremented after the multiplication, and undo the
+multiplication for even numbers by dividing by 6. This is the idea of the
+following extension:
 
 $$ F \colon \mathbb{C} \to \mathbb{C}, \quad
 F(z) = \frac{3z + \sin^2(\frac{\pi}{2} z)}{2 + 4 \cos^2(\frac{\pi}{2} z)} $$
@@ -69,7 +81,7 @@ $$ \forall n \in \mathbb{N} \quad n \equiv 0 \pmod 2 \Rightarrow
 F(n) = \frac{3n + 0}{2 + 4 \cdot 1} = \frac{3n}{6} = \frac{n}{2} $$
 
 Therefore $F$ restricted to the positive integers is equivalent with the
-shortcut Collatz function $T$.
+shortcut Collatz function $t$.
 
 Using the following trigonometric identities
 
@@ -91,13 +103,13 @@ but $F$ has infinitely many real fixed points which can be obtained by solving:
 $$ (1) \quad F(z) =
 \frac{3}{4} \cdot \frac{2z+1}{\cos(\pi z)+2} - \frac{1}{4} = z $$
 
-$0$ is a trivial fixed point of $F$, because
+$0$ is a fixed point of $F$, because
 
 $$ F(0) =
 \frac{3}{4} \cdot \frac{2 \cdot 0+1}{\cos(0 \cdot \pi)+2} - \frac{1}{4} =
 \frac{3}{4} \cdot \frac{1}{1+2} - \frac{1}{4} = 0 $$
 
-$\frac{1}{2}$ is another trivial fixed point, since
+$\frac{1}{2}$ is also a fixed point of $F$, since
 
 $$ F(\frac{1}{2}) =
 \frac{3}{4} \cdot \frac{2 \cdot \frac{1}{2} + 1}{\cos(\frac{\pi}{2})+2} - \frac{1}{4} =
