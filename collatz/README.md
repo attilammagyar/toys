@@ -57,7 +57,7 @@ The [3-power extension of the 3x+1 function][p3] raises $3$ to the power of
 $\text{mod}_2(z)$:
 
 $$ T \colon \mathbb{C} \to \mathbb{C}, \quad T(z) =
-\frac{1}{2} \cdot (3^{\text{mod}_2(z)}z + \text{mod}_2(z)) $$
+\frac{3^{\text{mod}_2(z)}z + \text{mod}_2(z)}{2} $$
 
   [p3]: https://webbox.lafayette.edu/~reiterc/3x%2B1/w3x%2B1_pp.pdf
 
@@ -145,6 +145,6 @@ Properties of $F$
 -----------------
 
 Numerical experiments seem to suggest that for positive real numbers, $F$ has
-no other cycles than $(1; \\, 2)$ and its fixed points. Even if the iteration
-starts from a value close to a fixed point, $F$ starts to converge to $1$ after
-a while.
+no other cycles than $(1; \\, 2)$ and its fixed points. For positive real
+numbers, even if the iteration starts from a value close to a fixed point, $F$
+starts to converge to $1$ after a while.
