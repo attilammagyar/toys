@@ -5121,7 +5121,7 @@
     {
         var params = new UIWidgetGroup("vertical"),
             amp_env = new NamedUIWidgetGroup("Amplitude envelope", "vertical"),
-            prefold_amp_env = new PrefoldAmpEnvUI(complex_osc),
+            prefold_amp_env = new PrefoldAmpEnvUI(complex_osc, synth),
             custom_waveform = new CustomWaveParamsUI("", complex_osc.custom_waveform, synth),
             filters = new ClosableNamedUIWidgetGroup("Filters", "filters horizontal"),
             env_highpass = new EnvelopeHighpassUI(complex_osc, synth),
@@ -5289,7 +5289,7 @@
     LFOCompatibleLowpassUI.prototype.add = LFOCompatibleBiquadFilterUI.prototype.add;
     LFOCompatibleLowpassUI.prototype.set_description = LFOCompatibleBiquadFilterUI.prototype.set_description;
 
-    function PrefoldAmpEnvUI(complex_osc)
+    function PrefoldAmpEnvUI(complex_osc, synth)
     {
         var params = complex_osc.env_prefold_amp_params;
 
@@ -6223,7 +6223,7 @@
     {
         var touch_area = document.createElement("div"),
             params = new UIWidgetGroup("horizontal"),
-            prefold_amp_env = new PrefoldAmpEnvUI(theremin),
+            prefold_amp_env = new PrefoldAmpEnvUI(theremin, synth),
             filters = new ClosableNamedUIWidgetGroup("Filters", "filters horizontal"),
             custom_waveform = new CustomWaveParamsUI("", theremin.custom_waveform, synth),
             env_highpass = new EnvelopeHighpassUI(theremin, synth),
