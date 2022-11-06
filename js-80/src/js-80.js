@@ -684,6 +684,12 @@
 
     function patch_audio_param(audio_ctx)
     {
+        /**
+         * NOTE: this is not a generic polyfill for cancelAndHoldAtTime(), since
+         *       it only supports linear ramping, and it's heavily based on
+         *       assumptions that are specific to how JS-80 uses automation.
+         */
+
         AudioParam.prototype._linearRampToValueAtTime = AudioParam.prototype.linearRampToValueAtTime;
         AudioParam.prototype._setValueAtTime = AudioParam.prototype.setValueAtTime;
 
@@ -691,7 +697,7 @@
         {
             var new_evts = [],
                 ct = audio_ctx.currentTime,
-                old_evts, i, l, e, l;
+                old_evts, i, l, e;
 
             if (old_evts = this._events) {
                 l = null;
@@ -752,7 +758,12 @@
                     return;
                 }
 
-                if ((last_event === null) || (last_event[0] === "s") || (last_event[3] >= when)) {
+                if (
+                    (last_event === null)
+                    || (last_event[0] === "s")
+                    || (last_event[3] >= when)
+                ) {
+                    // FIXME: probably this._setValueAtTime(v, when) would suffice
                     this._linearRampToValueAtTime(v, when);
 
                     return;
@@ -761,8 +772,7 @@
                 s = Math.max(s, last_event[3]);
 
                 if (0 < (d = (last_event[2] - s))) {
-                    d = (when - s) / d
-                    v = v + d * (last_event[1] - v);
+                    v = v + ((when - s) / d) * (last_event[1] - v);
                 }
 
                 this._linearRampToValueAtTime(v, when);
