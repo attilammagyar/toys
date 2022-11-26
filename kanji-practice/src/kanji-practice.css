@@ -9,6 +9,10 @@ html, body {
   background-color: #222;
 }
 
+body {
+  overscroll-behavior: contain;
+}
+
 #about-screen {
   padding: 3vmin;
   background-color: #111;
