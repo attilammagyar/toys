@@ -421,6 +421,8 @@
         MIDI_CONTROLS = merge(BASE_MIDI_CONTROLS, MCS_CONTROLS);
         ALL_CONTROLS = merge(merge(BASE_MIDI_CONTROLS, LFO_CONTROLS), MCS_CONTROLS);
 
+        // init_fold_curves();
+
         $("main-form").onsubmit = stop_event;
 
         init_random();
@@ -452,6 +454,52 @@
         start_button.onclick = handle_start_click;
 
         return true;
+    }
+
+    function init_fold_curves()
+    {
+        var resolution = 16384,
+            resolution_inv = 1.0 / resolution,
+            curve = new Float32Array(resolution),
+            inv = new Float32Array(resolution),
+            pi = Math.PI,
+            pi_sqr = Math.PI * Math.PI,
+            pi_2_f = Math.PI * 2.0 * 4.0,
+            sin = Math.sin,
+            abs = Math.abs,
+            i, j, a, v, s, max, n, norm;
+
+        max = 0.0;
+
+        for (i = 0; i < resolution; ++i) {
+            v = 0.0;
+            s = 1.0;
+
+            for (j = 0; j < 3; ++j) {
+                n = 2.0 * j + 1.0;
+                v += (s / (n * n)) * sin(pi_2_f * n * i * resolution_inv)
+                s = -s;
+            }
+
+            v = (1.0 / pi_sqr) * v;
+            a = abs(v);
+
+            if (a > max) {
+                max = a;
+            }
+
+            curve[i] = v;
+        }
+
+        norm = FOLD_THRESHOLD / max;
+
+        for (i = 0; i < resolution; ++i) {
+            curve[i] *= norm;
+            inv[i] = -curve[i];
+        }
+
+        FOLD_CURVE = curve;
+        FOLD_CURVE_INV = inv;
     }
 
     function ask_for_confirmation(message, callback)
