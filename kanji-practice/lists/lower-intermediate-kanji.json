@@ -1,0 +1,2758 @@
+{
+  "name": "Lower Intermediate Kanji",
+  "meaning_language": "en",
+  "notes_language": "ja",
+  "cards": [
+    [
+      "実",
+      "じつ",
+      "[n.] truth; reality",
+      "{彼女|かのじょ}は{彼|かれ}の{実|じゅつ}の{母|はは}です。\nShe is his real mother.",
+      ""
+    ],
+    [
+      "実る",
+      "みのる",
+      "[v5.; int.] to bear fruit; to ripen",
+      "{彼|かれ}の{努力|どりょく}が{実|みの}った。\nHis efforts have paid off.",
+      ""
+    ],
+    [
+      "木の実",
+      "このみ,きのみ",
+      "[n.] fruit of a tree; nut; berry",
+      "ボブはいろいろな{種類|しゅるい}の{木|き}の{実|み}を{見|み}つけた。\nBob found various kinds of nuts.",
+      ""
+    ],
+    [
+      "事",
+      "こと",
+      "[n.] thing; matter; occurrence; circumstances",
+      "{彼|かれ}はまた{曖昧|あいまい}な{事|こと}を{言|い}うかも{知|し}れない。\nHe might say something ambiguous again.",
+      ""
+    ],
+    [
+      "事実",
+      "じじつ",
+      "[adv.; n.] fact; truth; reality",
+      "{事実|じじつ}は{小説|しょうせつ}よりも{奇|き}なり。\nFact is stranger than fiction.",
+      ""
+    ],
+    [
+      "大事",
+      "だいじ",
+      "[adjn.] important; serious; crucial; valuable; precious",
+      "{彼|かれ}は{私|わたし}たちにとって{大事|だいじ}な{人|ひと}だ。\nHe is precious to us.",
+      ""
+    ],
+    [
+      "仕事",
+      "しごと",
+      "[n.; suru] work; job",
+      "{仕事|しごと}が{忙|いそが}しすぎるのも{考|かんが}えものだけど、{時間|じかん}が{余|あま}るのもなぁ。\nBeing too busy with work is a problem, but then so is having too much free time.",
+      ""
+    ],
+    [
+      "方",
+      "かた",
+      "[n.; sonkeigo] person; lady; gentleman",
+      "これから{何|なに}か{手職|てしょく}を{身|み}に{付|つ}けたいと{思|おも}う{方|かた}は、{是非|ぜひ}お{読|よ}みになることをおすすめします。\nI greatly recommend reading it to anybody thinking of learning a craft.",
+      ""
+    ],
+    [
+      "仕方",
+      "しかた",
+      "[n.] way; method; means; resource; course",
+      "{彼|かれ}の{動物|どうぶつ}の{世話|せわ}の{仕方|しかた}はとても{思|おも}いやりのあるものだ。\nHis way of looking after the animals is very humane.",
+      ""
+    ],
+    [
+      "方面",
+      "ほうめん",
+      "[n.] direction; district; area",
+      "もしかこの{方面|ほうめん}に{来|く}るようなことがあったらお{寄|よ}りください。\nIf you come this way by any chance, drop in to see me.",
+      ""
+    ],
+    [
+      "両方",
+      "りょうほう",
+      "[n.] both; both sides; both parties",
+      "この{手袋|てぶくろ}は{両方|りょうほう}がそろっていない。\nThese gloves are not in pairs.",
+      ""
+    ],
+    [
+      "夕方",
+      "ゆうがた",
+      "[n.; adv.] evening; dusk",
+      "",
+      ""
+    ],
+    [
+      "作る",
+      "つくる",
+      "[v5.; tran.] to make; to produce; to manufacture; to prepare (food); to brew (alcohol)",
+      "{模型飛行機|もけいひこうき}を{作|つく}ることが{彼|かれ}の{唯一|ゆいいつ}の{楽|たの}しみです。\nMaking model planes is his only pleasure.",
+      ""
+    ],
+    [
+      "作り方",
+      "つくりかた",
+      "[n.] way of making; style of building; construction; recipe",
+      "{母|はは}は{味噌汁|みそしる}の{作|つく}り{方|かた}を{教|おし}えてくれた。\nMy mother taught me how to make miso soup.",
+      ""
+    ],
+    [
+      "作家",
+      "さっか",
+      "[n.] author; writer; novelist; artist",
+      "その{作家|さっか}は{私|わたし}たちによく{知|し}られています。\nThat writer is well known to us.",
+      ""
+    ],
+    [
+      "便利",
+      "べんり",
+      "[adjn.] convenient; handy; useful",
+      "{電話|でんわ}は{便利|べんり}なものである。\nThe telephone is convenient.",
+      ""
+    ],
+    [
+      "不便",
+      "ふべん",
+      "[n.; adjn.] inconvenience; inexpediency; unhandiness",
+      "{電話|でんわ}がないのは{不便|ふべん}なことだ。\nNot having a telephone is inconvenient.",
+      ""
+    ],
+    [
+      "不安",
+      "ふあん",
+      "[n.; adjn.] anxiety; uneasiness; worry; apprehension; fear; insecurity; suspense",
+      "その{知|し}らせで{彼|かれ}の{不安|ふあん}が{増|ま}した。\nThe news added to his anxiety.",
+      ""
+    ],
+    [
+      "乗る",
+      "のる",
+      "[v5.; int.] to get on (train, plane, bus, ship, etc.); to ride; to get in; to board",
+      "{約束|やくそく}の{時間|じかん}に{遅|おく}れないようにバスに{乗|の}った。\nI took a bus so as not to be late for my appointment.",
+      ""
+    ],
+    [
+      "郵便局",
+      "ゆうびんきょく",
+      "[n.] post office",
+      "",
+      ""
+    ],
+    [
+      "低い",
+      "ひくい",
+      "[adj.] low (rank, degree, value, content, quality, etc.); short (height)",
+      "この{机|つくえ}は{私|わたし}にはちょっと{低|ひく}い。\nThis desk is a little low for me.",
+      ""
+    ],
+    [
+      "高い",
+      "たかい",
+      "[adj.] high; tall; expensive; high-priced",
+      "あそこに{高|たか}いビルが{見|み}えますね。\nYou can see a tall building over there.",
+      ""
+    ],
+    [
+      "背",
+      "せ",
+      "[n.] height; stature; back",
+      "ジェーンは{背|せ}を{木|き}にもたれかけて{待|ま}っていた。\nJane was waiting with her back against the tree.",
+      ""
+    ],
+    [
+      "背にする",
+      "せにする",
+      "[phrase] to turn one's back to",
+      "{彼|かれ}らは{絶景|ぜっけい}を{背|せ}にして{立|た}った。\nThey stood with their backs against the picturesque scenery.",
+      ""
+    ],
+    [
+      "背広",
+      "せびろ",
+      "[n.] business suit",
+      "{私|わたし}は{新|あたら}しい{背広|せびろ}を{買|か}った。\nI bought a new suit.",
+      ""
+    ],
+    [
+      "背が低い",
+      "せがひくい",
+      "[phrase; adj.] short (of a person)",
+      "{姉|あね}は{君|きみ}より{背|せ}が{低|ひく}い。\nMy sister is shorter than you.",
+      ""
+    ],
+    [
+      "背が高い",
+      "せがたかい",
+      "[phrase; adj.] tall (of a person)",
+      "ジョンの{方|ほう}が{二人|ふたり}のうちで{背|せ}が{高|たか}い。\nJohn is the taller of the two.",
+      ""
+    ],
+    [
+      "短い",
+      "みじかい",
+      "[adj.] short (length, not height); brief",
+      "あの{犬|いぬ}はしっぽが{短|みじか}い。\nThat dog has a short tail.",
+      ""
+    ],
+    [
+      "短気",
+      "たんき",
+      "[n.] short temper; quick temper; hot temper; impatience; irritability",
+      "{彼|かれ}の{短気|たんき}は{手|て}に{負|お}えない。\nHe has an uncontrollable temper.",
+      ""
+    ],
+    [
+      "所",
+      "ところ",
+      "[n.] place; scene; site",
+      "{旅行|りょこう}をする{人|ひと}は{誰|だれ}でも、{故郷|ふるさと}のような{良|よ}い{所|ところ}はないと{思|おも}うだろう。\nAnyone who travels will find that there's no place like home.",
+      ""
+    ],
+    [
+      "場所",
+      "ばしょ",
+      "[n.] place; location; position; room; space",
+      "このソファーは{場所|ばしょ}を{取|と}りすぎる。\nThis sofa takes too much room.",
+      ""
+    ],
+    [
+      "会場",
+      "かいじょう",
+      "[n.] assembly hall; meeting place; venue; grounds",
+      "{私|わたし}たちは{会場|かいじょう}の{後|うし}ろに{座|すわ}った。\nWe sat at the back of the hall.",
+      ""
+    ],
+    [
+      "会社",
+      "かいしゃ",
+      "[n.] company; corporation; workplace",
+      "{彼|かれ}の{努力|どりょく}は{会社|かいしゃ}の{成長|せいちょう}に{貢献|こうけん}した。\nHis effort contributed to the company's growth.",
+      ""
+    ],
+    [
+      "会社員",
+      "かいしゃいん",
+      "[n.] company employee; office worker; white-collar worker",
+      "",
+      ""
+    ],
+    [
+      "住む",
+      "すむ",
+      "[v5.; int.] to live (of humans); to reside; to inhabit; to dwell",
+      "{隣町|となりまち}に{住|す}んでいます。\nHe lives in the next town.",
+      ""
+    ],
+    [
+      "住所",
+      "じゅうしょ",
+      "[n.] address (e.g. of house); residence",
+      "{名前|なまえ}と{住所|じゅうしょ}を{記入|きにゅう}しなさい。\nFill in your name and address.",
+      ""
+    ],
+    [
+      "台所",
+      "だいどころ,だいどこ",
+      "[n.] kitchen; financial situation",
+      "メアリーは{階段|かいだん}をおりて{台所|だいどころ}へ{行|い}った。\nMary went down the stairs to the kitchen.",
+      ""
+    ],
+    [
+      "台風",
+      "たいふう",
+      "[n.] typhoon; hurricane",
+      "",
+      ""
+    ],
+    [
+      "去年",
+      "きょねん",
+      "[n.; adv.] last year",
+      "ビルは{去年|きょねん}の{秋|あき}に{私|わたし}に{会|あ}いに{来|き}た。\nBill came to see me last autumn.",
+      ""
+    ],
+    [
+      "軽い",
+      "かるい",
+      "[adj.] light (not heavy); feeling light (moving easily without resistance); non-serious; trivial; lighthearted (e.g. joke)",
+      "{飛行船|ひこうせん}は{空気|くうき}より{軽|かる}い。\nAirships are lighter than air.",
+      ""
+    ],
+    [
+      "重い",
+      "おもい",
+      "[adj.] heavy; weighty",
+      "{私|わたし}はそんな{重|おも}い{責任|せきにん}を{引|ひ}き{受|う}けたくない。\nI don't want to take on such a heavy responsibility.",
+      ""
+    ],
+    [
+      "重力",
+      "じゅうりょく",
+      "[n.] gravity",
+      "{月|つき}の{重力|じゅうりょく}は{地球|ちきゅう}の{６分|ろくぶん}の{１|いち}である。\nThe gravity of the moon is one-sixth of that of the earth.",
+      ""
+    ],
+    [
+      "動く",
+      "うごく",
+      "[v5.; int.] to move; to stir; to shift; to operate; to run; to go; to make a move; to take action",
+      "{路面電車|ろめんでんしゃ}は{電気|でんき}で{動|うご}く。\nTrams run on electricity.\n\n{氷河|ひょうが}はゆっくり{動|うご}いている。\nThe glacier is moving slowly.",
+      ""
+    ],
+    [
+      "動物",
+      "どうぶつ",
+      "[n.] animal",
+      "",
+      ""
+    ],
+    [
+      "動物園",
+      "どうぶつえん",
+      "[n.] zoo; zoological gardens",
+      "",
+      ""
+    ],
+    [
+      "公園",
+      "こうえん",
+      "[n.] (public) park",
+      "",
+      ""
+    ],
+    [
+      "主人公",
+      "しゅじんこう",
+      "[n.] protagonist; main character; hero or heroine (of a story); head of household",
+      "{主人公|しゅじんこう}は、{本|ほん}の{最後|さいご}で{死|し}んだ。\nThe hero died at the end of the book.",
+      ""
+    ],
+    [
+      "働く",
+      "はたらく",
+      "[v5.; int.] to work; to labor",
+      "{来年|らいねん}{私|わたし}は{大阪|おおさか}で{働|はたら}くつもりです。\nI'm going to work in Osaka next year.",
+      ""
+    ],
+    [
+      "回",
+      "かい",
+      "[cnt.] counter for occurrences",
+      "{私|わたし}たちは{一日|いちにち}に{三回|さんかい}、{犬|いぬ}に{餌|えさ}を{与|あた}えている。\nWe feed our dog three times a day.",
+      ""
+    ],
+    [
+      "何回",
+      "なんかい",
+      "[n.] how many times?",
+      "あなたは{何回|なんかい}{京都|きょうと}を{訪|おとず}れましたか。\nHow many times have you visited Kyoto?",
+      ""
+    ],
+    [
+      "回る",
+      "まわる",
+      "[v5.; int.] to turn; to revolve",
+      "このハンドルはどうしても{回|まわ}らない。\nThis handle just will not turn.",
+      ""
+    ],
+    [
+      "前回",
+      "ぜんかい",
+      "[n.; adv.] previous time; last time",
+      "{彼|かれ}は{前回|ぜんかい}の{好景気|こうけいき}の{間|あいだ}に{財産|ざいさん}を{株|かぶ}{取り引|とりひ}きのあてた。\nHe amassed a fortune in stock trading during the last boom.",
+      ""
+    ],
+    [
+      "代わり",
+      "かわり",
+      "[n.] substitute; replacement; substituting; replacing; stand-in; proxy; alternate",
+      "{父|ちち}が{忙|いそが}しいので、{私|わたし}が{代|か}わりに{行|い}きます。\nMy father is busy, so I will go instead.",
+      ""
+    ],
+    [
+      "時代",
+      "じだい",
+      "[n.] period; epoch; era; age; the times",
+      "{彼|かれ}は{時代|じだい}に{先|さき}んじていた。\nHe was ahead of his time.",
+      ""
+    ],
+    [
+      "以上",
+      "いじょう",
+      "[n.; adv.] not less than; ... and over; ... and above; ... and upwards; ... or more",
+      "これ{以上|いじょう}は{読|よ}む{価値|かち}がない。\nIt's not worth reading any further.",
+      ""
+    ],
+    [
+      "以下",
+      "いか",
+      "[n.] not exceeding; and downward; ... and below; below (e.g. standard); under (e.g. a level); the below-mentioned; the following; the rest",
+      "{１６歳|じゅうろくさい}{以下|いか}の{子供|こども}は{劇場|げきじょう}には{入場|にゅうじょう}できません。\nChildren of age sixteen and under may not enter the theatre.",
+      ""
+    ],
+    [
+      "家族",
+      "かぞく",
+      "[n.] family",
+      "",
+      ""
+    ],
+    [
+      "兄",
+      "あに",
+      "[n.] older brother",
+      "{僕|ぼく}と{兄|あに}を{比|くら}べないでください。\nPlease don't compare me with my brother.",
+      ""
+    ],
+    [
+      "弟",
+      "おとうと",
+      "[n.] younger brother",
+      "{妹|いもうと}は{３歳|さんさい}{年下|としした}で{弟|おとうと}は{４歳|よんさい}{年下|としした}です。\nMy sister is three years younger than I and my brother is four years younger.",
+      ""
+    ],
+    [
+      "兄弟",
+      "きょうだい",
+      "[n.] siblings",
+      "",
+      ""
+    ],
+    [
+      "姉",
+      "あね",
+      "[n.] older sister",
+      "{姉|あね}は{頭|あたま}の{回転|かいてん}がいい。\nMy sister is quick-thinking.",
+      ""
+    ],
+    [
+      "妹",
+      "いもうと",
+      "[n.] younger sister",
+      "あのかわいい{少女|しょうじょ}は{私|わたし}の{妹|いもうと}です。\nThat pretty girl is my sister.",
+      ""
+    ],
+    [
+      "好き",
+      "すき",
+      "[adjn.; n.] liked; favourite; in love (with); loved; romantically interested (in)",
+      "{私|わたし}も{英語|えいご}が{好|す}きです。\nI like English, too.",
+      ""
+    ],
+    [
+      "誰",
+      "だれ",
+      "[pron.] who",
+      "{彼|かれ}は{誰|だれ}？\nWho is he?",
+      ""
+    ],
+    [
+      "夜",
+      "よる,よ",
+      "[n.; adv.] evening; night",
+      "",
+      ""
+    ],
+    [
+      "今夜",
+      "こんや",
+      "[n.; adv.] this evening; tonight",
+      "{今夜|こんや}、パーティーを{開|ひら}きます。\nWe're giving a party tonight.",
+      ""
+    ],
+    [
+      "光",
+      "ひかり",
+      "[n.] light; glow; flash",
+      "{君|きみ}の{車|くるま}はちゃんと{洗|あら}ってやれば{太陽|たいよう}の{光|ひかり}で{輝|かがや}くと{思|おも}うよ。\nI think your car will shine in the sun if you wash it properly.",
+      ""
+    ],
+    [
+      "顔",
+      "かお,がん",
+      "[n.] face; look; expression",
+      "",
+      ""
+    ],
+    [
+      "広い",
+      "ひろい",
+      "[adj.] spacious; vast; wide",
+      "{門|もん}はその{車|くるま}が{通|とお}れるほど{広|ひろ}い。\nThe gate is wide enough for the car to go through.",
+      ""
+    ],
+    [
+      "顔が広い",
+      "かおがひろい",
+      "[phrase] well connected; well known; having a large, diverse circle of acquaintances",
+      "{彼|かれ}は{顔|かお}が{広|ひろ}い。\nHe knows a lot of people.",
+      ""
+    ],
+    [
+      "広告",
+      "こうこく",
+      "[n.; suru] advertisement; advertising; announcement; notice",
+      "その{商品|しょうひん}はテレビで{広告|こうこく}された。\nThe product was advertised on TV.",
+      ""
+    ],
+    [
+      "建てる",
+      "たてる",
+      "[v1.; tran.] to build; to construct",
+      "この{寺院|じいん}は７８０{年|ねん}に{建|た}てられた。\nThis temple was built in 780.",
+      ""
+    ],
+    [
+      "建物",
+      "たてもの",
+      "[n.] building",
+      "",
+      ""
+    ],
+    [
+      "元",
+      "もと",
+      "[n.] origin; source",
+      "{私達|わたしたち}はどうにか{彼女|かのじょ}に{知|し}られずにそれを{元|もと}に{戻|もど}した。\nSomehow we managed to get it back without her knowing.",
+      ""
+    ],
+    [
+      "元気",
+      "げんき",
+      "[adjn.; n.] lively; full of spirit; energetic; healthy; fit",
+      "お{元気|げんき}ですか。\nHow are you?",
+      ""
+    ],
+    [
+      "元日",
+      "がんじつ",
+      "[n.] New Year's Day",
+      "{元日|がんじつ}に{神社|じんじゃ}へ{参拝|さんぱい}する{日本人|にほんじん}は{多|おお}い。\nMany Japanese visit the shrine on New Year's Day",
+      ""
+    ],
+    [
+      "地元",
+      "じもと",
+      "[n.] home area; home town; local",
+      "{彼女|かのじょ}は{地元|じもと}の{病院|びょういん}で{看護婦|かんごふ}として{働|はたら}いている。\nShe works as a nurse in the local hospital.",
+      ""
+    ],
+    [
+      "部分",
+      "ぶぶん",
+      "[n.] portion; section; part",
+      "{錆|さび}が{金属|きんぞく}の{部分|ぶぶん}を{少|すこ}しずつ{侵食|しんしょく}している。\nRust is gradually eating into the metal parts.",
+      ""
+    ],
+    [
+      "部屋",
+      "へや",
+      "[n.] room; chamber",
+      "{私|わたし}の{部屋|へや}は{４階|よんかい}にあります。\nMy room is on the fourth floor.",
+      ""
+    ],
+    [
+      "食堂",
+      "しょくどう",
+      "[n.] dining room; dining hall; cafeteria; canteen; diner",
+      "",
+      ""
+    ],
+    [
+      "昼",
+      "ひる",
+      "[n.] daytime; noon; midday",
+      "さて、{昼|ひる}にしましょう。\nWell, let's have lunch.",
+      ""
+    ],
+    [
+      "ご飯",
+      "ごはん",
+      "[n.] cooked rice; meal",
+      "{友達|ともだち}にご{飯|はん}をおごってもらった。\nMy friends treated me to a meal.",
+      ""
+    ],
+    [
+      "朝",
+      "あさ",
+      "[n.; adv.] morning; next morning",
+      "",
+      ""
+    ],
+    [
+      "今朝",
+      "けさ",
+      "[n.; adv.] this morning",
+      "{今朝|けさ}はとても{寒|さむ}かった。\nIt was very cold this morning.",
+      ""
+    ],
+    [
+      "朝ご飯",
+      "あさごはん",
+      "[n.] breakfast",
+      "",
+      ""
+    ],
+    [
+      "昼ご飯",
+      "ひるごはん",
+      "[n.] lunch; midday meal",
+      "{昼|ひる}ご{飯|はん}を{食|た}べに{外|そと}に{出|で}ませんか。\nHow about going out for lunch?",
+      ""
+    ],
+    [
+      "晩ご飯",
+      "ばんごはん",
+      "[n.] dinner; evening meal",
+      "{母|はは}は{晩御飯|ばんごはん}の{支度|したく}で{忙|いそが}しい。\nMom is busy cooking the dinner.",
+      ""
+    ],
+    [
+      "使う",
+      "つかう",
+      "[v5.; tran.] to use (a thing, method, etc.); to make use of",
+      "{大学生|だいがくせい}の{多|おお}くは、レポートを{書|か}くのにパソコンを{使|つか}います。\nMost college students use a computer for writing papers.",
+      ""
+    ],
+    [
+      "使用",
+      "しよう",
+      "[n.; suru] use; application; employment; utilization",
+      "{使用|しよう}する{前|まえ}に{瓶|びん}を{振|ふ}ってください。\nShake the bottle before using.",
+      ""
+    ],
+    [
+      "風邪",
+      "かぜ",
+      "[n.] (common) cold; influenza; flu",
+      "{風邪|かぜ}{早|はや}く{治|なお}るといいね。\nI hope you'll get over your cold soon.",
+      ""
+    ],
+    [
+      "引く",
+      "ひく",
+      "[v5.; tran.] to pull; to tug; to catch (a cold); to lead (a horse); to draw (attention, sympathy, etc.); to attract (e.g. interest)",
+      "カーテンがゆっくり{引|ひ}かれた。\nThe curtains were drawn slowly.",
+      ""
+    ],
+    [
+      "風邪を引く",
+      "かぜをひく",
+      "[phrase; v5.] to catch a cold",
+      "{雨|あめ}の{中|なか}を{出|で}かけたので、{彼|かれ}は{風邪|かぜ}をひいた。\nHe caught a cold because he went out in the rain.",
+      ""
+    ],
+    [
+      "引用",
+      "いんよう",
+      "[n.; suru] quotation; citation; reference",
+      "ハムレットから{１行|いちぎょう}{引用|いんよう}できますか。\nCan you quote a line from Hamlet?",
+      ""
+    ],
+    [
+      "冬",
+      "ふゆ",
+      "[n.; adv.] winter",
+      "まもなく{冬|ふゆ}だ。\nIt will be winter before long.",
+      ""
+    ],
+    [
+      "春",
+      "はる",
+      "[n.; adv.] spring; springtimeportrait photo; mug shot",
+      "{多|おお}くの{植物|しょくぶつ}は{春|はる}に{花|はな}をつける。\nMany plants bloom in the spring.",
+      ""
+    ],
+    [
+      "夏",
+      "なつ",
+      "[n.; adv.] summer",
+      "この{夏|なつ}{最高|さいこう}の{暑|あつ}さだ。\nIt's the hottest summer.",
+      ""
+    ],
+    [
+      "秋",
+      "あき",
+      "[n.; adv.] autumn; fall",
+      "{秋|あき}には{木|こ}の{葉|は}が{落|お}ちる。\nLeaves fall in the autumn.",
+      ""
+    ],
+    [
+      "夏休み",
+      "なつやすみ",
+      "[n.] summer vacation; summer holiday",
+      "この{夏休|なつやす}みはどこかへ{行|い}くのですか。\nAre you going anywhere this summer for a vacation?",
+      ""
+    ],
+    [
+      "秋田",
+      "あきた",
+      "[n.] Akita (city, prefecture)",
+      "",
+      ""
+    ],
+    [
+      "秋田犬",
+      "あきたいぬ",
+      "[n.] Akita (breed of dog)",
+      "",
+      ""
+    ],
+    [
+      "曲がる",
+      "まがる",
+      "[v5.; int.] to turn; to curve; to bend; to warp; to wind; to twist",
+      "ネクタイが{曲|ま}がってるよ。\nYour tie is crooked.",
+      ""
+    ],
+    [
+      "弱い",
+      "よわい",
+      "[adj.] weak; frail; delicate; tender; unskilled",
+      "ところが{地球|ちきゅう}の{磁場|じば}はごく{弱|よわ}いものです。\nBut the earth's magnetic field is very weak.",
+      ""
+    ],
+    [
+      "強い",
+      "つよい",
+      "[adj.] strong; potent; powerful; skilled",
+      "この{布地|ぬのじ}は{洗濯|せんたく}に{強|つよ}い。\nThis fabric stands up to washing.",
+      ""
+    ],
+    [
+      "勉強",
+      "べんきょう",
+      "[n.; suru] study; diligence",
+      "{心理学|しんりがく}を{勉強|べんきょう}すればするほど{面白|おもしろ}いと{思|おも}えてきたんだ。\nThe more I studied psychology, the more interesting it seemed to me.",
+      ""
+    ],
+    [
+      "育てる",
+      "そだてる",
+      "[v1.; tran.] to raise; to bring up; to train; to nurture; to foster; to develop",
+      "{叔父|おじ}が{今日|きょう}の{私|わたし}を{育|そだ}ててくれた。\nMy uncle has made me what I am today.",
+      ""
+    ],
+    [
+      "体育",
+      "たいいく",
+      "[n.] physical education; PE; gym (class)",
+      "{体育|たいいく}は{必修科目|ひっしゅうかもく}ですか。\nIs physical education a required course?",
+      ""
+    ],
+    [
+      "心",
+      "こころ",
+      "[n.] mind; heart; spirit; the meaning of a phrase (riddle, etc.)",
+      "この{事実|じじつ}を{心|こころ}に{留|と}めておいて{下|くだ}さい。\nPlease bear this fact in mind.",
+      ""
+    ],
+    [
+      "安心",
+      "あんしん",
+      "[adjn.; n.; suru] relief; peace of mind",
+      "{彼|かれ}は{真相|しんそう}を{知|し}るまで{安心|あんしん}できなかった。\nHe could not rest until he knew the truth.",
+      ""
+    ],
+    [
+      "思う",
+      "おもう",
+      "[v5.; tran.] to think; to consider; to believe; to reckon",
+      "{旅行|りょこう}をする{人|ひと}は{誰|だれ}でも、{故郷|ふるさと}のような{良|よ}い{所|ところ}はないと{思|おも}うだろう。\nAnyone who travels will find that there's no place like home.",
+      ""
+    ],
+    [
+      "思い出す",
+      "おもいだす",
+      "[v5; tran.] to recall; to remember; to recollect",
+      "あなたを{見|み}るとお{兄|にい}さんを{思|おも}い{出|だ}します。\nWhen I see you, I remember your brother.",
+      ""
+    ],
+    [
+      "急",
+      "きゅう",
+      "[adjn.] sudden; abrupt; unexpected; urgent; pressing",
+      "{彼女|かのじょ}は{急|きゅう}に{笑|わら}い{出|だ}した。\nShe burst into laughter.",
+      ""
+    ],
+    [
+      "急ぐ",
+      "いそぐ",
+      "[v5.; int.; tran.] to hurry; to rush; to hasten",
+      "{夕方|ゆうがた}が{近|ちか}づいたので{旅人達|たびびとたち}は{急|いそ}いだ。\nAs the evening approached, the travelers hurried.",
+      ""
+    ],
+    [
+      "真ん中",
+      "まんなか",
+      "[n.] middle; center; midpoint",
+      "{砂漠|さばく}の{真|ま}ん{中|なか}で{私|わたし}たちの{車|くるま}はガス{欠|かけ}になった。\nOur car ran out of gas in the middle of the desert.",
+      ""
+    ],
+    [
+      "真っ白",
+      "まっしろ",
+      "[adjn.] pure white",
+      "{見渡|みわた}す{限|かぎ}り、{野原|のはら}は{真|ま}っ{白|しろ}だった。\nThe field was white as far as the eye could see.",
+      ""
+    ],
+    [
+      "写真",
+      "しゃしん",
+      "[n.] photograph; photo",
+      "ここで{写真|しゃしん}を{撮|と}らないでください。\nPlease don't take pictures here.",
+      ""
+    ],
+    [
+      "顔写真",
+      "かおじゃしん",
+      "[n.] photograph of a person's face; portrait photo; mug shot",
+      "",
+      ""
+    ],
+    [
+      "教える",
+      "おしえる",
+      "[v1.; tran.] to teach; to instruct; to tell; to inform; to preach",
+      "{地下鉄|ちかてつ}へ{行|い}く{道|みち}を{教|おし}えていただけませんか。\nCould you tell me how to get to the subway station?",
+      ""
+    ],
+    [
+      "教科書",
+      "きょうかしょ",
+      "[n.] textbook; coursebook; schoolbook",
+      "",
+      ""
+    ],
+    [
+      "教室",
+      "きょうしつ",
+      "[n.] classroom; lecture room",
+      "{教室|きょうしつ}は{生徒|せいと}でいっぱいだった。\nThe classroom was full of students.",
+      ""
+    ],
+    [
+      "借りる",
+      "かりる",
+      "[v1.; tran.] to borrow; to have a loan; to rent",
+      "{本|ほん}は{一度|いちど}に{３冊|さんさつ}{借|か}りる{事|こと}が{出来|でき}ます。\nYou can borrow three books at a time.",
+      ""
+    ],
+    [
+      "借金",
+      "しゃっきん",
+      "[n.; suru] debt; loan; liabilities; borrowing money",
+      "{友人|ゆうじん}から{借金|しゃっきん}しないほうがよい。\nYou'd better not borrow money from your friends.",
+      ""
+    ],
+    [
+      "切る",
+      "きる",
+      "[v5.; tran.] to cut; to cut through; to sever (connections, ties); to turn off (e.g. the light); to terminate (e.g. a conversation); to hang up (the phone); to disconnect",
+      "{林檎|りんご}は{彼女|かのじょ}によってナイフで{半分|はんぶん}に{切|き}られた。\nThe apple was cut in two by her with a knife.",
+      ""
+    ],
+    [
+      "切符",
+      "きっぷ",
+      "[n.] ticket",
+      "この{切符|きっぷ}で{二人|ふたり}{入|はい}れるよ。\nTwo people can enter with this ticket.",
+      ""
+    ],
+    [
+      "切手",
+      "きって",
+      "[n.] stamp (postage)",
+      "{彼|かれ}は{切手|きって}を{５００枚|ごひゃくまい}も{集|あつ}めた。\nHe has collected no fewer than five hundred stamps.",
+      ""
+    ],
+    [
+      "往復",
+      "おうふく",
+      "[n.; suru] making a round trip; going and returning; coming and going",
+      "そのバスは{学校|がっこう}と{駅|えき}の{間|あいだ}を{往復|おうふく}します。\nThat bus runs between the school and the station.",
+      ""
+    ],
+    [
+      "往復切符",
+      "おうふくきっぷ",
+      "[n.] round-trip ticket; return ticket",
+      "{往復切符|おうふくきっぷ}を{買|か}いましたか。\nDid you buy a round-trip ticket?",
+      ""
+    ],
+    [
+      "暗い",
+      "くらい",
+      "[adj.] dark; gloomy; murky; depressed",
+      "{外|そと}が{暗|くら}くなってきた。\nIt's getting dark outside now.",
+      ""
+    ],
+    [
+      "別",
+      "べつ",
+      "[n.] distinction; difference; separate; another",
+      "また{別|べつ}のときにチェスをしましょう。\nLet's play chess another time.",
+      ""
+    ],
+    [
+      "別々",
+      "べつべつ",
+      "[n.] separate; respective",
+      "{我々|われわれ}は{別|わか}れて{別々|べつべつ}の{道|みち}を{行|い}った。\nWe broke up and went our own ways.",
+      ""
+    ],
+    [
+      "特別",
+      "とくべつ",
+      "[adjn.; adv.; n.] special; particular; extraordinary; exceptional; especial",
+      "{服装|ふくそう}に{関|かん}する{特別|とくべつ}な{規則|きそく}はない。\nThere are no special rules regarding clothing.",
+      ""
+    ],
+    [
+      "区",
+      "く",
+      "[n.] ward; borough; district (e.g. electoral); section; zone (e.g. postal)",
+      "{英国|えいこく}の{南東|なんとう}{区|く}は{人口密度|じんこうみつど}が{高|たか}い。\nThe South East region of England is densely populated.",
+      ""
+    ],
+    [
+      "区切る",
+      "くぎる",
+      "[v5.; tran.] to demarcate; to delimit; to divide (an area); to punctuate; to insert pauses or breaks (e.g. when reading aloud)",
+      "グラウンドは{白線|はくせん}で{３つ|みっつ}に{区切|くぎ}られている。\nThe playground is divided into three areas by white lines.",
+      ""
+    ],
+    [
+      "月曜日",
+      "げつようび",
+      "[n.; adv.] Monday",
+      "",
+      ""
+    ],
+    [
+      "火曜日",
+      "かようび",
+      "[n.; adv.] Tuesday",
+      "",
+      ""
+    ],
+    [
+      "水曜日",
+      "すいようび",
+      "[n.; adv.] Wednesday",
+      "",
+      ""
+    ],
+    [
+      "木曜日",
+      "もくようび",
+      "[n.; adv.] Thursday",
+      "",
+      ""
+    ],
+    [
+      "金曜日",
+      "きんようび",
+      "[n.; adv.] Friday",
+      "",
+      ""
+    ],
+    [
+      "土曜日",
+      "どようび",
+      "[n.; adv.] Saturday",
+      "",
+      ""
+    ],
+    [
+      "日曜日",
+      "にちようび",
+      "[n.; adv.] Sunday",
+      "",
+      ""
+    ],
+    [
+      "門",
+      "もん",
+      "[n.] gate",
+      "{門|もん}を{閉|し}めて。\nClose the gate.",
+      ""
+    ],
+    [
+      "間に合う",
+      "まにあう",
+      "[v5.; int.] to be in time (for); to serve (suit, meet) the purpose; to be good enough",
+      "{彼女|かのじょ}はバスに{間|ま}に{合|あ}った。\nShe was in time for the bus.",
+      ""
+    ],
+    [
+      "合格",
+      "ごうかく",
+      "[n.; suru] passing (e.g. exam); eligibility; success",
+      "{彼女|かのじょ}は{試験|しけん}に{合格|ごうかく}した。\nShe passed the exam.",
+      ""
+    ],
+    [
+      "不合格",
+      "ふごうかく",
+      "[n.] (examination) failure; rejection; disqualification",
+      "{５０人|ごじゅうにん}の{応募者|おうぼしゃ}のうち{２０人|にじゅうにん}が{不合格|ふごうかく}となった。\nThere were 20 failures among 50 applicants.",
+      ""
+    ],
+    [
+      "場合",
+      "ばあい",
+      "[adv.; n.] case; situation",
+      "この{規則|きそく}はどんな{場合|ばあい}にでも{当|あ}てはまる。\nThis rule applies to any case.",
+      ""
+    ],
+    [
+      "林",
+      "はやし",
+      "[n.] woods; grove; thicket",
+      "{林|はやし}に{竹|たけ}が{目立|めだ}つ。\nBamboo stands out in the woods.",
+      ""
+    ],
+    [
+      "森",
+      "もり",
+      "[n.] forest",
+      "{彼女|かのじょ}は{森|もり}の{中|なか}で{右|みぎ}も{左|ひだり}も{分|わ}からなくなった。\nShe completely lost her way in the forest.",
+      ""
+    ],
+    [
+      "医者",
+      "いしゃ",
+      "[n.] (medical) doctor; physician",
+      "{症状|しょうじょう}が{悪|わる}くなったら{医者|いしゃ}に{診|み}てもらった{方|ほう}がいい。\nYou should consult a doctor if the symptoms get worse.",
+      ""
+    ],
+    [
+      "医学",
+      "いがく",
+      "[n.] medical science; medicine",
+      "{二人|ふたり}の{医者|いしゃ}が{医学|いがく}の{話|はなし}をしていた。\nTwo doctors were talking about medicine.",
+      ""
+    ],
+    [
+      "歌",
+      "うた",
+      "[n.] song; singing",
+      "この{歌|うた}を{聞|き}くと{私|わたし}はいつも、{学生|がくせい}{時代|じだい}を{思い出|おもいだ}す。\nWhenever I hear this song, I remember my school days.",
+      ""
+    ],
+    [
+      "歌う",
+      "うたう",
+      "[v5.; tran.; int.] to sing; to recite a poem",
+      "ジョンはステージで{何|なに}を{歌|うた}いましたか。\nWhat did John sing on the stage?",
+      ""
+    ],
+    [
+      "歌手",
+      "かしゅ",
+      "[n.] singer",
+      "その{歌手|かしゅ}は{若者|わかもの}たちのアイドルだ。\nThat singer is a youth idol.",
+      ""
+    ],
+    [
+      "楽しい",
+      "たのしい",
+      "[adj.] enjoyable; fun; pleasant; happy; delightful",
+      "{外|そと}で{遊|あそ}ぶのはとても{楽|たの}しいことです。\nIt's a lot of fun playing outdoors.",
+      ""
+    ],
+    [
+      "音",
+      "おと,ね",
+      "[n.] sound; noise",
+      "ここから{海|うみ}の{音|おと}が{聞|き}こえる。\nWe can hear the ocean from here.",
+      ""
+    ],
+    [
+      "音楽",
+      "おんがく",
+      "[n.] music",
+      "あの{音楽|おんがく}は{彼|かれ}の{気|き}にさわる。\nThat music gets on his nerves.",
+      ""
+    ],
+    [
+      "発音",
+      "はつおん",
+      "[n.; suru] pronunciation",
+      "{彼女|かのじょ}は{昨日|きのう}{英語|えいご}の{発音|はつおん}を{練習|れんしゅう}した。\nShe practiced her English pronunciation yesterday.",
+      ""
+    ],
+    [
+      "発売",
+      "はつばい",
+      "[n.; suru] sale; offering for sale; release (for sale); launch (product)",
+      "{彼|かれ}の{自叙伝|じじょでん}が{今日|きょう}{発売|はつばい}され、{午前中|ごぜんちゅう}に{完売|かんばい}した。\nHis autobiography was released today and was sold out by noon.",
+      ""
+    ],
+    [
+      "発表",
+      "はっぴょう",
+      "[n.; suru] announcement; publication; communique",
+      "{選挙|せんきょ}の{結果|けっか}は{明日|あした}{発表|はっぴょう}される。\nThe result of the election will be announced tomorrow.",
+      ""
+    ],
+    [
+      "止まる",
+      "とまる",
+      "[v5.; int.] to stop (moving); to come to a stop",
+      "{列車|れっしゃ}はその{駅|えき}では{止|と}まりません。\nThe train doesn't stop at that station.",
+      ""
+    ],
+    [
+      "走る",
+      "はしる",
+      "[v5.; int.] to run; to drive (vehicle); to travel (vehicle); to sail; to rush (to)",
+      "{彼|かれ}は{毎日|まいにち}{公園|こうえん}を{走|はし}る。\nHe runs in the park every day.",
+      ""
+    ],
+    [
+      "取る",
+      "とる",
+      "[v5; tran.] to take; to pick up; to grab; to harvest; to obtain; to acquire; to win; to catch (e.g. fish)",
+      "{良|よ}い{点|てん}を{取|と}ろうと{努力|どりょく}をした。\nI tried to get good marks.",
+      ""
+    ],
+    [
+      "場所を取る",
+      "ばしょをとる",
+      "[phrase; v5.] to take up space; to occupy space",
+      "その{機械|きかい}は{場所|ばしょ}をとる。\nThe machine takes a lot of room.",
+      ""
+    ],
+    [
+      "味",
+      "あじ",
+      "[n.] flavor; taste; charm; appeal; uniqueness",
+      "このチーズはピリッとした{味|あじ}がする。\nThis cheese has a sharp taste.",
+      ""
+    ],
+    [
+      "味方",
+      "みかた",
+      "[n.; suru] friend; ally; supporter; taking sides with; supporting; standing by; backing up",
+      "{彼女|かのじょ}が{味方|みかた}してくれてとてもうれしかった。\nI was happy that she took my side.",
+      ""
+    ],
+    [
+      "趣",
+      "おもむき",
+      "[n.] gist; tenor; meaning; effect; aspect; grace; charm",
+      "それは、いくぶんナンセンスな{趣|おもむ}きの{楽|たの}しさがあった。\nIt was a delightful bit of nonsense.",
+      ""
+    ],
+    [
+      "趣味",
+      "しゅみ",
+      "[n.] hobby; pastime",
+      "{絵|え}を{描|か}くのが{趣味|しゅみ}です。\nMy hobby is drawing pictures.",
+      ""
+    ],
+    [
+      "興味",
+      "きょうみ",
+      "[n.] interest (in something); curiosity (about something)",
+      "{花|はな}に{興味|きょうみ}がありますか。\nAre you interested in flowers?",
+      ""
+    ],
+    [
+      "意味",
+      "いみ",
+      "[n.; suru] meaning; significance; sense",
+      "その{語|ご}にはいくつかの{意味|いみ}がある。\nThat word has several meanings.",
+      ""
+    ],
+    [
+      "意見",
+      "いけん",
+      "[n.; suru] opinion; view; comment",
+      "{両親|りょうしん}は{私|わたし}の{意見|いけん}に{反対|はんたい}している。\nMy parents object to my opinion.",
+      ""
+    ],
+    [
+      "同じ",
+      "おなじ",
+      "[n.] same; identical; equal; uniform; equivalent",
+      "{僕|ぼく}はトムと{同|おな}じくらいの{背|せ}の{高|たか}さだ。\nI'm as tall as Tom.",
+      ""
+    ],
+    [
+      "同意",
+      "どうい",
+      "[n.; suru] agreement; consent; approval; same opinion; same meaning",
+      "{問題|もんだい}は{両親|りょうしん}が{同意|どうい}してくれるかどうかです。\nThe problem is whether my parents will agree or not.",
+      ""
+    ],
+    [
+      "質問",
+      "しつもん",
+      "[n.; suru] question; inquiry; enquiry",
+      "{料理|りょうり}について{何|なに}か{質問|しつもん}がありますか。\nDo you have any questions about the menu?",
+      ""
+    ],
+    [
+      "問題",
+      "もんだい",
+      "[n.] problem; question (e.g. on a test); issue; subject (e.g. of research); difficulty",
+      "{私|わたし}は{今|いま}たくさんの{問題|もんだい}を{抱|かか}えている。\nI have a lot of problems at the moment.",
+      ""
+    ],
+    [
+      "宿題",
+      "しゅくだい",
+      "[n.] homework; assignment",
+      "{今日|きょう}は{宿題|しゅくだい}が{無|な}い。\nI have no homework today.",
+      ""
+    ],
+    [
+      "正しい",
+      "ただしい",
+      "[adj.] right; correct; proper; lawful",
+      "{彼女|かのじょ}の{言|い}うことはある{意味|いみ}では{正|ただ}しい。\nWhat she says is right in a sense.",
+      ""
+    ],
+    [
+      "正解",
+      "せいかい",
+      "[n.; suru] correct (answer, solution); right",
+      "{正解|せいかい}をまるで{囲|かこ}みなさい。\nPlease circle the right answer.",
+      ""
+    ],
+    [
+      "品物",
+      "しなもの",
+      "[n.] goods; article; thing",
+      "{彼|かれ}が{買|か}った{最初|さいしょ}の{品物|しなもの}は{目覚|めざ}まし{時計|とけい}です。\nThe first item he bought is an alarm clock.",
+      ""
+    ],
+    [
+      "作品",
+      "さくひん",
+      "[n.] work of art (book, film, composition, etc.)",
+      "{彼|かれ}はピカソの{作品|さくひん}を{２つ|ふたつ}{持|も}っている。\nHe has two Picassos.",
+      ""
+    ],
+    [
+      "私",
+      "わたし",
+      "[pron.] I; me",
+      "{私|わたし}も{英語|えいご}が{好|す}きです。\nI like English, too.",
+      ""
+    ],
+    [
+      "親",
+      "おや",
+      "[n.] parent; parents",
+      "アナは、{親|おや}が{知|し}らないうちに{結婚|けっこん}した。\nAnna married without her parents knowing.",
+      ""
+    ],
+    [
+      "両親",
+      "りょうしん",
+      "[n.] parents; both parents",
+      "{両親|りょうしん}は{彼|かれ}を{落|お}ち{着|つ}かせることに{成功|せいこう}した。\nThe parents succeeded in calming him down.",
+      ""
+    ],
+    [
+      "図",
+      "ず",
+      "[n.] diagram; figure; illustration; chart; graph",
+      "{図|ず}で{説明|せつめい}しましょう。\nLet me explain it with a diagram.",
+      ""
+    ],
+    [
+      "図書館",
+      "としょかん",
+      "[n.] library",
+      "{郵便局|ゆうびんきょく}は{図書館|としょかん}の{隣|となり}にある。\nThe post office is adjacent to the library.",
+      ""
+    ],
+    [
+      "地図",
+      "ちず",
+      "[n.] map",
+      "{壁|かべ}の{地図|ちず}を{注意|ちゅうい}して{見|み}なさい。\nLook at the map on the wall carefully.",
+      ""
+    ],
+    [
+      "地震",
+      "じしん",
+      "[n.] earthquake",
+      "{地震|じしん}がその{地域|ちいき}を{襲|おそ}った。\nThe earthquake shook the area.",
+      ""
+    ],
+    [
+      "地理",
+      "ちり",
+      "[n.] geography",
+      "{地理|ちり}より{歴史|れきし}が{好|す}きだ。\nI prefer history to geography.",
+      ""
+    ],
+    [
+      "理解",
+      "りかい",
+      "[n.; suru] understanding; comprehension; appreciation",
+      "{私|わたし}はこの{問題|もんだい}をある{程度|ていど}{理解|りかい}できる。\nI can understand this problem to some extent.",
+      ""
+    ],
+    [
+      "読解",
+      "どっかい",
+      "[n.; suru] reading comprehension",
+      "",
+      ""
+    ],
+    [
+      "世界",
+      "せかい",
+      "[n.] the world; society; the universe",
+      "{夢|ゆめ}の{世界|せかい}ではどんなことでも{起|お}こりうる。\nAnything can happen in the world of dreams.",
+      ""
+    ],
+    [
+      "世話",
+      "せわ",
+      "[n.; suru] care; looking after; help; assistance; aid",
+      "{彼|かれ}の{動物|どうぶつ}の{世話|せわ}の{仕方|しかた}はとても{思|おも}いやりのあるものだ。\nHis way of looking after the animals is very humane.",
+      ""
+    ],
+    [
+      "紙",
+      "かみ",
+      "[n.] paper",
+      "{書|か}く{紙|かみ}がない。\nThere is no paper to write on.",
+      ""
+    ],
+    [
+      "手紙",
+      "てがみ",
+      "[n.] letter; missive; note; mail",
+      "{郵便屋|ゆうびんや}さんは{毎朝|まいあさ}{手紙|てがみ}を{配達|はいたつ}する。\nThe postman delivers letters every morning.",
+      ""
+    ],
+    [
+      "側",
+      "そば",
+      "[n.] near; close; beside; vicinity; proximity; besides",
+      "{彼|かれ}は{私|わたし}の{側|そば}に{座|すわ}った。\nHe sat down by my side.",
+      ""
+    ],
+    [
+      "右側",
+      "みぎがわ",
+      "[n.] right side; right-hand side",
+      "{急|いそ}いでいない{人|ひと}はエスカレーターの{右側|みぎがわ}に{立|た}ちなさい。\nIf you are not in a hurry, stand on the right side of the escalator.",
+      ""
+    ],
+    [
+      "左側",
+      "ひだりがわ",
+      "[n.] left side; left-hand side",
+      "{車|くるま}を{運転|うんてん}しているときは{左側|ひだりがわ}を{通|とお}りなさい。\nKeep to the left when driving.",
+      ""
+    ],
+    [
+      "側面",
+      "そくめん",
+      "[n.] side; flank; profile; sidelight; lateral",
+      "さらにまた、その{話|はなし}にはもうひとつの{側面|そくめん}がある。\nAgain, there is another side to that story.",
+      ""
+    ],
+    [
+      "折る",
+      "おる",
+      "[v5.; tran.] to break; to fracture; to break off; to snap off; to pick (e.g. flowers); to fold; to bend; to interrupt; to end",
+      "{落馬|らくば}の{結果|けっか}{足|あし}を{折|お}った。\nThe fall from the horse resulted in a broken leg.",
+      ""
+    ],
+    [
+      "折り紙",
+      "おりがみ",
+      "[n.] origami; art of paper folding",
+      "{彼|かれ}は{私|わたし}に{折り紙|おりがみ}をどこで{買|か}ったらいいか{話|はな}してくれた。\nHe told me where to buy origami.",
+      ""
+    ],
+    [
+      "右折",
+      "うせつ",
+      "[n.; suru] turning to the right; right turn",
+      "{右折|うせつ}しなさい、そうすれば{私|わたし}の{事務所|じむしょ}が{見|み}つかります。\nTurn to the right, and you'll find my office.",
+      ""
+    ],
+    [
+      "左折",
+      "させつ",
+      "[n.; suru] turning to the left; left turn",
+      "{自動車|じどうしゃ}は{左折|させつ}した。\nThe car made a turn to the left.",
+      ""
+    ],
+    [
+      "忘れる",
+      "わすれる",
+      "[v1.; tran.] to forget; to be forgetful of",
+      "{母|はは}はサラダに{塩|しお}を{加|くわ}えるのを{忘|わす}れた。\nMy mother forgot to add salt to the salad.",
+      ""
+    ],
+    [
+      "忙しい",
+      "いそがしい",
+      "[adj.] busy; occupied; hectic",
+      "{明日|あした}の{準備|じゅんび}で{忙|いそが}しい。\nI'm busy getting ready for tomorrow.",
+      ""
+    ],
+    [
+      "鉄",
+      "てつ",
+      "[n.] iron (Fe)",
+      "{鉄|てつ}は{最|もっと}も{有用|ゆうよう}な{金属|きんぞく}です。\nIron is the most useful metal.",
+      ""
+    ],
+    [
+      "道",
+      "みち",
+      "[n.] road; path; street; way",
+      "{道|みち}は{急斜面|きゅうしゃめん}をジグザグにのぼっていた。\nThe path zigzagged up the steep slope.",
+      ""
+    ],
+    [
+      "鉄道",
+      "てつどう",
+      "[n.] railroad; railway; rail transport",
+      "{今日|こんにち}ではイギリス{中|ちゅう}に{鉄道|てつどう}が{走|はし}っている。\nNowadays there are railways all over England.",
+      ""
+    ],
+    [
+      "地下鉄",
+      "ちかてつ",
+      "[n.] subway; underground train",
+      "{最寄|もよ}りの{地下鉄|ちかてつ}の{駅|えき}はどこにありますか。\nWhere's the nearest subway station?",
+      ""
+    ],
+    [
+      "赤い",
+      "あかい",
+      "[adj.] red; crimson; scarlet; vermilion",
+      "",
+      ""
+    ],
+    [
+      "赤ちゃん",
+      "あかちゃん",
+      "[n.] baby; infant",
+      "",
+      ""
+    ],
+    [
+      "団体",
+      "だんたい",
+      "[n.] group; party; team; organization",
+      "{議長|ぎちょう}はその{団体|だんたい}に{１０年間|じゅうねんかん}{加入|かにゅう}しています。\nThe chairperson has been associated with the organization for ten years.",
+      ""
+    ],
+    [
+      "布団",
+      "ふとん",
+      "[n.] futon; Japanese bedding consisting of a mattress and a duvet",
+      "{朝|あさ}になると{布団|ふとん}を{片|かた}づけます。\nIn the morning, we put away our futons.",
+      ""
+    ],
+    [
+      "銀",
+      "ぎん",
+      "[n.] silver (Ag)",
+      "",
+      ""
+    ],
+    [
+      "銀色",
+      "ぎんいろ",
+      "[n.] silver (color)",
+      "{女王|じょおう}は{華麗|かれい}な{銀色|ぎんいろ}のドレスを{着|き}ていた。\nThe queen was wearing a magnificent silver dress.",
+      ""
+    ],
+    [
+      "銀行",
+      "ぎんこう",
+      "[n.] bank",
+      "ジェーンはお{金|かね}を{引き出|ひきだ}しに{銀行|ぎんこう}へ{行|い}った。\nJane went to the bank to withdraw some money.",
+      ""
+    ],
+    [
+      "向こう",
+      "むこう",
+      "[n.] opposite side; other side; opposite direction; the other party",
+      "{向|む}こうまで{泳|およ}いで{渡|わた}ることができますか。\nCan you swim across to the other side?",
+      ""
+    ],
+    [
+      "美しい",
+      "うつくしい",
+      "[adj.] beautiful; pretty; lovely; sweet",
+      "{富士山|ふじさん}は{姿|すがた}が{美|うつく}しいので{有名|ゆうめい}です。\nMt. Fuji is noted for its beautiful shape.",
+      ""
+    ],
+    [
+      "美術館",
+      "びじゅつかん",
+      "[n.] art gallery; art museum",
+      "",
+      ""
+    ],
+    [
+      "首",
+      "くび",
+      "[n.] neck; head",
+      "",
+      ""
+    ],
+    [
+      "首都",
+      "しゅと",
+      "[n.] capital city; metropolis",
+      "{東京|とうきょう}は{日本|にっぽん}の{首都|しゅと}です。\nTokyo is the capital of Japan.",
+      ""
+    ],
+    [
+      "東京",
+      "とうきょう",
+      "[n.] Tokyo",
+      "{東京|とうきょう}は{日本|にっぽん}の{首都|しゅと}です。\nTokyo is the capital of Japan.",
+      ""
+    ],
+    [
+      "京都",
+      "きょうと",
+      "[n.] Kyoto (city, prefecture)",
+      "あなたは{何回|なんかい}{京都|きょうと}を{訪|おとず}れましたか。\nHow many times have you visited Kyoto?",
+      ""
+    ],
+    [
+      "汚い",
+      "きたない",
+      "[adj.] dirty; filthy; messy; untidy; poor (e.g. handwriting)",
+      "{彼|かれ}の{部屋|へや}は{汚|きたな}い。\nHis room is untidy.",
+      ""
+    ],
+    [
+      "汚れる",
+      "よごれる",
+      "[v1.; int.] to get dirty; to become dirty",
+      "この{部屋|へや}の{空気|くうき}は{汚|よご}れている。\nThe air in this room is foul.",
+      ""
+    ],
+    [
+      "怖い",
+      "こわい",
+      "[adj.] scary; frightening; eerie; dreadful",
+      "このような{仕事|しごと}で{怖|こわ}い{顔|かお}をしたら、お{客|きゃく}さんはいらっしゃらないでしょう。\nIn this line of work, if you make a grim face the customers won't come.",
+      ""
+    ],
+    [
+      "青い",
+      "あおい",
+      "[adj.] blue; azure; green; pale; unripe; inexperienced",
+      "",
+      ""
+    ],
+    [
+      "一番",
+      "いちばん",
+      "[n.] the first; number one; first place; best; most",
+      "このネクタイにしましょう、{一番|いちばん}よさそうだから。\nI will take this tie, as it seems to be the best.",
+      ""
+    ],
+    [
+      "番号",
+      "ばんごう",
+      "[n.] number; series of digits",
+      "パスポートの{番号|ばんごう}は{覚|おぼ}えていますか。\nDo you remember your passport number?",
+      ""
+    ],
+    [
+      "電話番号",
+      "でんわばんごう",
+      "[n.] telephone number",
+      "この{電話番号|でんわばんごう}に{電話|でんわ}する{方法|ほうほう}を{教|おし}えてください。\nCould you tell me how to call this number?",
+      ""
+    ],
+    [
+      "鳥",
+      "とり",
+      "[n.] bird; bird meat (esp. chicken meat)",
+      "",
+      ""
+    ],
+    [
+      "小鳥",
+      "ことり",
+      "[n.] small bird; little bird",
+      "",
+      ""
+    ],
+    [
+      "声",
+      "こえ",
+      "[n.] voice; singing (of a bird); chirping (of an insect); hoot",
+      "しーっ、{声|こえ}が{大|おお}きい。\nShh, you're speaking too loudly.",
+      ""
+    ],
+    [
+      "太い",
+      "ふとい",
+      "[adj.] fat; thick; deep (of a voice); thick; sonorous",
+      "その{地図|ちず}の{上|うえ}の{太|ふと}い{線|せん}は{道路|どうろ}を{示|しめ}す。\nThe broad lines on the map indicate roads.",
+      ""
+    ],
+    [
+      "太陽",
+      "たいよう",
+      "[n.] sun",
+      "{太陽|たいよう}の{黒点|こくてん}を{観察|かんさつ}しよう。\nLet's observe sunspots.",
+      ""
+    ],
+    [
+      "黒い",
+      "くろい",
+      "[adj.] black",
+      "",
+      ""
+    ],
+    [
+      "黒板",
+      "こくばん",
+      "[n.] blackboard",
+      "{黒板|こくばん}に{書|か}きますね。\nI'll write it on the blackboard.",
+      ""
+    ],
+    [
+      "始め",
+      "はじめ",
+      "[n.; adv.] beginning; start; outset; opening; origin",
+      "",
+      ""
+    ],
+    [
+      "始まる",
+      "はじまる",
+      "[v5.; int.] to begin; to start; to commence",
+      "その{試合|しあい}は{何時|なんじ}に{始|はじ}まりますか。\nWhat time does the game start?",
+      ""
+    ],
+    [
+      "始業",
+      "しぎょう",
+      "[n.; suru] start of work; commencement; opening",
+      "",
+      ""
+    ],
+    [
+      "開始",
+      "かいし",
+      "[n.; suru] start; commencement; beginning; initiation",
+      "{天候|てんこう}のためレースの{開始|かいし}は{遅|おく}れるだろう。\nThe weather will delay the start of the race.",
+      ""
+    ],
+    [
+      "始業式",
+      "しぎょうしき",
+      "[n.] opening ceremony (of the school term)",
+      "",
+      ""
+    ],
+    [
+      "式場",
+      "しきじょう",
+      "[n.] ceremonial hall (e.g. wedding)",
+      "",
+      ""
+    ],
+    [
+      "漢字",
+      "かんじ",
+      "[n.] kanji; Chinese character",
+      "",
+      ""
+    ],
+    [
+      "暖かい",
+      "あたたかい",
+      "[adj.] warm; mild; (pleasantly) hot; kind; genial",
+      "このセーターは{暖|あたた}かい。\nThis sweater is warm.",
+      ""
+    ],
+    [
+      "暑い",
+      "あつい",
+      "[adj.] hot (weather); warm",
+      "{今日|きょう}はとても{暑|あつ}い。\nIt is very hot today.",
+      ""
+    ],
+    [
+      "寒い",
+      "さむい",
+      "[adj.] cold (weather); uninteresting (esp. joke); lame; dull; weak; corny",
+      "{昨日|きのう}からずっと{寒|さむ}い。\nIt has been cold since yesterday.",
+      ""
+    ],
+    [
+      "冷たい",
+      "つめたい",
+      "[adj.] cold (to the touch); chilly; freezing; coldhearted; unfriendly",
+      "{私|わたし}はとても{喉|のど}が{渇|かわ}いたので{何|なに}か{冷|つめ}たい{飲|の}み{物|もの}が{欲|ほ}しかった。\nI was very thirsty and I wanted to drink something cold.",
+      ""
+    ],
+    [
+      "寒冷",
+      "かんれい",
+      "[n.] cold; coldness; chilliness",
+      "カナダの{気候|きこう}は{日本|にほん}よりも{寒冷|かんれい}である。\nThe climate of Canada is cooler than that of Japan.",
+      ""
+    ],
+    [
+      "度",
+      "ど",
+      "[n.] degree (angle, temperature, scale, etc.); counter for occurrences",
+      "{直角|ちょっかく}は{９０|きゅうじゅう}{度|ど}である。\nA right angle has ninety degrees.",
+      ""
+    ],
+    [
+      "今度",
+      "こんど",
+      "[n.; adv.] this time; now; next time",
+      "{今度|こんど}の{土曜日|どようび}、テニスをしませんか。\nHow about playing tennis next Saturday?",
+      ""
+    ],
+    [
+      "温度",
+      "おんど",
+      "[n.] temperature",
+      "{朝|あさ}から{温度|おんど}が{下|さ}がってきた。\nThe temperature has fallen since morning.",
+      ""
+    ],
+    [
+      "何度",
+      "なんど",
+      "[n.] how many degrees (temperature, angle, etc.); how many times",
+      "{彼女|かのじょ}はハワイに{何度|なんど}も{行|おこな}ったことがある。\nShe has been to Hawaii several times.",
+      ""
+    ],
+    [
+      "熱",
+      "ねつ",
+      "[n.] fever; heat; zeal; passion; enthusiasm",
+      "{風邪|かぜ}をひいて{熱|ねつ}がある。\nI caught a cold, and I have a fever.",
+      ""
+    ],
+    [
+      "熱い",
+      "あつい",
+      "[adj.] hot (to the touch); passionate (feelings, etc.)",
+      "スープは{熱|あつ}いうちに{召|め}し{上|あ}がって{下|くだ}さい。\nEat your soup while it is hot.",
+      ""
+    ],
+    [
+      "工場",
+      "こうじょう,こうば",
+      "[n.] factory; plant; mill; workshop",
+      "その{工場|こうじょう}は{玩具|おもちゃ}を{製造|せいぞう}している。\nThe factory manufactures toys.",
+      ""
+    ],
+    [
+      "人工",
+      "じんこう",
+      "[n.] artificial; man-made; human work; human skill; artificiality",
+      "{私|わたし}たちは{人工雪|じんこうゆき}でスキーをした。\nWe skied on artificial snow.",
+      ""
+    ],
+    [
+      "市場",
+      "いちば",
+      "[n.] (town) market; (street) market; marketplace",
+      "{母|はは}は{毎日|まいにち}{市場|いちば}に{買|か}い{物|もの}に{行|い}く。\nMy mother goes to the market every day to buy things.",
+      ""
+    ],
+    [
+      "市場",
+      "しじょう",
+      "[n.] market (financial, stock, domestic, etc.); marketplace; exchange",
+      "{大統領|だいとうりょう}の{決定|けってい}は{市場|しじょう}に{影響|えいきょう}を{与|あた}えた。\nThe President's decision caused the market to react.",
+      ""
+    ],
+    [
+      "都市",
+      "とし",
+      "[n.] town; city; municipal; urban",
+      "",
+      ""
+    ],
+    [
+      "帰る",
+      "かえる",
+      "[v5.; int.] to return home; to come home; to go home",
+      "{彼|かれ}は{明日|あした}ヨーロッパ{旅行|りょこう}から{帰|かえ}ります。\nHe comes home from his trip to Europe tomorrow.",
+      ""
+    ],
+    [
+      "待つ",
+      "まつ",
+      "[v5; tran.; int.] to wait; to await; to look forward to",
+      "{私|わたし}はベルを{鳴|な}らして{待|ま}った。\nI rang the bell and waited.",
+      ""
+    ],
+    [
+      "悪い",
+      "わるい",
+      "[adj.] bad; undesirable; poor (quality); inferior",
+      "{目|め}に{悪|わる}いから{暗|くら}いところで{本|ほん}を{読|よ}んではいけない。\nDon't read books in dark places, because it is bad for your eyes.",
+      ""
+    ],
+    [
+      "悪口",
+      "わるぐち",
+      "[n.; suru] slander; bad-mouthing; insult; speaking ill (of)",
+      "{人|ひと}の{陰|かげ}で{悪口|わるぐち}を{言|い}うな。\nDon't speak ill of others behind their back.",
+      ""
+    ],
+    [
+      "悪口を言う",
+      "わるぐちをいう",
+      "[phrase; v5] to insult; to bad-mouth; to say something insulting about",
+      "{人|ひと}の{陰|かげ}で{悪口|わるぐち}を{言|い}うな。\nDon't speak ill of others behind their back.",
+      ""
+    ],
+    [
+      "持つ",
+      "もつ",
+      "[v5; tran.] to hold (in one's hand); to carry; to possess; to own",
+      "コートを{持|も}ちましょうか。\nShall I carry your coat?",
+      ""
+    ],
+    [
+      "映画",
+      "えいが",
+      "[n.] movie; film",
+      "{彼|かれ}らは{時々|ときどき}{一緒|いっしょ}に{映画|えいが}を{見|み}に{行|い}く。\nThey go to the movies together once in a while.",
+      ""
+    ],
+    [
+      "画家",
+      "がか",
+      "[n.] painter; artist",
+      "あなたが{気|き}に{入|い}った{絵|え}を{描|えが}いた{画家|がか}は{私|わたし}の{友人|ゆうじん}です。\nThe artist whose paintings you liked is a friend of mine.",
+      ""
+    ],
+    [
+      "絵",
+      "え",
+      "[n.] picture; drawing; painting; sketch; image (TV, film, etc.); footage",
+      "あなたが{気|き}に{入|い}った{絵|え}を{描|えが}いた{画家|がか}は{私|わたし}の{友人|ゆうじん}です。\nThe artist whose paintings you liked is a friend of mine.",
+      ""
+    ],
+    [
+      "絵画",
+      "かいが",
+      "[n.] painting; picture",
+      "{競売|きょうばい}でその{絵画|かいが}を{手|て}に{入|い}れた。\nI got that painting at an auction.",
+      ""
+    ],
+    [
+      "文",
+      "ぶん",
+      "[n.] sentence; text; writings",
+      "この{文|ぶん}の{意味|いみ}は{曖昧|あいまい}だ。\nThe meaning of this sentence is ambiguous.",
+      ""
+    ],
+    [
+      "文学",
+      "ぶんがく",
+      "[n.] literature",
+      "{彼女|かのじょ}はフランス{文学|ぶんがく}を{専攻|せんこう}している。\nShe majors in French literature.",
+      ""
+    ],
+    [
+      "文書",
+      "ぶんしょ",
+      "[n.] document; writing; papers; notes; records; archives",
+      "{父|ちち}はフランス{語|ご}の{文書|ぶんしょ}を{日本語|にほんご}に{翻訳|ほんやく}した。\nMy dad translated the French document into Japanese.",
+      ""
+    ],
+    [
+      "作文",
+      "さくぶん",
+      "[n.; suru] composition; writing (an essay, prose, etc.)",
+      "{彼女|かのじょ}の{作文|さくぶん}には{誤|あやま}りがなかった。\nHer composition was free from mistakes.",
+      ""
+    ],
+    [
+      "文字",
+      "もじ",
+      "[n.] letter (of alphabet); character",
+      "{壁|かべ}に{書|か}かれた{文字|もじ}を{判読|はんどく}しようとした。\nWe tried to make out the letters written on the wall.",
+      ""
+    ],
+    [
+      "絵文字",
+      "えもじ,エモジ",
+      "[n.] emoji; pictorial symbol; pictograph; pictogram; ASCII art",
+      "",
+      ""
+    ],
+    [
+      "文法",
+      "ぶんぽう",
+      "[n.] grammar",
+      "{文法|ぶんぽう}の{授業|じゅぎょう}が{難|むずか}しくなかった。\nThe grammar lesson wasn't difficult.",
+      ""
+    ],
+    [
+      "法律",
+      "ほうりつ",
+      "[n.] law",
+      "{弁護士|べんごし}は{新|あたら}しい{法律|ほうりつ}を{説明|せつめい}した。\nThe lawyer explained the new law.",
+      ""
+    ],
+    [
+      "方法",
+      "ほうほう",
+      "[n.] method; process; manner; way; means; technique",
+      "これが、{私|わたし}が{英語|えいご}を{勉強|べんきょう}した{方法|ほうほう}だ。\nThis is how I learned English.",
+      ""
+    ],
+    [
+      "注文",
+      "ちゅうもん",
+      "[n.; suru] order (for an item); request; demand",
+      "{朝食|ちょうしょく}のメニューの{中|なか}から{注文|ちゅうもん}してもいいですか。\nCan I order from the breakfast menu?",
+      ""
+    ],
+    [
+      "注意",
+      "ちゅうい",
+      "[n.; suru] attention; notice; heed; caution; precaution; advice; warning",
+      "{卵|たまご}を{割|わ}らないように{注意|ちゅうい}しなさい。\nTake care not to break the eggs.",
+      ""
+    ],
+    [
+      "石",
+      "いし",
+      "[n.] stone; rock (in rock-paper-scissors)",
+      "{壁|かべ}はざらざらとした{石|いし}で{出来|でき}ていた。\nThe wall was made of rough stones.",
+      ""
+    ],
+    [
+      "油",
+      "あぶら",
+      "[n.] oil",
+      "{油|あぶら}は{火|ひ}から{離|はな}しておきなさい。\nKeep oil away from the fire.",
+      ""
+    ],
+    [
+      "石油",
+      "せきゆ",
+      "[n.] oil; petroleum",
+      "{石油|せきゆ}の{値段|ねだん}が{上|あ}がっている。\nThe price of oil is going up.",
+      ""
+    ],
+    [
+      "文化",
+      "ぶんか",
+      "[n.] culture; civilization",
+      "すべての{文化|ぶんか}には{何本|なんぼん}かの{共通|きょうつう}する{糸|いと}が{通|とお}っている。\nAll cultures have some common threads running through them.",
+      ""
+    ],
+    [
+      "化石",
+      "かせき",
+      "[n.; suru] fossil; fossilization",
+      "",
+      ""
+    ],
+    [
+      "料",
+      "りょう",
+      "[n.] fee; material",
+      "{食事代|しょくじだい}はサービス{料|りょう}も{込|こ}みになっています。\nThe price of the meal includes a service charge.",
+      ""
+    ],
+    [
+      "料理",
+      "りょうり",
+      "[n.; suru] cooking; cookery; cuisine; meal; item on a menu; dish",
+      "スペイン{料理|りょうり}ってパエリアの{他|ほか}に{何|なに}があるの？\nWhat Spanish food is there apart from paella?",
+      ""
+    ],
+    [
+      "料金",
+      "りょうきん",
+      "[n.] fee; charge; fare",
+      "{料金|りょうきん}は{会計係|かいけいがかり}へ{払|はら}って{下|くだ}さい。\nPay your dues to the treasurer.",
+      ""
+    ],
+    [
+      "旅行",
+      "りょこう",
+      "[n.; suru] travel; trip; journey; excursion; tour",
+      "{毎年|まいとし}、{多|おお}くの{日本人|にほんじん}が{海外|かいがい}へ{旅行|りょこう}する。\nMany Japanese people travel overseas every year.",
+      ""
+    ],
+    [
+      "長旅",
+      "ながたび,ちょうりょ",
+      "[n.] long trip",
+      "",
+      ""
+    ],
+    [
+      "旅行会社",
+      "りょこうがいしゃ",
+      "[n.] travel agent; travel agency",
+      "",
+      ""
+    ],
+    [
+      "旅館",
+      "りょかん",
+      "[n.] ryokan; traditional Japanese inn",
+      "",
+      ""
+    ],
+    [
+      "早い",
+      "はやい",
+      "[adj.] fast; quick; early (in the day, etc.); premature; (too) soon",
+      "{北欧|ほくおう}では{冬|ふゆ}の{訪|おとず}れが{早|はや}い。\nWinter comes earlier in North Europe.",
+      ""
+    ],
+    [
+      "早口",
+      "はやくち,はやぐち",
+      "[n.] fast-talking; rapid talking",
+      "あんなに{早口|はやくち}で{英語|えいご}が{話|はな}せるのを{聞|き}いたことがない。\nI've never heard English spoken so quickly.",
+      ""
+    ],
+    [
+      "映画館",
+      "えいがかん",
+      "[n.] movie theatre; movie theater; cinema",
+      "",
+      ""
+    ],
+    [
+      "有名",
+      "ゆうめい",
+      "[adjn.] famous",
+      "",
+      ""
+    ],
+    [
+      "有名人",
+      "ゆうめいじん",
+      "[n.] celebrity; famous person; public figure",
+      "",
+      ""
+    ],
+    [
+      "服",
+      "ふく",
+      "[n.] clothes",
+      "{彼|かれ}は{濡|ぬ}れた{服|ふく}を{火|ひ}にあぶってかわかした。\nHe dried his wet clothes by the fire.",
+      ""
+    ],
+    [
+      "洋服",
+      "ようふく",
+      "[n.] Western-style clothes",
+      "",
+      ""
+    ],
+    [
+      "村",
+      "むら",
+      "[n.] village",
+      "",
+      ""
+    ],
+    [
+      "授業",
+      "じゅぎょう",
+      "[n.; suru] lesson; class work",
+      "それは{授業|じゅぎょう}の{終|お}わりだった。\nThat was the end of the class.",
+      ""
+    ],
+    [
+      "授業料",
+      "じゅぎょうりょう",
+      "[n.] tuition fee; course fee",
+      "",
+      ""
+    ],
+    [
+      "授業中",
+      "じゅぎょうちゅう",
+      "[n.] while in class",
+      "{静|しず}かに、{授業中|じゅぎょうちゅう}にしゃべってはいけません。\nBe quiet. Don't talk in class.",
+      ""
+    ],
+    [
+      "歩く",
+      "あるく",
+      "[v5.; int.] to walk",
+      "{学校|がっこう}まで{１０分|じゅっぷん}で{歩|ある}いて{行|い}ける。\nI can walk to school in ten minutes.",
+      ""
+    ],
+    [
+      "歩道",
+      "ほどう",
+      "[n.] footpath; walkway; sidewalk",
+      "{歩道|ほどう}にお{金|かね}が{落|お}ちていた。\nMoney had fallen on the sidewalk.",
+      ""
+    ],
+    [
+      "死ぬ",
+      "しぬ",
+      "[v5.; int.] to die; to pass away; to lose spirit; to lose vigor; to look dead",
+      "",
+      ""
+    ],
+    [
+      "市民",
+      "しみん",
+      "[n.] citizen; citizenry; public",
+      "",
+      ""
+    ],
+    [
+      "消える",
+      "きえる",
+      "[v1.; int.] to disappear; to vanish; to go out (fire, light, etc.); to turn off (e.g. TV screen); to fade (feeling, etc.)",
+      "{明|あ}かりがすべて{消|き}えた。\nAll the lights went out.",
+      ""
+    ],
+    [
+      "消費",
+      "しょうひ",
+      "[n.; suru] consumption; expenditure",
+      "{農業|のうぎょう}は{多量|たりょう}の{水|みず}を{消費|しょうひ}する。\nAgriculture consumes a great amount of water.",
+      ""
+    ],
+    [
+      "池",
+      "いけ",
+      "[n.] pond",
+      "うちの{庭|にわ}には{小|ちい}さな{池|いけ}がある。\nThere is a small pond in our garden.",
+      ""
+    ],
+    [
+      "電池",
+      "でんち",
+      "[n.] battery; cell",
+      "{電池|でんち}が{弱|よわ}ってきているのでうまく{動|うご}かない。\nIt doesn't work so well because the batteries are running down.",
+      ""
+    ],
+    [
+      "洗う",
+      "あらう",
+      "[v5.; tran.] to wash; to cleanse; to rinse",
+      "{彼|かれ}は{毎週|まいしゅう}{車|くるま}を{洗|あら}います。\nHe washes the car every week.",
+      ""
+    ],
+    [
+      "お手洗い",
+      "おてあらい",
+      "[n.] toilet; restroom; bathroom",
+      "お{手洗|てあら}いをお{借|か}りしても{良|い}いですか。\nMay I use the bathroom?",
+      ""
+    ],
+    [
+      "洗濯",
+      "せんたく",
+      "[n.; suru] laundry; washing",
+      "{日曜日|にちようび}には{洗濯|せんたく}をする。\nI do the laundry on Sundays.",
+      ""
+    ],
+    [
+      "海",
+      "うみ",
+      "[n.] sea; ocean; waters",
+      "{冷|つめ}たい{風|かぜ}は{海|うみ}から{吹|ふ}いている。\nThe cold wind is blowing from the sea.",
+      ""
+    ],
+    [
+      "海外",
+      "かいがい",
+      "[n.] overseas; foreign; abroad",
+      "{毎年|まいとし}、{多|おお}くの{日本人|にほんじん}が{海外|かいがい}へ{旅行|りょこう}する。\nMany Japanese travel abroad every year.",
+      ""
+    ],
+    [
+      "海外旅行",
+      "かいがいりょこう",
+      "[n.] overseas travel; trip abroad",
+      "{彼女|かのじょ}は、{海外旅行|かいがいりょこう}をするために{貯金|ちょきん}している。\nShe is saving money to go abroad.",
+      ""
+    ],
+    [
+      "津波",
+      "つなみ",
+      "[n.] tsunami; tidal wave",
+      "{彼|かれ}らは{津波|つなみ}の{危険|きけん}を{知|し}らされていなかった。\nThey weren't informed of the tidal wave danger.",
+      ""
+    ],
+    [
+      "肉",
+      "にく",
+      "[n.] meat; flesh",
+      "{冷蔵庫|れいぞうこ}を{開|あ}けてみたら、{肉|にく}が{腐|くさ}っているのに{気付|きづ}いた。\nWhen I opened the refrigerator, I noticed the meat had spoiled.",
+      ""
+    ],
+    [
+      "牛肉",
+      "ぎゅうにく",
+      "[n.] beef",
+      "",
+      ""
+    ],
+    [
+      "理由",
+      "りゆう",
+      "[n.] reason; pretext; motive",
+      "{彼|かれ}は{実験|じっけん}の{失敗|しっぱい}の{理由|りゆう}を{説明|せつめい}した。\nHe explained why the experiment failed.",
+      ""
+    ],
+    [
+      "産業",
+      "さんぎょう",
+      "[n.] industry",
+      "{日本|にほん}は{世界|せかい}のハイテク{産業|さんぎょう}のリーダーだ。\nJapan is a leader in the world's high-tech industry.",
+      ""
+    ],
+    [
+      "町",
+      "まち",
+      "[n.] town; block; city quarter",
+      "{彼|かれ}はイタリアの{小|ちい}さな{町|まち}で{生|う}まれた。\nHe was born in a small town in Italy.",
+      ""
+    ],
+    [
+      "病気",
+      "びょうき",
+      "[n.] illness; disease; sickness",
+      "{薬|くすり}が{彼|かれ}の{病気|びょうき}を{治|なお}した。\nThe medicine cured him of his illness.",
+      ""
+    ],
+    [
+      "病院",
+      "びょういん",
+      "[n.] hospital; clinic; infirmary",
+      "ここは{私|わたし}が{生|う}まれた{病院|びょういん}です。\nThis is the hospital where I was born.",
+      ""
+    ],
+    [
+      "入院",
+      "にゅういん",
+      "[n.; suru] hospitalization",
+      "{彼|かれ}は{入院|にゅういん}している。\nHe is in hospital.",
+      ""
+    ],
+    [
+      "県",
+      "けん",
+      "[n.] prefecture; county; department; province",
+      "チューリップは、{私|わたし}たちの{県|けん}の{県花|けんか}です。\nTulips are our prefecture's official flower.",
+      ""
+    ],
+    [
+      "着く",
+      "つく",
+      "[v5.; int.] to arrive at; to reach; to sit on; to sit at (e.g. the table)",
+      "{列車|れっしゃ}は{彼|かれ}らが{駅|えき}へ{着|つ}く{前|まえ}に{出|で}てしまった。\nThe train left before they got to the station.",
+      ""
+    ],
+    [
+      "着る",
+      "きる",
+      "[v1.; tran.] to wear (upper body); to put on; to bear (guilt, etc.)",
+      "{彼女|かのじょ}は{緑色|みどりいろ}のドレスを{着|き}ている。\nShe is in a green dress.",
+      ""
+    ],
+    [
+      "履く",
+      "はく",
+      "[v5.; tran.] to put on (lower body clothing, e.g. pants, skirt, footwear); to wear",
+      "{靴|くつ}を{履|は}いて。\nPut on your shoes.",
+      ""
+    ],
+    [
+      "着物",
+      "きもの",
+      "[n.] kimono; Japanese traditional clothing (esp. full-length); clothes",
+      "この{着物|きもの}を{着|き}ませんか。\nWill you put on this kimono?",
+      ""
+    ],
+    [
+      "上着",
+      "うわぎ",
+      "[n.] coat; tunic; jacket; outer garment",
+      "{彼女|かのじょ}は{赤|あか}い{上着|うわぎ}に{決|き}めた。\nShe decided on the red coat.",
+      ""
+    ],
+    [
+      "知る",
+      "しる",
+      "[v5.; tran.] to know; to be aware (of); to be conscious (of); to learn (of); to find out",
+      "{友人|ゆうじん}からお{名前|なまえ}を{知|し}りました。\nI have got your name from my friend.",
+      ""
+    ],
+    [
+      "知能",
+      "ちのう",
+      "[n.] intelligence; intellect",
+      "イルカは{非常|ひじょう}に{知能|ちのう}の{高|たか}い{動物|どうぶつ}です。\nDolphins are very intelligent animals.",
+      ""
+    ],
+    [
+      "人工知能",
+      "じんこうちのう",
+      "[n.] artificial intelligence; AI",
+      "ＡＩは{人工知能|じんこうちのう}の{略|りゃく}です。\nAI stands for artificial intelligence.",
+      ""
+    ],
+    [
+      "能力",
+      "のうりょく",
+      "[n.] ability",
+      "{話|はな}すことは{人間|にんげん}の{能力|のうりょく}の{一|ひと}つである。\nTalking is a human ability.",
+      ""
+    ],
+    [
+      "研究",
+      "けんきゅう",
+      "[n.; suru] study; research; investigation",
+      "{野生|やせい}の{花|はな}の{研究|けんきゅう}が{好|す}きだ。\nI like studying wild flowers.",
+      ""
+    ],
+    [
+      "答える",
+      "こたえる",
+      "[v1.; int.] to answer; to reply",
+      "{注意|ちゅうい}して{質問|しつもん}に{答|こた}えなさい。\nAnswer my question carefully.",
+      ""
+    ],
+    [
+      "終わる",
+      "おわる",
+      "[v5.; int.] to end; to come to an end; to finish",
+      "{大勢|おおぜい}の{客|きゃく}は{歌|うた}が{終|お}わると{拍手|はくしゅ}をした。\nThe large audience applauded when the song ended.",
+      ""
+    ],
+    [
+      "終電車",
+      "しゅうでんしゃ",
+      "[n.] last train (of the day)",
+      "{僕|ぼく}は{終電車|しゅうでんしゃ}に{乗|の}り{遅|おく}れた。\nI missed the last train.",
+      ""
+    ],
+    [
+      "習う",
+      "ならう",
+      "[v5.; tran.] to take lessons in; to be taught; to learn (from a teacher); to study (under a teacher); to get training in",
+      "{彼|かれ}は{泳|およ}ぎ{方|かた}を{習|なら}った。\nHe learned how to swim.",
+      ""
+    ],
+    [
+      "復習",
+      "ふくしゅう",
+      "[n.; suru] review (of learned material); revision",
+      "{君|きみ}は{英語|えいご}の{復習|ふくしゅう}をしようとしましたか。\nDid you try to review the English lessons?",
+      ""
+    ],
+    [
+      "習慣",
+      "しゅうかん",
+      "[n.] habit; (social) custom; practice; convention",
+      "{毎朝|まいあさ}{早起|はやお}きするのを{習慣|しゅうかん}にしている。\nI make it a rule to get up early in the morning.",
+      ""
+    ],
+    [
+      "考える",
+      "かんがえる",
+      "[v1.; tran.] to think (about, of); to think over; to ponder; to consider",
+      "{本当|ほんとう}の{科学者|かがくしゃ}ならそういう{風|ふう}には{考|かんが}えない。\nA true scientist would not think like that.",
+      ""
+    ],
+    [
+      "上がる",
+      "あがる",
+      "[v5.; int.] to rise; to go up; to come up; to ascend; to get out (of water); to be promoted; to advance",
+      "{米|こめ}の{値段|ねだん}が{３|さん}パーセント{上|あ}がった。\nThe price of rice rose by three percent.",
+      ""
+    ],
+    [
+      "降りる",
+      "おりる",
+      "[v1.; int.] to descend (e.g. a mountain); to go down; to come down; to get off; to disembark; to dismount; to form (frost, dew, mist, etc.)",
+      "{木|き}の{上|うえ}の{猫|ねこ}が{私|わたし}の{所|ところ}へ{降|お}りてきた。\nThe cat on the tree came down to me.",
+      ""
+    ],
+    [
+      "下ろす",
+      "おろす",
+      "[v5.; tran.] to take down; to bring down; to lower (a hand, flag, shutter, etc.); to drop (an anchor, curtain, etc.); to let down (hair); to withdraw (money)",
+      "{船|ふね}は{錨|いかり}を{下|お}ろした。\nThe ship dropped anchor.",
+      ""
+    ],
+    [
+      "者",
+      "もの",
+      "[n.] person",
+      "{今|いま}までにこの{問題|もんだい}が{解|と}けた{者|もの}はひとりもいない。\nNo one has ever been able to solve this problem.",
+      ""
+    ],
+    [
+      "自分",
+      "じぶん",
+      "[pron.] self; oneself",
+      "{彼女|かのじょ}は{自分|じぶん}の{秘密|ひみつ}を{明|あ}かすことには{気|き}が{進|すす}まなかった。\nShe was reluctant to reveal her secret.",
+      ""
+    ],
+    [
+      "自由",
+      "じゆう",
+      "[n.; adjn.] freedom; liberty",
+      "{車|くるま}があれば、{自由|じゆう}に{行|い}ったり{来|き}たりできるよ。\nIf you have a car, you can come and go at will.",
+      ""
+    ],
+    [
+      "学校",
+      "がっこう",
+      "[n.] school",
+      "",
+      ""
+    ],
+    [
+      "自動車",
+      "じどうしゃ",
+      "[n.] car; automobile; motorcar; motor vehicle; auto",
+      "{自動車|じどうしゃ}は{左折|させつ}した。\nThe car made a turn to the left.",
+      ""
+    ],
+    [
+      "自動車学校",
+      "じどうしゃがっこう",
+      "[n.] driving school",
+      "",
+      ""
+    ],
+    [
+      "英語",
+      "えいご",
+      "[n.] English (language)",
+      "{彼女|かのじょ}は{昨日|きのう}{英語|えいご}の{発音|はつおん}を{練習|れんしゅう}した。\nShe practiced her English pronunciation yesterday.",
+      ""
+    ],
+    [
+      "お茶",
+      "おちゃ",
+      "[n.] tea (usu. green); tea break (at work)",
+      "{少女|しょうじょ}は{友達|ともだち}にお{茶|ちゃ}をいれるのに{忙|いそが}しかった。\nThe girl was busy making tea for her friend.",
+      ""
+    ],
+    [
+      "茶色",
+      "ちゃいろ",
+      "[n.] light brown; tawny",
+      "{母|はは}がお{茶|ちゃ}を{入|い}れてくれています。\nMom is making tea for us.",
+      ""
+    ],
+    [
+      "野菜",
+      "やさい",
+      "[n.] vegetable",
+      "{彼女|かのじょ}は{野菜|やさい}しか{食|た}べない。\nShe eats nothing but vegetables.",
+      ""
+    ],
+    [
+      "野原",
+      "のはら",
+      "[n.] field; plain; prairie",
+      "{見渡|みわた}す{限|かぎ}り、{野原|のはら}は{真|ま}っ{白|しろ}だった。\nThe field was white as far as the eye could see.",
+      ""
+    ],
+    [
+      "原子",
+      "げんし",
+      "[n.] atom",
+      "{地球上|ちきゅうじょう}の{万物|ばんぶつ}は{原子|げんし}からなっている。\nAll things on the Earth are made of atoms.",
+      ""
+    ],
+    [
+      "原子力",
+      "げんしりょく",
+      "[n.] atomic energy; nuclear power",
+      "",
+      ""
+    ],
+    [
+      "薬",
+      "くすり",
+      "[n.] medicine; pharmaceuticals; pill; efficacious chemical (gunpowder, pesticide, etc.)",
+      "{薬|くすり}が{彼|かれ}の{病気|びょうき}を{治|なお}した。\nThe medicine cured him of his illness.",
+      ""
+    ],
+    [
+      "薬局",
+      "やっきょく",
+      "[n.] pharmacy; drugstore; chemist's (shop)",
+      "",
+      ""
+    ],
+    [
+      "時計",
+      "とけい",
+      "[n.] clock; watch; timepiece",
+      "{聞|き}こえる{音|おと}は{時計|とけい}のカチカチという{音|おと}だけだった。\nThe only sound to be heard was the ticking of the clock.",
+      ""
+    ],
+    [
+      "計画",
+      "けいかく",
+      "[n.; suru] plan; project; schedule; scheme; program",
+      "{始|はじ}める{前|まえ}に{仕事|しごと}の{計画|けいかく}を{立|た}てなさい。\nPlan your work before you start it.",
+      ""
+    ],
+    [
+      "試合",
+      "しあい",
+      "[n.; suru] match; game; bout; contest",
+      "その{試合|しあい}は{何時|なんじ}に{始|はじ}まりますか。\nWhat time does the game start?",
+      ""
+    ],
+    [
+      "試験",
+      "しけん",
+      "[n.; suru] examination; exam; test; trial",
+      "{彼女|かのじょ}は{試験|しけん}に{合格|ごうかく}した。\nShe passed the exam.",
+      ""
+    ],
+    [
+      "日本語能力試験",
+      "にほんごのうりょくしけん",
+      "[n.] Japanese Language Proficiency Test; JLPT",
+      "",
+      ""
+    ],
+    [
+      "説明",
+      "せつめい",
+      "[n.; suru] explanation; exposition; description; caption; legend",
+      "{図|ず}で{説明|せつめい}しましょう。\nLet me explain it with a diagram.",
+      ""
+    ],
+    [
+      "貸す",
+      "かす",
+      "[v5.; tran.] to lend; to loan; to rent out; to hire out",
+      "{彼女|かのじょ}は{私|わたし}に{貸|か}したコートを{取|と}り{返|かえ}した。\nShe took back the coat she lent me.",
+      ""
+    ],
+    [
+      "起きる",
+      "おきる",
+      "[v1.; int.] to get up; to blaze up (fire); to wake up; to be awake; to stay awake; to occur (usu. unfavourable incidents)",
+      "{明日|あした}{何|なに}が{起|お}きるのかは{誰|だれ}にもわからない。\nNobody knows what's going to happen tomorrow.",
+      ""
+    ],
+    [
+      "転ぶ",
+      "ころぶ",
+      "[v5.; int.] to fall down; to fall over",
+      "{転|ころ}んで{手首|てくび}を{痛|いた}めました。\nI fell down and hurt my wrist.",
+      ""
+    ],
+    [
+      "自転車",
+      "じてんしゃ",
+      "[n.] bicycle; bike",
+      "{歩道|ほどう}で{自転車|じてんしゃ}に{乗|の}ってはいけません。\nOne shouldn't ride a bicycle on the pavement.",
+      ""
+    ],
+    [
+      "近い",
+      "ちかい",
+      "[adj.] near; close; short (distance); close (in time); soon; nearly",
+      "{合計|ごうけい}は{１万|いちまん}ドルに{近|ちか}い。\nThe total is approximately ten thousand dollars.",
+      ""
+    ],
+    [
+      "近く",
+      "ちかく",
+      "[n.; adv.] near; vicinity; nearly; close to; shortly; soon",
+      "{嵐|あらし}を{避|さ}けて{近|ちか}くの{納屋|なや}に{逃|に}げ{込|こ}んだ。\nWe took refuge from the storm in a nearby barn.",
+      ""
+    ],
+    [
+      "近所",
+      "きんじょ",
+      "[n.] neighbourhood",
+      "{彼|かれ}が{近所|きんじょ}に{越|こ}してきた。\nHe moved into my neighborhood.",
+      ""
+    ],
+    [
+      "送る",
+      "おくる",
+      "[v5.; tran.] to send (a thing); to dispatch; to transmit; to take or escort (a person somewhere); to see off (a person); to bid farewell (to the departed)",
+      "{来週中|らいしゅうちゅう}にあなたが{必要|ひつよう}な{情報|じょうほう}を{送|おく}ります。\nI'll send you the info you need by next week.",
+      ""
+    ],
+    [
+      "送別",
+      "そうべつ",
+      "[n.; suru] farewell; send-off",
+      "",
+      ""
+    ],
+    [
+      "送別会",
+      "そうべつかい",
+      "[n.] farewell party",
+      "{私|わたし}たちは{彼|かれ}のために{送別会|そうべつかい}を{開|ひら}く{予定|よてい}です。\nWe are going to hold a farewell party for him.",
+      ""
+    ],
+    [
+      "通る",
+      "とおる",
+      "[v5.; int.] to go by; to go past; to go along; to pass through; to use (a road); to take (a route); to go via",
+      "{車|くるま}を{運転|うんてん}しているときは{左側|ひだりがわ}を{通|とお}りなさい。\nKeep to the left when driving.",
+      ""
+    ],
+    [
+      "通う",
+      "かよう",
+      "[v5.; int.] to go to (school, work, etc.); to commute; to frequent; to go back and forth between; to circulate (e.g. blood, electricity); to be communicated (e.g. thought)",
+      "{私|わたし}は{歩|ある}いて{学校|がっこう}に{通|かよ}う。\nI go to school on foot.",
+      ""
+    ],
+    [
+      "通行",
+      "つうこう",
+      "[n.; suru] passage (of people, traffic); passing",
+      "ここは{大型車|おおがたしゃ}の{通行|つうこう}は{禁止|きんし}されている。\nThere is no passage for big vehicles here.",
+      ""
+    ],
+    [
+      "進む",
+      "すすむ",
+      "[v5.; int.] to advance; to go forward; to make progress",
+      "あの{時計|とけい}は{１分|いっぷん}{進|すす}んでいます。\nThat clock is one minute fast.",
+      ""
+    ],
+    [
+      "進歩",
+      "しんぽ",
+      "[n.; suru] progress; advancement; improvement; development",
+      "{科学|かがく}の{進歩|しんぽ}は{止|と}まることがない。\nAdvance in science never stops.",
+      ""
+    ],
+    [
+      "運ぶ",
+      "はこぶ",
+      "[v5.; tran.] to carry; to transport; to move; to convey",
+      "{彼|かれ}はガラス{製品|せいひん}を{注意|ちゅうい}して{運|はこ}んだ。\nHe carried the glassware with care.",
+      ""
+    ],
+    [
+      "運動",
+      "うんどう",
+      "[n.; suru] movement; motion; workout; physical training; exercise; campaign; appeal",
+      "もっと{運動|うんどう}をしないと{太|ふと}るよ。\nIf you don't get more exercise, you'll get fat.",
+      ""
+    ],
+    [
+      "遠い",
+      "とおい",
+      "[adj.] far; distant; far away; distant (past); remote (in time)",
+      "{彼|かれ}は{彼女|かのじょ}の{遠|とお}い{親戚|しんせき}だ。\nHe is a distant relative of hers.",
+      ""
+    ],
+    [
+      "遠足",
+      "えんそく",
+      "[n.; suru] excursion; outing; trip",
+      "{学校|}の{遠足|}で{奈良|}に{行|}った。\nWe went on a school trip to Nara.",
+      ""
+    ],
+    [
+      "集める",
+      "あつめる",
+      "[v1.; tran.] to collect (something); to assemble; to gather (something)",
+      "{彼|かれ}は{切手|きって}を{５００枚|ごひゃくまい}も{集|あつ}めた。\nHe has collected no fewer than five hundred stamps.",
+      ""
+    ],
+    [
+      "集まる",
+      "あつまる",
+      "[v5.; int.] to gather; to collect; to assemble",
+      "{学生|がくせい}たちは{教室|きょうしつ}に{集|あつ}まった。\nThe students gathered in the classroom.",
+      ""
+    ],
+    [
+      "集合",
+      "しゅうごう",
+      "[n.; suru] meeting up; gathering; assembly; set (mathematics)",
+      "{日曜日|にちようび}に{集合|しゅうごう}しよう。\nLet's get together on Sunday.",
+      ""
+    ],
+    [
+      "痛い",
+      "いたい",
+      "[adj.] painful; sore",
+      "{翌日|よくじつ}は{足|あし}が{痛|いた}かった。\nI had sore legs the next day.",
+      ""
+    ],
+    [
+      "頭痛",
+      "ずつう",
+      "[n.] headache",
+      "{今日|きょう}は{少|すこ}し{頭痛|ずつう}がする。\nI have a slight headache today.",
+      ""
+    ],
+    [
+      "減る",
+      "へる",
+      "[v5.; int.] to decrease (in size or number); to diminish; to abate",
+      "{痛|いた}みが{少|すこ}し{減|へ}りました。\nThe pain has lessened a little.",
+      ""
+    ],
+    [
+      "増える",
+      "ふえる",
+      "[v1.; int.] to increase; to multiply",
+      "{彼|かれ}の{給料|きゅうりょう}は{１０|じゅっ}{％|パーセント}{増|ふ}えた。\nHis salary was increased by ten percent.",
+      ""
+    ],
+    [
+      "笑う",
+      "わらう",
+      "[v5.; int.] to laugh; to smile; to sneer; to ridicule",
+      "クラスのもの{皆|みな}が{彼|かれ}の{冗談|じょうだん}に{笑|わら}った。\nThe whole class laughed at his joke.",
+      ""
+    ],
+    [
+      "笑顔",
+      "えがお",
+      "[n.; suru] smiling face; smile",
+      "{彼女|かのじょ}の{笑顔|えがお}が{感謝|かんしゃ}の{気持|きも}ちを{表|あらわ}した。\nHer smile showed her gratitude.",
+      ""
+    ]
+  ]
+}
