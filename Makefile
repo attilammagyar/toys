@@ -21,6 +21,7 @@ JS80_SRC = \
 	./js-80/src/js-80.js
 
 KANJI_PRACTICE_SRC = \
+	./kanji-practice/src/builtins.js \
 	./kanji-practice/src/kanjidic.js \
 	./kanji-practice/src/kanjivg.js \
 	./kanji-practice/src/kanji-practice.css \
@@ -66,4 +67,4 @@ clean:
 	python3 single_html.py \
 		kanji-practice/src/kanji-practice.html \
 		kanji-practice/index.html \
-		4
+		5

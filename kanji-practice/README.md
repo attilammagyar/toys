@@ -40,11 +40,20 @@ This software uses stroke data from Ulrich Apel's [KanjiVG][kanjivg] project.
   [kanjivg]: https://kanjivg.tagaini.net/
   [kanjivggithub]: https://github.com/KanjiVG/kanjivg/
 
-This projects uses kanji data from the [KANJIDIC][kanjidic] dictionary files.
-These files are the property of the [Electronic Dictionary Research and
+This software uses the [EDICT][edict] and [KANJIDIC][kanjidic] dictionary
+files. These files are the property of the [Electronic Dictionary Research and
 Development Group][edrdg] and are used in conformance with the Group's
 [license][edrdglic].
 
+  [edict]: http://www.csse.monash.edu.au/~jwb/edict.html
   [kanjidic]: https://www.edrdg.org/wiki/index.php/KANJIDIC_Project
   [edrdg]: http://www.edrdg.org/
   [edrdglic]: http://www.edrdg.org/edrdg/licence.html
+
+Most of the example sentences in the built-in decks come from the
+[Tatoeba][tatoeba] project and the [Tanaka Corpus][tanaka], which are licensed
+under [Creative Commons CC-BY][cc-by-fr].
+
+  [tatoeba]: http://tatoeba.org/
+  [tanaka]: https://www.edrdg.org/wiki/index.php/Tanaka_Corpus
+  [cc-by-fr]: http://creativecommons.org/licenses/by/2.0/fr/

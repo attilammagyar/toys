@@ -24,7 +24,8 @@ body {
   color: #90a0ff;
 }
 
-#about-screen a.button {
+#about-screen a.button,
+#builtins-screen a.button {
   color: #e0e0f0;
 }
 
@@ -37,6 +38,7 @@ body {
 }
 
 #alert.hidden,
+#builtins-screen.hidden,
 #confirm.hidden,
 #editor-screen.hidden,
 #deck-properties-screen.hidden,
@@ -243,11 +245,37 @@ div#stats {
 
 #practice-kanji-details-close,
 #about-back,
+#builtins-back,
 #menu-button {
   background-color: #347;
   border-color: #246;
   color: #e0e0f0;
   font-family: Verdana, sans-serif;
+}
+
+#about-back,
+#builtins-back {
+  min-width: 16vw;
+}
+
+#builtins-screen div.deck a.button {
+  min-width: 45vw;
+  text-align: center;
+  font-size: 5vmin;
+  border-color: #125;
+  background-color: #237;
+  color: #eee;
+  margin: 2vmin;
+}
+
+#builtins-screen div.deck {
+  margin: 5vh 10vw;
+  font-size: 4.2vmin;
+  text-align: center;
+  border: solid 0.5vmin #111;
+  border-radius: 3vmin;
+  background: #161616;
+  padding: 3vmin;
 }
 
 #practice-kanji-details-close {

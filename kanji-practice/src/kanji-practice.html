@@ -48,7 +48,7 @@
 
   <div id="deck-properties-screen" class="hidden">
     <form id="deck-properties-form" action="#" method="get">
-      <h1>Deck properties</h1>
+      <h1>Deck Properties</h1>
       <div class="input">
         <label for="deck-name">Deck name:</label>
         <input type="text" id="deck-name" name="deck-name" /><br/>
@@ -70,7 +70,7 @@
 
   <div id="editor-screen" class="hidden">
     <form id="editor-form" action="#" method="get">
-      <h1>Edit card</h1>
+      <h1>Edit Card</h1>
       <div class="input">
         <label for="kanji">Word (kanji):</label>
         <input type="text" id="kanji" name="kanji" lang="ja" /><br/>
@@ -176,6 +176,7 @@
       <a id="learn-button" class="button hidden" href="#" title="Learn new card">+</a>
       <ul id="menu" class="hidden">
         <li><a id="menu-hide" href="#">&larr; Hide menu</a></li>
+        <li><a id="menu-builtins" href="#">Built-in decks</a></li>
         <li><a id="menu-deck" href="#">Deck properties</a></li>
         <li><a id="menu-create" href="#">Create cards</a></li>
         <li><a id="menu-edit" href="#">Edit card</a></li>
@@ -191,7 +192,9 @@
         <a id="no-cards-create" href="#">Create some cards</a>,
         <a id="no-cards-load" href="#">load a previously saved deck from JSON</a>,
         or
-        <a id="no-cards-import" href="#">import a deck from TSV</a>.
+        <a id="no-cards-import" href="#">import a deck from TSV</a>, or
+        start practising with one of the
+        <a id="no-cards-builtins" href="#">built-in decks</a>.
       </div>
       <div id="stats"></div>
       <div id="grade" class="hidden">
@@ -232,15 +235,27 @@
             project.
           </p>
           <p>
-            This projects uses kanji data from the
+            This software uses the
+            <a href="https://www.edrdg.org/jmdict/edict.html"
+              target="_blank">EDICT</a>
+            and
             <a href="https://www.edrdg.org/wiki/index.php/KANJIDIC_Project"
               target="_blank">KANJIDIC</a>
             dictionary files. These files are the property of the
-            <a href="http://www.edrdg.org/" target="_blank">
-              Electronic Dictionary Research and Development Group
-            </a>
+            <a href="http://www.edrdg.org/" target="_blank">Electronic
+              Dictionary Research and Development Group</a>,
             and are used in conformance with the Group's
-            <a href="http://www.edrdg.org/edrdg/licence.html" target="_blank">license</a>.
+            <a href="http://www.edrdg.org/edrdg/licence.html"
+              target="_blank">licence</a>.
+          </p>
+          <p>
+            Most of the example sentences in the built-in decks come from the
+            <a href="http://tatoeba.org/" target="_blank">Tatoeba</a> project
+            and the
+            <a href="https://www.edrdg.org/wiki/index.php/Tanaka_Corpus"
+              target="_blank">Tanaka Corpus</a>, which are licensed under
+            <a href="http://creativecommons.org/licenses/by/2.0/fr/"
+              target="_blank">Creative Commons CC-BY</a>.
           </p>
         </div>
       </div>
@@ -312,24 +327,67 @@
       project.
     </p>
     <p>
-      This projects uses kanji data from the
+      This software uses the
+      <a href="https://www.edrdg.org/jmdict/edict.html"
+        target="_blank">EDICT</a>
+      and
       <a href="https://www.edrdg.org/wiki/index.php/KANJIDIC_Project"
         target="_blank">KANJIDIC</a>
       dictionary files. These files are the property of the
-      <a href="http://www.edrdg.org/" target="_blank">
-        Electronic Dictionary Research and Development Group
-      </a>
+      <a href="http://www.edrdg.org/" target="_blank">Electronic
+        Dictionary Research and Development Group</a>,
       and are used in conformance with the Group's
-      <a href="http://www.edrdg.org/edrdg/licence.html" target="_blank">license</a>.
+      <a href="http://www.edrdg.org/edrdg/licence.html"
+        target="_blank">licence</a>.
+    </p>
+    <p>
+      Most of the example sentences in the built-in decks come from the
+      <a href="http://tatoeba.org/" target="_blank">Tatoeba</a> project and the
+      <a href="https://www.edrdg.org/wiki/index.php/Tanaka_Corpus"
+        target="_blank">Tanaka Corpus</a>, which are licensed under
+      <a href="http://creativecommons.org/licenses/by/2.0/fr/"
+        target="_blank">Creative Commons CC-BY</a>.
     </p>
     <div class="input">
       <a class="button" id="about-back" href="#">Back</a>
     </div>
   </div>
 
+  <div id="builtins-screen" class="hidden">
+    <h1>Built-in Decks</h1>
+    <div class="deck">
+      <a class="button" id="builtins-hiragana" href="#">Hiragana</a>
+      <br/>
+      Start learning the Japanese writing system with this deck of flashcards.
+    </div>
+    <div class="deck">
+      <a class="button" id="builtins-katakana" href="#">Katakana</a>
+      <br/>
+      If you are already comfortable with hiragana, you might want to start
+      learning katakana.
+    </div>
+    <div class="deck">
+      <a class="button" id="builtins-basic-kanji" href="#">Basic Kanji</a>
+      <br/>
+      Learn your first 200 kanji through the more than 300 words from this deck
+      of flashcards. (It contains all the kanji that might come up at the N5
+      level of the JLPT, and more.)
+    </div>
+    <div class="deck">
+      <a class="button" id="builtins-lower-intermediate-kanji" href="#">Lower Intermediate Kanji</a>
+      <br/>
+      If you already know around 100-200 basic kanji, challenge yourself with
+      the 300 kanji that is included in this flashcard deck. (It contains all
+      the kanji that might come up at the N4 level of the JLPT, and more.)
+    </div>
+    <div class="input">
+      <a class="button" id="builtins-back" href="#">Back</a>
+    </div>
+  </div>
+
   <div id="load-screen" class="hidden">
     <form id="load-form" action="#" method="get">
-      <h1 id="load-screen-title">Load deck</h1>
+      <h1 id="load-screen-title">Load Deck</h1>
       <div class="input" id="tsv-info">
         <label id="tsv-format">
           File format:<br/>
@@ -352,6 +410,7 @@
     </form>
   </div>
 
+  <script type="text/javascript" src="builtins.js"></script>
   <script type="text/javascript" src="kanjivg.js"></script>
   <script type="text/javascript" src="kanjidic.js"></script>
   <script type="text/javascript" src="kanji-practice.js"></script>

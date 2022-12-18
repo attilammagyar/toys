@@ -33,6 +33,7 @@
             "jinmeiyō (used in names)",
             "jinmeiyō (used in names)"
         ],
+        builtin_decks,
         kanjivg,
         kanjidic,
         is_routing,
@@ -51,6 +52,7 @@
         practice_screen,
         load_screen,
         load_screen_title,
+        builtins_screen,
         current_card,
         current_card_ref = null,
         characters,
@@ -330,6 +332,7 @@
 
     function main()
     {
+        builtin_decks = window.builtin_decks;
         kanjivg = window.kanjivg;
         kanjidic = window.kanjidic;
         initialize_languages();
@@ -385,6 +388,18 @@
         } else if (match = url.match(/#load$/)) {
             start_practising();
             handle_load_confirmation();
+            is_routing = false;
+
+            return;
+        } else if (match = url.match(/#imp$/)) {
+            start_practising();
+            handle_import_tsv_confirmation();
+            is_routing = false;
+
+            return;
+        } else if (match = url.match(/#builtins$/)) {
+            start_practising();
+            handle_menu_builtins_click();
             is_routing = false;
 
             return;
@@ -447,6 +462,7 @@
         tsv_info = $("tsv-info");
         load_screen = $("load-screen");
         load_screen_title = $("load-screen-title");
+        builtins_screen = $("builtins-screen");
         practice_screen = $("practice-screen")
         no_cards = $("no-cards");
         practice_card = $("practice-card");
@@ -502,6 +518,13 @@
         $("no-cards-load").onclick = handle_menu_load_click;
         $("menu-import-tsv").onclick = handle_menu_import_tsv_click;
         $("no-cards-import").onclick = handle_menu_import_tsv_click;
+        $("menu-builtins").onclick = handle_menu_builtins_click;
+        $("no-cards-builtins").onclick = handle_menu_builtins_click;
+        $("builtins-back").onclick = handle_builtins_back_click;
+        $("builtins-hiragana").onclick = handle_builtins_hiragana_click;
+        $("builtins-katakana").onclick = handle_builtins_katakana_click;
+        $("builtins-basic-kanji").onclick = handle_builtins_basic_kanji_click;
+        $("builtins-lower-intermediate-kanji").onclick = handle_lower_intermediate_kanji_click;
         $("menu-add-tsv").onclick = handle_menu_add_tsv_click;
         $("menu-about").onclick = handle_menu_about_click;
         $("about-back").onclick = handle_about_back_click;
@@ -1330,6 +1353,81 @@
         return stop_event(evt);
     }
 
+    function handle_menu_builtins_click(evt)
+    {
+        push_history("builtins");
+        hide(menu);
+        hide_all_screens();
+
+        show(builtins_screen);
+
+        return stop_event(evt);
+    }
+
+    function handle_builtins_back_click(evt)
+    {
+        show_practice_screen();
+
+        return stop_event(evt);
+    }
+
+    function handle_builtins_hiragana_click(evt)
+    {
+        return handle_builtin_deck_click(evt, "hiragana");
+    }
+
+    function handle_builtins_katakana_click(evt)
+    {
+        return handle_builtin_deck_click(evt, "katakana");
+    }
+
+    function handle_builtins_basic_kanji_click(evt)
+    {
+        return handle_builtin_deck_click(evt, "basic_kanji");
+    }
+
+    function handle_lower_intermediate_kanji_click(evt)
+    {
+        return handle_builtin_deck_click(evt, "lower_intermediate_kanji");
+    }
+
+    function handle_builtin_deck_click(evt, deck_name)
+    {
+        if (deck["cards"].length > 0) {
+            ask_for_confirmation(
+                "Loading a built-in deck will replace the current one."
+                + " It is recommended to save the current deck as a file before switching to another deck."
+                + "<br/><br/>Are you sure you want to load a different deck?",
+                function () { load_builtin_deck(deck_name); }
+            );
+        } else {
+            load_builtin_deck(deck_name);
+        }
+
+        return stop_event(evt);
+    }
+
+    function load_builtin_deck(deck_name)
+    {
+        var deck;
+
+        if (!builtin_decks.hasOwnProperty(deck_name)) {
+            return;
+        }
+
+        deck = builtin_decks[deck_name];
+
+        load_deck(deck);
+
+        hide_all_screens();
+        hide(grade_form);
+        show_message("Loaded the " + deck["name"] + " deck.", 2400);
+        start_practising();
+        update_title();
+        store_state();
+        show_practice_screen();
+    }
+
     function show_alert(message, callback)
     {
         alert_message.innerHTML = message;
@@ -1374,9 +1472,10 @@
     {
         push_history("load");
         load_action = load_deck_from_json_file;
-        load_screen_title.innerHTML = "Load deck";
+        load_screen_title.innerHTML = "Load Deck";
         load_input.setAttribute("accept", ".json,application/json");
         hide_all_screens();
+        hide(grade_form);
         show(load_screen);
         hide(tsv_info);
     }
@@ -1386,6 +1485,7 @@
         hide(menu);
 
         hide(about_screen);
+        hide(builtins_screen);
         hide(deck_properties_screen);
         hide(editor_screen);
         hide(load_screen);
@@ -1395,10 +1495,12 @@
 
     function handle_import_tsv_confirmation()
     {
+        push_history("imp");
         load_action = import_deck_from_tsv_file;
-        load_screen_title.innerHTML = "Import deck from TSV";
+        load_screen_title.innerHTML = "Import Deck From TSV";
         load_input.setAttribute("accept", ".tsv,.tab,text/tab-separated-values");
         hide_all_screens();
+        hide(grade_form);
         show(load_screen);
         show(tsv_info);
     }
