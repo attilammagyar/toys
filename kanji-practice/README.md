@@ -8,8 +8,9 @@ Key differences from other similar apps:
 
  * **Dark colorshceme**.
 
- * **No stroke recognition**, so you won't experience the frustration of the
-   app repeatedly failing to accept a correct stroke.
+ * **Minimalistic stroke recognition**, so you won't be frustrated with the
+   app repeatedly failing to accept a correct stroke (however, it might
+   tolerate an incorrect one).
 
  * **No subscription fees, no data privacy concerns.** All your flashcard data
    is located on your device, so the control is 100% yours. This also means

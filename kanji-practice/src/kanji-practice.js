@@ -16,6 +16,7 @@
             + " Are you sure you want to navigate away and lose those changes?"
         ),
         CANVAS_SIZE = 480,
+        TOLERANCE = CANVAS_SIZE / 3,
         CLEAR_GESTURE_VERTICAL = - Math.round(CANVAS_SIZE * 0.55),
         KANJIVG_SIZE = 109,
         SCALE = CANVAS_SIZE / KANJIVG_SIZE,
@@ -94,6 +95,8 @@
         editor_button_save,
         editor_button_save_new,
         is_drawing,
+        undo_needed,
+        undo_snapshot,
         is_waiting_for_click,
         freeze_until,
         is_done,
@@ -107,8 +110,6 @@
         teach_snapshot,
         teach_frames,
         teach_frame,
-        teach_stroke,
-        teach_stroke_length,
         abs_max_distance_x,
         abs_max_distance_y,
         max_distance_y,
@@ -119,6 +120,9 @@
         prev_mid,
         prev_time,
         prev_stroke_width,
+        next_stroke,
+        next_stroke_svg_path,
+        next_stroke_svg_path_length,
         stroke_segments,
         drawn_strokes,
         drawn_characters = [],
@@ -602,6 +606,7 @@
     function initialize_canvas()
     {
         is_drawing = false;
+        undo_needed = false;
         prev_pos = [0, 0];
         prev_mid = null;
         prev_time = 0;
@@ -757,6 +762,10 @@
             return;
         }
 
+        if (undo_needed) {
+            undo_incorrect_stroke();
+        }
+
         start_pos = to_canvas_pos(doc_pos);
         abs_max_distance_x = 0;
         abs_max_distance_y = 0;
@@ -793,6 +802,8 @@
 
     function stop_drawing(doc_pos, is_click_end, needs_drawing)
     {
+        var is_accepted;
+
         if ((is_drawing || is_waiting_for_click || is_done) && is_clear_gesture()) {
             is_drawing = false;
             clear_drawn_character();
@@ -844,26 +855,57 @@
             draw(doc_pos);
         }
 
-        drawn_strokes.push(stroke_segments);
+        is_accepted = is_stroke_acceptable();
+
+        if (is_accepted) {
+            drawn_strokes.push(stroke_segments);
+        } else {
+            undo_needed = true;
+            undo_snapshot = start_snapshot;
+            setTimeout(undo_incorrect_stroke, 50);
+        }
 
         stroke_segments = [];
 
-        if (is_teaching && is_teaching_paused) {
-            continue_teaching();
+        if (is_accepted) {
+            if (is_teaching && is_teaching_paused) {
+                continue_teaching();
+            }
+
+            if (drawn_strokes.length < characters[current_character_ref]["strokes"].length) {
+                update_next_stroke();
+            } else {
+                reveal_character();
+
+                drawn_characters[current_character_ref] = make_canvas_snapshot();
+                drawn_strokes = [];
+                is_waiting_for_click = true;
+                set_revealed_chars(Math.max(revealed_chars, current_character_ref + 1));
+                freeze_until = time() + 0.3;
+
+                if ((current_character_ref + 1) >= characters.length) {
+                    show(practice_pronunciation);
+                }
+            }
+        }
+    }
+
+    function undo_incorrect_stroke()
+    {
+        if (!undo_needed) {
+            if (is_teaching) {
+                continue_teaching();
+            }
+
+            return;
         }
 
-        if (drawn_strokes.length >= characters[current_character_ref]["strokes"].length) {
-            reveal_character();
+        undo_needed = false;
+        restore_canvas_snapshot(undo_snapshot);
+        undo_snapshot = null;
 
-            drawn_characters[current_character_ref] = make_canvas_snapshot();
-            drawn_strokes = [];
-            is_waiting_for_click = true;
-            set_revealed_chars(Math.max(revealed_chars, current_character_ref + 1));
-            freeze_until = time() + 0.3;
-
-            if ((current_character_ref + 1) >= characters.length) {
-                show(practice_pronunciation);
-            }
+        if (is_teaching) {
+            continue_teaching();
         }
     }
 
@@ -877,6 +919,36 @@
         return ((abs_max_distance_x + abs_max_distance_y) <= 5) && (time() - start_time) <= 0.20;
     }
 
+    function is_stroke_acceptable()
+    {
+        var drawn_start, drawn_end, correct_start, correct_end;
+
+        drawn_start = stroke_segments[0][0];
+        drawn_end = stroke_segments[stroke_segments.length - 1][1];
+
+        correct_start = svg_point_at_length_to_canvas_pos(
+            next_stroke_svg_path, 0
+        );
+        correct_end = svg_point_at_length_to_canvas_pos(
+            next_stroke_svg_path, next_stroke_svg_path_length
+        );
+
+        return (
+            (pdistance([correct_start.x, correct_start.y], drawn_start) <= TOLERANCE)
+            && (pdistance([correct_end.x, correct_end.y], drawn_end) <= TOLERANCE)
+        );
+    }
+
+    function svg_point_at_length_to_canvas_pos(svg_path, length)
+    {
+        var pos = svg_path.getPointAtLength(length);
+
+        pos.x *= SCALE;
+        pos.y *= SCALE;
+
+        return pos;
+    }
+
     function reset_current_character()
     {
         stop_animations();
@@ -888,6 +960,15 @@
         is_showing_hint = false;
         save_revealed_snapshot();
         reset_canvas();
+        update_next_stroke();
+    }
+
+    function update_next_stroke()
+    {
+        next_stroke = characters[current_character_ref]["strokes"][drawn_strokes.length];
+        next_stroke_svg_path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        next_stroke_svg_path.setAttribute("d", next_stroke);
+        next_stroke_svg_path_length = next_stroke_svg_path.getTotalLength();
     }
 
     function stop_animations()
@@ -1909,7 +1990,7 @@
 
     function draw_hint()
     {
-        var alpha, strokes, next_stroke, svg_path, pos;
+        var alpha, strokes, pos;
 
         if (hint_remaining_frames < 0 || current_character_ref >= characters.length) {
             stop_showing_hint();
@@ -1928,7 +2009,6 @@
         restore_canvas_snapshot(hint_snapshot);
 
         alpha = Math.min(1.0, (hint_remaining_frames + 1) / 6),
-        next_stroke = strokes[drawn_strokes.length];
 
         canvas_ctx.strokeStyle = "rgba(104, 144, 192, " + String(alpha) + ")";
         canvas_ctx.lineCap = "round";
@@ -1937,9 +2017,7 @@
         canvas_ctx.scale(SCALE, SCALE);
         canvas_ctx.stroke(new Path2D(next_stroke));
 
-        svg_path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        svg_path.setAttribute("d", next_stroke);
-        pos = svg_path.getPointAtLength(0);
+        pos = next_stroke_svg_path.getPointAtLength(0);
         canvas_ctx.fillStyle = "rgba(216, 236, 255, " + String(alpha) + ")";
         canvas_ctx.beginPath();
         canvas_ctx.arc(pos.x, pos.y, 1, 0, FULL_CIRCLE);
@@ -2002,10 +2080,7 @@
             return false;
         }
 
-        teach_stroke = document.createElementNS("http://www.w3.org/2000/svg", "path");
-        teach_stroke.setAttribute("d", strokes[drawn_strokes.length]);
-        teach_stroke_length = teach_stroke.getTotalLength();
-        teach_frames = Math.floor(teach_stroke_length / 3.6) + 1;
+        teach_frames = Math.floor(next_stroke_svg_path_length / 3.6) + 1;
         teach_frame = 0;
 
         return true;
@@ -2016,9 +2091,7 @@
         var pos, l;
 
         l = teach_frame / teach_frames;
-        pos = teach_stroke.getPointAtLength(teach_stroke_length * l);
-        pos.x *= SCALE;
-        pos.y *= SCALE;
+        pos = svg_point_at_length_to_canvas_pos(next_stroke_svg_path, next_stroke_svg_path_length * l);
 
         restore_canvas_snapshot(teach_snapshot);
 
