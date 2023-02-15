@@ -121,7 +121,7 @@ FUNCTIONS = {
 
 def main(argv):
     try:
-        out_file = str(argv[1])
+        conv_file = str(argv[1])
         stop_file = str(argv[2])
         func = str(argv[3])
         width, height = int(argv[4]), int(argv[5])
@@ -135,14 +135,14 @@ def main(argv):
 
     except:
         print(
-            "Usage: {} out.png stop.png C|T|F width height conv_threshold esc_threshold left top right bottom\n".format(
+            "Usage: {} conv.png stop.png C|T|F width height conv_threshold esc_threshold left top right bottom\n".format(
                 os.path.basename(argv[0])
             ),
             file=sys.stderr
         )
         raise
 
-    out_bn = os.path.basename(out_file)
+    out_bn = os.path.basename(conv_file)
     stop_bn = os.path.basename(stop_file)
 
     dw = right - left
@@ -328,7 +328,7 @@ def main(argv):
                 )
 
     print_lines(canvas, font, info_box, padding, line_height, info + stats)
-    img.save(out_file)
+    img.save(conv_file)
 
     del img
     del canvas

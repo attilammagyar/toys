@@ -1,5 +1,5 @@
 
-# f_img_5760_3240_1e-9_1e50_-20_0_11_25_20_0_-11_25.png
+# f_conv_5760_3240_1e-9_1e50_-20_0_11_25_20_0_-11_25.png
 function:       F(z) = (3/4) * (2*z+1) / (cos(pi*z)+2) - 1/4
 left-top:       (      -20.000000, 11.250000       )
 right-bottom:   (       20.000000, -11.250000      )
@@ -21,7 +21,7 @@ right-bottom:   (       20.000000, -11.250000      )
                                                    min      average          max      percent
 stop time        [blue --> light yellow]:      1.00000      1.01669     33.00000     99.99044%
 
-# c_img_5760_3240_1e-9_1e50_-20_0_11_25_20_0_-11_25.png
+# c_conv_5760_3240_1e-9_1e50_-20_0_11_25_20_0_-11_25.png
 function:       f(z) = (z/2) * cos(z*pi/2)^2 + ((3*z+1)/2) * sin(z*pi/2)^2
 left-top:       (      -20.000000, 11.250000       )
 right-bottom:   (       20.000000, -11.250000      )
@@ -43,7 +43,7 @@ right-bottom:   (       20.000000, -11.250000      )
                                                    min      average          max      percent
 stop time        [blue --> light yellow]:      1.00000      1.14799    146.00000      2.51781%
 
-# t_img_5760_3240_1e-9_1e50_-20_0_11_25_20_0_-11_25.png
+# t_conv_5760_3240_1e-9_1e50_-20_0_11_25_20_0_-11_25.png
 function:       T(z) = (3^(sin(z*pi/2)^2) + sin(z*pi/2)^2) / 2
 left-top:       (      -20.000000, 11.250000       )
 right-bottom:   (       20.000000, -11.250000      )
@@ -65,7 +65,7 @@ right-bottom:   (       20.000000, -11.250000      )
                                                    min      average          max      percent
 stop time        [blue --> light yellow]:      1.00000      1.31264    339.00000      6.67411%
 
-# f_img_5760_3240_1e-9_1e50_-10_0_5_625_10_0_-5_625.png
+# f_conv_5760_3240_1e-9_1e50_-10_0_5_625_10_0_-5_625.png
 function:       F(z) = (3/4) * (2*z+1) / (cos(pi*z)+2) - 1/4
 left-top:       (      -10.000000, 5.625000        )
 right-bottom:   (       10.000000, -5.625000       )
@@ -87,7 +87,7 @@ right-bottom:   (       10.000000, -5.625000       )
                                                    min      average          max      percent
 stop time        [blue --> light yellow]:      1.00000      1.03467     32.00000     99.96597%
 
-# c_img_5760_3240_1e-9_1e50_-10_0_5_625_10_0_-5_625.png
+# c_conv_5760_3240_1e-9_1e50_-10_0_5_625_10_0_-5_625.png
 function:       f(z) = (z/2) * cos(z*pi/2)^2 + ((3*z+1)/2) * sin(z*pi/2)^2
 left-top:       (      -10.000000, 5.625000        )
 right-bottom:   (       10.000000, -5.625000       )
@@ -109,7 +109,7 @@ right-bottom:   (       10.000000, -5.625000       )
                                                    min      average          max      percent
 stop time        [blue --> light yellow]:      1.00000      1.19320    109.00000      5.34924%
 
-# t_img_5760_3240_1e-9_1e50_-10_0_5_625_10_0_-5_625.png
+# t_conv_5760_3240_1e-9_1e50_-10_0_5_625_10_0_-5_625.png
 function:       T(z) = (3^(sin(z*pi/2)^2) + sin(z*pi/2)^2) / 2
 left-top:       (      -10.000000, 5.625000        )
 right-bottom:   (       10.000000, -5.625000       )
@@ -131,7 +131,7 @@ right-bottom:   (       10.000000, -5.625000       )
                                                    min      average          max      percent
 stop time        [blue --> light yellow]:      1.00000      1.17688    187.00000     11.83621%
 
-# f_img_5760_3240_1e-9_1e50_-5_0_2_8125_5_0_-2_8125.png
+# f_conv_5760_3240_1e-9_1e50_-5_0_2_8125_5_0_-2_8125.png
 function:       F(z) = (3/4) * (2*z+1) / (cos(pi*z)+2) - 1/4
 left-top:       (       -5.000000, 2.812500        )
 right-bottom:   (        5.000000, -2.812500       )
@@ -152,7 +152,7 @@ right-bottom:   (        5.000000, -2.812500       )
                                                    min      average          max      percent
 stop time        [blue --> light yellow]:      1.00000      1.07225     68.00000     99.86583%
 
-# c_img_5760_3240_1e-9_1e50_-5_0_2_8125_5_0_-2_8125.png
+# c_conv_5760_3240_1e-9_1e50_-5_0_2_8125_5_0_-2_8125.png
 function:       f(z) = (z/2) * cos(z*pi/2)^2 + ((3*z+1)/2) * sin(z*pi/2)^2
 left-top:       (       -5.000000, 2.812500        )
 right-bottom:   (        5.000000, -2.812500       )
@@ -173,7 +173,7 @@ right-bottom:   (        5.000000, -2.812500       )
                                                    min      average          max      percent
 stop time        [blue --> light yellow]:      1.00000      1.25507    109.00000     11.51601%
 
-# t_img_5760_3240_1e-9_1e50_-5_0_2_8125_5_0_-2_8125.png
+# t_conv_5760_3240_1e-9_1e50_-5_0_2_8125_5_0_-2_8125.png
 function:       T(z) = (3^(sin(z*pi/2)^2) + sin(z*pi/2)^2) / 2
 left-top:       (       -5.000000, 2.812500        )
 right-bottom:   (        5.000000, -2.812500       )
@@ -195,7 +195,7 @@ right-bottom:   (        5.000000, -2.812500       )
                                                    min      average          max      percent
 stop time        [blue --> light yellow]:      1.00000      1.21339    134.00000     20.94857%
 
-# f_img_5760_3240_1e-9_1e50_-2_5_1_40625_2_5_-1_40625.png
+# f_conv_5760_3240_1e-9_1e50_-2_5_1_40625_2_5_-1_40625.png
 function:       F(z) = (3/4) * (2*z+1) / (cos(pi*z)+2) - 1/4
 left-top:       (       -2.500000, 1.406250        )
 right-bottom:   (        2.500000, -1.406250       )
@@ -216,7 +216,7 @@ right-bottom:   (        2.500000, -1.406250       )
                                                    min      average          max      percent
 stop time        [blue --> light yellow]:      1.00000      1.12332     78.00000     99.46541%
 
-# c_img_5760_3240_1e-9_1e50_-2_5_1_40625_2_5_-1_40625.png
+# c_conv_5760_3240_1e-9_1e50_-2_5_1_40625_2_5_-1_40625.png
 function:       f(z) = (z/2) * cos(z*pi/2)^2 + ((3*z+1)/2) * sin(z*pi/2)^2
 left-top:       (       -2.500000, 1.406250        )
 right-bottom:   (        2.500000, -1.406250       )
@@ -237,7 +237,7 @@ right-bottom:   (        2.500000, -1.406250       )
                                                    min      average          max      percent
 stop time        [blue --> light yellow]:      1.00000      1.25989     80.00000     27.90177%
 
-# t_img_5760_3240_1e-9_1e50_-2_5_1_40625_2_5_-1_40625.png
+# t_conv_5760_3240_1e-9_1e50_-2_5_1_40625_2_5_-1_40625.png
 function:       T(z) = (3^(sin(z*pi/2)^2) + sin(z*pi/2)^2) / 2
 left-top:       (       -2.500000, 1.406250        )
 right-bottom:   (        2.500000, -1.406250       )
@@ -258,7 +258,7 @@ right-bottom:   (        2.500000, -1.406250       )
                                                    min      average          max      percent
 stop time        [blue --> light yellow]:      1.00000      1.25061     63.00000     43.10738%
 
-# f_img_5760_3240_1e-9_1e50_0_25_0_703125_2_75_-0_703125.png
+# f_conv_5760_3240_1e-9_1e50_0_25_0_703125_2_75_-0_703125.png
 function:       F(z) = (3/4) * (2*z+1) / (cos(pi*z)+2) - 1/4
 left-top:       (        0.250000, 0.703125        )
 right-bottom:   (        2.750000, -0.703125       )
@@ -279,7 +279,7 @@ right-bottom:   (        2.750000, -0.703125       )
                                                    min      average          max      percent
 stop time        [blue --> light yellow]:      1.00000      1.43662     78.00000     99.23338%
 
-# c_img_5760_3240_1e-9_1e50_0_25_0_703125_2_75_-0_703125.png
+# c_conv_5760_3240_1e-9_1e50_0_25_0_703125_2_75_-0_703125.png
 function:       f(z) = (z/2) * cos(z*pi/2)^2 + ((3*z+1)/2) * sin(z*pi/2)^2
 left-top:       (        0.250000, 0.703125        )
 right-bottom:   (        2.750000, -0.703125       )
@@ -301,7 +301,7 @@ right-bottom:   (        2.750000, -0.703125       )
                                                    min      average          max      percent
 stop time        [blue --> light yellow]:      1.00000      1.46887    178.00000     33.06704%
 
-# t_img_5760_3240_1e-9_1e50_0_25_0_703125_2_75_-0_703125.png
+# t_conv_5760_3240_1e-9_1e50_0_25_0_703125_2_75_-0_703125.png
 function:       T(z) = (3^(sin(z*pi/2)^2) + sin(z*pi/2)^2) / 2
 left-top:       (        0.250000, 0.703125        )
 right-bottom:   (        2.750000, -0.703125       )
@@ -322,7 +322,7 @@ right-bottom:   (        2.750000, -0.703125       )
                                                    min      average          max      percent
 stop time        [blue --> light yellow]:      1.00000      1.44390     57.00000     51.54657%
 
-# f_img_5760_3240_1e-9_1e50_0_875_0_3515625_2_125_-0_3515625.png
+# f_conv_5760_3240_1e-9_1e50_0_875_0_3515625_2_125_-0_3515625.png
 function:       F(z) = (3/4) * (2*z+1) / (cos(pi*z)+2) - 1/4
 left-top:       (        0.875000, 0.351562        )
 right-bottom:   (        2.125000, -0.351562       )
@@ -343,7 +343,7 @@ right-bottom:   (        2.125000, -0.351562       )
                                                    min      average          max      percent
 stop time        [blue --> light yellow]:      1.00000      1.58330     82.00000     98.67263%
 
-# c_img_5760_3240_1e-9_1e50_0_875_0_3515625_2_125_-0_3515625.png
+# c_conv_5760_3240_1e-9_1e50_0_875_0_3515625_2_125_-0_3515625.png
 function:       f(z) = (z/2) * cos(z*pi/2)^2 + ((3*z+1)/2) * sin(z*pi/2)^2
 left-top:       (        0.875000, 0.351562        )
 right-bottom:   (        2.125000, -0.351562       )
@@ -364,7 +364,7 @@ right-bottom:   (        2.125000, -0.351562       )
                                                    min      average          max      percent
 stop time        [blue --> light yellow]:      1.00000      1.56188     50.00000     68.58441%
 
-# t_img_5760_3240_1e-9_1e50_0_875_0_3515625_2_125_-0_3515625.png
+# t_conv_5760_3240_1e-9_1e50_0_875_0_3515625_2_125_-0_3515625.png
 function:       T(z) = (3^(sin(z*pi/2)^2) + sin(z*pi/2)^2) / 2
 left-top:       (        0.875000, 0.351562        )
 right-bottom:   (        2.125000, -0.351562       )
@@ -385,7 +385,7 @@ right-bottom:   (        2.125000, -0.351562       )
                                                    min      average          max      percent
 stop time        [blue --> light yellow]:      1.00000      1.60415     70.00000     80.88317%
 
-# f_img_5760_3240_1e-9_1e50_1_1875_0_17578125_1_8125_-0_17578125.png
+# f_conv_5760_3240_1e-9_1e50_1_1875_0_17578125_1_8125_-0_17578125.png
 function:       F(z) = (3/4) * (2*z+1) / (cos(pi*z)+2) - 1/4
 left-top:       (        1.187500, 0.175781        )
 right-bottom:   (        1.812500, -0.175781       )
@@ -406,7 +406,7 @@ right-bottom:   (        1.812500, -0.175781       )
                                                    min      average          max      percent
 stop time        [blue --> light yellow]:      1.00000      1.35224      2.00000    100.00000%
 
-# c_img_5760_3240_1e-9_1e50_1_1875_0_17578125_1_8125_-0_17578125.png
+# c_conv_5760_3240_1e-9_1e50_1_1875_0_17578125_1_8125_-0_17578125.png
 function:       f(z) = (z/2) * cos(z*pi/2)^2 + ((3*z+1)/2) * sin(z*pi/2)^2
 left-top:       (        1.187500, 0.175781        )
 right-bottom:   (        1.812500, -0.175781       )
@@ -427,7 +427,7 @@ right-bottom:   (        1.812500, -0.175781       )
                                                    min      average          max      percent
 stop time        [blue --> light yellow]:      1.00000      1.70464     20.00000     92.96697%
 
-# t_img_5760_3240_1e-9_1e50_1_1875_0_17578125_1_8125_-0_17578125.png
+# t_conv_5760_3240_1e-9_1e50_1_1875_0_17578125_1_8125_-0_17578125.png
 function:       T(z) = (3^(sin(z*pi/2)^2) + sin(z*pi/2)^2) / 2
 left-top:       (        1.187500, 0.175781        )
 right-bottom:   (        1.812500, -0.175781       )

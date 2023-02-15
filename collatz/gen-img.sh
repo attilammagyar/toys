@@ -30,7 +30,7 @@ gen_img()
         l=$(echo "$f" | tr [[:upper:]] [[:lower:]])
 
         python collatz-vis.py \
-            "$img_dir/${l}_img_$p.png" \
+            "$img_dir/${l}_conv_$p.png" \
             "$img_dir/${l}_stop_$p.png" \
             "$f" \
             "$w" "$h" \
@@ -40,8 +40,8 @@ gen_img()
     done
 }
 
-gen_img     -20.0       11.25           20.0        -11.25
-gen_img     -10.0        5.625          10.0         -5.625
+gen_img    -20.0        11.25           20.0        -11.25
+gen_img    -10.0         5.625          10.0         -5.625
 gen_img     -5.0         2.8125          5.0         -2.8125
 gen_img     -2.5         1.40625         2.5         -1.40625
 gen_img      0.25        0.703125        2.75        -0.703125
