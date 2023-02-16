@@ -20,14 +20,20 @@ Table of Contents
        * [Region: (0.250000, 0.703125), (2.750000, -0.703125)](#region-5)
        * [Region: (0.875000, 0.351562), (2.125000, -0.351562)](#region-6)
        * [Region: (1.187500, 0.175781), (1.812500, -0.175781)](#region-7)
+       * [Region: (95.000000, 2.812500), (105.000000, -2.812500)](#region-8)
+       * [Region: (1095.000000, 2.812500), (1105.000000, -2.812500)](#region-9)
+       * [Region: (9095.000000, 2.812500), (9105.000000, -2.812500)](#region-10)
     * [Stopping Times](#stop)
-       * [Region: (-20.000000, 11.250000), (20.000000, -11.250000)](#region-8)
-       * [Region: (-10.000000, 5.625000), (10.000000, -5.625000)](#region-9)
-       * [Region: (-5.000000, 2.812500), (5.000000, -2.812500)](#region-10)
-       * [Region: (-2.500000, 1.406250), (2.500000, -1.406250)](#region-11)
-       * [Region: (0.250000, 0.703125), (2.750000, -0.703125)](#region-12)
-       * [Region: (0.875000, 0.351562), (2.125000, -0.351562)](#region-13)
-       * [Region: (1.187500, 0.175781), (1.812500, -0.175781)](#region-14)
+       * [Region: (-20.000000, 11.250000), (20.000000, -11.250000)](#region-11)
+       * [Region: (-10.000000, 5.625000), (10.000000, -5.625000)](#region-12)
+       * [Region: (-5.000000, 2.812500), (5.000000, -2.812500)](#region-13)
+       * [Region: (-2.500000, 1.406250), (2.500000, -1.406250)](#region-14)
+       * [Region: (0.250000, 0.703125), (2.750000, -0.703125)](#region-15)
+       * [Region: (0.875000, 0.351562), (2.125000, -0.351562)](#region-16)
+       * [Region: (1.187500, 0.175781), (1.812500, -0.175781)](#region-17)
+       * [Region: (95.000000, 2.812500), (105.000000, -2.812500)](#region-18)
+       * [Region: (1095.000000, 2.812500), (1105.000000, -2.812500)](#region-19)
+       * [Region: (9095.000000, 2.812500), (9105.000000, -2.812500)](#region-20)
 
 <a name="conjecture"></a>
 
@@ -586,13 +592,161 @@ $10^{50}$
         other cycle           [yellow --> white]:    124.00000    147.40667    250.00000      0.00161%
 
 
+<a name="region-8"></a>
+
+#### Region: (95.000000, 2.812500), (105.000000, -2.812500)
+
+ * F: [`images/f_conv_2880_1620_1e-9_1e50_95_0_2_8125_105_0_-2_8125.png`](https://github.com/attilammagyar/toys/raw/gh-pages/collatz/images/f_conv_2880_1620_1e-9_1e50_95_0_2_8125_105_0_-2_8125.png)
+
+        function:       F(z) = (3/4) * (2*z+1) / (cos(pi*z)+2) - 1/4
+        left-top:       (       95.000000, 2.812500        )
+        right-bottom:   (      105.000000, -2.812500       )
+        conv_threshold: 1.000000e-09          esc_threshold: 1.000000e+50
+
+                                                           min      average          max      percent
+        converge to 0           [black --> grey]:     19.00000     29.94793     55.00000     98.49456%
+        cycle (1; 2)            [red --> orange]:     11.00000    116.29431    168.00000      0.36638%
+        escape              [blue --> turquoise]:      2.00000      2.01693      9.00000      0.41019%
+        fixed point            [purple --> pink]:     22.00000     28.48257     47.00000      0.72805%
+        other cycle           [yellow --> white]:     24.00000    201.00000    283.00000      0.00081%
+
+
+ * f: [`images/c_conv_2880_1620_1e-9_1e50_95_0_2_8125_105_0_-2_8125.png`](https://github.com/attilammagyar/toys/raw/gh-pages/collatz/images/c_conv_2880_1620_1e-9_1e50_95_0_2_8125_105_0_-2_8125.png)
+
+        function:       f(z) = (z/2) * cos(z*pi/2)^2 + ((3*z+1)/2) * sin(z*pi/2)^2
+        left-top:       (       95.000000, 2.812500        )
+        right-bottom:   (      105.000000, -2.812500       )
+        conv_threshold: 1.000000e-09          esc_threshold: 1.000000e+50
+
+                                                           min      average          max      percent
+        converge to 0           [black --> grey]:     29.00000     30.42857     35.00000      0.00030%
+        cycle (1; 2)            [red --> orange]:     11.00000    132.08337    376.00000      0.05039%
+        escape              [blue --> turquoise]:      2.00000      2.14116     18.00000     99.93600%
+        fixed point            [purple --> pink]:     18.00000     24.84615     31.00000      0.00056%
+        other cycle           [yellow --> white]:     28.00000     71.93950    276.00000      0.01275%
+
+
+ * T: [`images/t_conv_2880_1620_1e-9_1e50_95_0_2_8125_105_0_-2_8125.png`](https://github.com/attilammagyar/toys/raw/gh-pages/collatz/images/t_conv_2880_1620_1e-9_1e50_95_0_2_8125_105_0_-2_8125.png)
+
+        function:       T(z) = (3^(sin(z*pi/2)^2) + sin(z*pi/2)^2) / 2
+        left-top:       (       95.000000, 2.812500        )
+        right-bottom:   (      105.000000, -2.812500       )
+        conv_threshold: 1.000000e-09          esc_threshold: 1.000000e+50
+
+                                                           min      average          max      percent
+        converge to 0           [black --> grey]:     23.00000     32.75394     98.00000      0.30976%
+        cycle (1; 2)            [red --> orange]:     11.00000    120.27374    222.00000      0.07673%
+        escape              [blue --> turquoise]:      1.00000      2.14105     43.00000     99.41212%
+        fixed point            [purple --> pink]:     22.00000     30.39081     73.00000      0.18806%
+        other                            [green]:    500.00000    500.00000    500.00000      0.00086%
+        other cycle           [yellow --> white]:    121.00000    175.90893    334.00000      0.01247%
+
+
+<a name="region-9"></a>
+
+#### Region: (1095.000000, 2.812500), (1105.000000, -2.812500)
+
+ * F: [`images/f_conv_2880_1620_1e-9_1e50_1095_0_2_8125_1105_0_-2_8125.png`](https://github.com/attilammagyar/toys/raw/gh-pages/collatz/images/f_conv_2880_1620_1e-9_1e50_1095_0_2_8125_1105_0_-2_8125.png)
+
+        function:       F(z) = (3/4) * (2*z+1) / (cos(pi*z)+2) - 1/4
+        left-top:       (     1095.000000, 2.812500        )
+        right-bottom:   (     1105.000000, -2.812500       )
+        conv_threshold: 1.000000e-09          esc_threshold: 1.000000e+50
+
+                                                           min      average          max      percent
+        converge to 0           [black --> grey]:     22.00000     30.19708     54.00000     84.27349%
+        cycle (1; 2)            [red --> orange]:     16.00000    118.41080    214.00000      0.33929%
+        escape              [blue --> turquoise]:      2.00000      2.00273      4.00000     14.65179%
+        fixed point            [purple --> pink]:     21.00000     28.46612     48.00000      0.73453%
+        other cycle           [yellow --> white]:     31.00000    226.23810    264.00000      0.00090%
+
+
+ * f: [`images/c_conv_2880_1620_1e-9_1e50_1095_0_2_8125_1105_0_-2_8125.png`](https://github.com/attilammagyar/toys/raw/gh-pages/collatz/images/c_conv_2880_1620_1e-9_1e50_1095_0_2_8125_1105_0_-2_8125.png)
+
+        function:       f(z) = (z/2) * cos(z*pi/2)^2 + ((3*z+1)/2) * sin(z*pi/2)^2
+        left-top:       (     1095.000000, 2.812500        )
+        right-bottom:   (     1105.000000, -2.812500       )
+        conv_threshold: 1.000000e-09          esc_threshold: 1.000000e+50
+
+                                                           min      average          max      percent
+        cycle (1; 2)            [red --> orange]:     16.00000    161.53150    451.00000      0.05069%
+        escape              [blue --> turquoise]:      2.00000      2.02330     11.00000     99.93806%
+        fixed point            [purple --> pink]:     28.00000     29.00000     30.00000      0.00021%
+        other cycle           [yellow --> white]:     45.00000    103.52233    301.00000      0.01104%
+
+
+ * T: [`images/t_conv_2880_1620_1e-9_1e50_1095_0_2_8125_1105_0_-2_8125.png`](https://github.com/attilammagyar/toys/raw/gh-pages/collatz/images/t_conv_2880_1620_1e-9_1e50_1095_0_2_8125_1105_0_-2_8125.png)
+
+        function:       T(z) = (3^(sin(z*pi/2)^2) + sin(z*pi/2)^2) / 2
+        left-top:       (     1095.000000, 2.812500        )
+        right-bottom:   (     1105.000000, -2.812500       )
+        conv_threshold: 1.000000e-09          esc_threshold: 1.000000e+50
+
+                                                           min      average          max      percent
+        converge to 0           [black --> grey]:     25.00000     33.57961     98.00000      0.14566%
+        cycle (1; 2)            [red --> orange]:     16.00000    133.44396    257.00000      0.06846%
+        escape              [blue --> turquoise]:      1.00000      2.02738     55.00000     99.65246%
+        fixed point            [purple --> pink]:     20.00000     31.24631     73.00000      0.12061%
+        other                            [green]:    500.00000    500.00000    500.00000      0.00086%
+        other cycle           [yellow --> white]:    120.00000    172.60573    334.00000      0.01196%
+
+
+<a name="region-10"></a>
+
+#### Region: (9095.000000, 2.812500), (9105.000000, -2.812500)
+
+ * F: [`images/f_conv_2880_1620_1e-9_1e50_9095_0_2_8125_9105_0_-2_8125.png`](https://github.com/attilammagyar/toys/raw/gh-pages/collatz/images/f_conv_2880_1620_1e-9_1e50_9095_0_2_8125_9105_0_-2_8125.png)
+
+        function:       F(z) = (3/4) * (2*z+1) / (cos(pi*z)+2) - 1/4
+        left-top:       (     9095.000000, 2.812500        )
+        right-bottom:   (     9105.000000, -2.812500       )
+        conv_threshold: 1.000000e-09          esc_threshold: 1.000000e+50
+
+                                                           min      average          max      percent
+        converge to 0           [black --> grey]:     24.00000     30.07238     65.00000     55.75311%
+        cycle (1; 2)            [red --> orange]:     18.00000    123.83282    253.00000      0.11756%
+        escape              [blue --> turquoise]:      2.00000      2.00205      4.00000     44.06970%
+        fixed point            [purple --> pink]:     21.00000     30.40455     47.00000      0.05748%
+        other cycle           [yellow --> white]:     23.00000    197.82000    331.00000      0.00214%
+
+
+ * f: [`images/c_conv_2880_1620_1e-9_1e50_9095_0_2_8125_9105_0_-2_8125.png`](https://github.com/attilammagyar/toys/raw/gh-pages/collatz/images/c_conv_2880_1620_1e-9_1e50_9095_0_2_8125_9105_0_-2_8125.png)
+
+        function:       f(z) = (z/2) * cos(z*pi/2)^2 + ((3*z+1)/2) * sin(z*pi/2)^2
+        left-top:       (     9095.000000, 2.812500        )
+        right-bottom:   (     9105.000000, -2.812500       )
+        conv_threshold: 1.000000e-09          esc_threshold: 1.000000e+50
+
+                                                           min      average          max      percent
+        cycle (1; 2)            [red --> orange]:     19.00000    190.10214    476.00000      0.05015%
+        escape              [blue --> turquoise]:      2.00000      2.00421      6.00000     99.93827%
+        other                            [green]:    500.00000    500.00000    500.00000      0.00004%
+        other cycle           [yellow --> white]:     57.00000    139.03346    412.00000      0.01153%
+
+
+ * T: [`images/t_conv_2880_1620_1e-9_1e50_9095_0_2_8125_9105_0_-2_8125.png`](https://github.com/attilammagyar/toys/raw/gh-pages/collatz/images/t_conv_2880_1620_1e-9_1e50_9095_0_2_8125_9105_0_-2_8125.png)
+
+        function:       T(z) = (3^(sin(z*pi/2)^2) + sin(z*pi/2)^2) / 2
+        left-top:       (     9095.000000, 2.812500        )
+        right-bottom:   (     9105.000000, -2.812500       )
+        conv_threshold: 1.000000e-09          esc_threshold: 1.000000e+50
+
+                                                           min      average          max      percent
+        converge to 0           [black --> grey]:     25.00000     34.09361     98.00000      0.08288%
+        cycle (1; 2)            [red --> orange]:     19.00000    146.51795    269.00000      0.06807%
+        escape              [blue --> turquoise]:      1.00000      1.98476     40.00000     99.75851%
+        fixed point            [purple --> pink]:     24.00000     31.93726     73.00000      0.07823%
+        other                            [green]:    500.00000    500.00000    500.00000      0.00086%
+        other cycle           [yellow --> white]:    119.00000    174.39700    334.00000      0.01145%
+
+
 <a name="stop"></a>
 
 ### Stopping Times
 
 Maximum iterations: $500$
 
-<a name="region-8"></a>
+<a name="region-11"></a>
 
 #### Region: (-20.000000, 11.250000), (20.000000, -11.250000)
 
@@ -626,7 +780,7 @@ Maximum iterations: $500$
         stop time        [blue --> light yellow]:      1.00000      1.31264    339.00000      6.67411%
 
 
-<a name="region-9"></a>
+<a name="region-12"></a>
 
 #### Region: (-10.000000, 5.625000), (10.000000, -5.625000)
 
@@ -660,7 +814,7 @@ Maximum iterations: $500$
         stop time        [blue --> light yellow]:      1.00000      1.17688    187.00000     11.83621%
 
 
-<a name="region-10"></a>
+<a name="region-13"></a>
 
 #### Region: (-5.000000, 2.812500), (5.000000, -2.812500)
 
@@ -694,7 +848,7 @@ Maximum iterations: $500$
         stop time        [blue --> light yellow]:      1.00000      1.21339    134.00000     20.94857%
 
 
-<a name="region-11"></a>
+<a name="region-14"></a>
 
 #### Region: (-2.500000, 1.406250), (2.500000, -1.406250)
 
@@ -728,7 +882,7 @@ Maximum iterations: $500$
         stop time        [blue --> light yellow]:      1.00000      1.25061     63.00000     43.10738%
 
 
-<a name="region-12"></a>
+<a name="region-15"></a>
 
 #### Region: (0.250000, 0.703125), (2.750000, -0.703125)
 
@@ -762,7 +916,7 @@ Maximum iterations: $500$
         stop time        [blue --> light yellow]:      1.00000      1.44390     57.00000     51.54657%
 
 
-<a name="region-13"></a>
+<a name="region-16"></a>
 
 #### Region: (0.875000, 0.351562), (2.125000, -0.351562)
 
@@ -796,7 +950,7 @@ Maximum iterations: $500$
         stop time        [blue --> light yellow]:      1.00000      1.60415     70.00000     80.88317%
 
 
-<a name="region-14"></a>
+<a name="region-17"></a>
 
 #### Region: (1.187500, 0.175781), (1.812500, -0.175781)
 
@@ -828,3 +982,104 @@ Maximum iterations: $500$
 
                                                            min      average          max      percent
         stop time        [blue --> light yellow]:      1.00000      1.51734     11.00000     97.50324%
+
+
+<a name="region-18"></a>
+
+#### Region: (95.000000, 2.812500), (105.000000, -2.812500)
+
+ * F: [`images/f_stop_2880_1620_1e-9_1e50_95_0_2_8125_105_0_-2_8125.png`](https://github.com/attilammagyar/toys/raw/gh-pages/collatz/images/f_stop_2880_1620_1e-9_1e50_95_0_2_8125_105_0_-2_8125.png)
+
+        function:       F(z) = (3/4) * (2*z+1) / (cos(pi*z)+2) - 1/4
+        left-top:       (       95.000000, 2.812500        )
+        right-bottom:   (      105.000000, -2.812500       )
+
+                                                           min      average          max      percent
+        stop time        [blue --> light yellow]:      1.00000      1.05845     42.00000     99.59341%
+
+
+ * f: [`images/c_stop_2880_1620_1e-9_1e50_95_0_2_8125_105_0_-2_8125.png`](https://github.com/attilammagyar/toys/raw/gh-pages/collatz/images/c_stop_2880_1620_1e-9_1e50_95_0_2_8125_105_0_-2_8125.png)
+
+        function:       f(z) = (z/2) * cos(z*pi/2)^2 + ((3*z+1)/2) * sin(z*pi/2)^2
+        left-top:       (       95.000000, 2.812500        )
+        right-bottom:   (      105.000000, -2.812500       )
+
+                                                           min      average          max      percent
+        stop time        [blue --> light yellow]:      1.00000      1.03533    241.00000      9.03112%
+
+
+ * T: [`images/t_stop_2880_1620_1e-9_1e50_95_0_2_8125_105_0_-2_8125.png`](https://github.com/attilammagyar/toys/raw/gh-pages/collatz/images/t_stop_2880_1620_1e-9_1e50_95_0_2_8125_105_0_-2_8125.png)
+
+        function:       T(z) = (3^(sin(z*pi/2)^2) + sin(z*pi/2)^2) / 2
+        left-top:       (       95.000000, 2.812500        )
+        right-bottom:   (      105.000000, -2.812500       )
+
+                                                           min      average          max      percent
+        stop time        [blue --> light yellow]:      1.00000      1.01061     45.00000     39.57868%
+
+<a name="region-19"></a>
+
+#### Region: (1095.000000, 2.812500), (1105.000000, -2.812500)
+
+ * F: [`images/f_stop_2880_1620_1e-9_1e50_1095_0_2_8125_1105_0_-2_8125.png`](https://github.com/attilammagyar/toys/raw/gh-pages/collatz/images/f_stop_2880_1620_1e-9_1e50_1095_0_2_8125_1105_0_-2_8125.png)
+
+        function:       F(z) = (3/4) * (2*z+1) / (cos(pi*z)+2) - 1/4
+        left-top:       (     1095.000000, 2.812500        )
+        right-bottom:   (     1105.000000, -2.812500       )
+
+                                                           min      average          max      percent
+        stop time        [blue --> light yellow]:      1.00000      1.01787     32.00000     95.53498%
+
+
+ * f: [`images/c_stop_2880_1620_1e-9_1e50_1095_0_2_8125_1105_0_-2_8125.png`](https://github.com/attilammagyar/toys/raw/gh-pages/collatz/images/c_stop_2880_1620_1e-9_1e50_1095_0_2_8125_1105_0_-2_8125.png)
+
+        function:       f(z) = (z/2) * cos(z*pi/2)^2 + ((3*z+1)/2) * sin(z*pi/2)^2
+        left-top:       (     1095.000000, 2.812500        )
+        right-bottom:   (     1105.000000, -2.812500       )
+
+                                                           min      average          max      percent
+        stop time        [blue --> light yellow]:      1.00000      1.02706    162.00000      9.01089%
+
+
+ * T: [`images/t_stop_2880_1620_1e-9_1e50_1095_0_2_8125_1105_0_-2_8125.png`](https://github.com/attilammagyar/toys/raw/gh-pages/collatz/images/t_stop_2880_1620_1e-9_1e50_1095_0_2_8125_1105_0_-2_8125.png)
+
+        function:       T(z) = (3^(sin(z*pi/2)^2) + sin(z*pi/2)^2) / 2
+        left-top:       (     1095.000000, 2.812500        )
+        right-bottom:   (     1105.000000, -2.812500       )
+
+                                                           min      average          max      percent
+        stop time        [blue --> light yellow]:      1.00000      1.00245     47.00000     51.58486%
+
+
+<a name="region-20"></a>
+
+#### Region: (9095.000000, 2.812500), (9105.000000, -2.812500)
+
+ * F: [`images/f_stop_2880_1620_1e-9_1e50_9095_0_2_8125_9105_0_-2_8125.png`](https://github.com/attilammagyar/toys/raw/gh-pages/collatz/images/f_stop_2880_1620_1e-9_1e50_9095_0_2_8125_9105_0_-2_8125.png)
+
+        function:       F(z) = (3/4) * (2*z+1) / (cos(pi*z)+2) - 1/4
+        left-top:       (     9095.000000, 2.812500        )
+        right-bottom:   (     9105.000000, -2.812500       )
+
+                                                           min      average          max      percent
+        stop time        [blue --> light yellow]:      1.00000      1.00382     25.00000     94.19689%
+
+
+ * f: [`images/c_stop_2880_1620_1e-9_1e50_9095_0_2_8125_9105_0_-2_8125.png`](https://github.com/attilammagyar/toys/raw/gh-pages/collatz/images/c_stop_2880_1620_1e-9_1e50_9095_0_2_8125_9105_0_-2_8125.png)
+
+        function:       f(z) = (z/2) * cos(z*pi/2)^2 + ((3*z+1)/2) * sin(z*pi/2)^2
+        left-top:       (     9095.000000, 2.812500        )
+        right-bottom:   (     9105.000000, -2.812500       )
+
+                                                           min      average          max      percent
+        stop time        [blue --> light yellow]:      1.00000      1.02495    164.00000      9.01170%
+
+
+ * T: [`images/t_stop_2880_1620_1e-9_1e50_9095_0_2_8125_9105_0_-2_8125.png`](https://github.com/attilammagyar/toys/raw/gh-pages/collatz/images/t_stop_2880_1620_1e-9_1e50_9095_0_2_8125_9105_0_-2_8125.png)
+
+        function:       T(z) = (3^(sin(z*pi/2)^2) + sin(z*pi/2)^2) / 2
+        left-top:       (     9095.000000, 2.812500        )
+        right-bottom:   (     9105.000000, -2.812500       )
+
+                                                           min      average          max      percent
+        stop time        [blue --> light yellow]:      1.00000      1.00228     70.00000     51.59600%
