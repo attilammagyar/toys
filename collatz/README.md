@@ -147,7 +147,7 @@ Non-negative Real Fixed Points of F
 The original Collatz function does not have any positive integer fixed points
 (proof left for the reader), but $F$ has infinitely many non-negative real
 fixed points which can be obtained by solving the following equation for
-$x \in \mathbb{R}_{\ge 0}$:
+$0 \le x \in \mathbb{R}$:
 
 $$ (1) \quad F(x) =
 \frac{3}{4} \cdot \frac{2x+1}{\cos(\pi x)+2} - \frac{1}{4} = x $$
@@ -178,16 +178,16 @@ One way to solve this for $\frac{1}{2} < x \in \mathbb{R}$ is to notice that
 
 $$ \lim_{x \to \infty} - \frac{2x-1}{4x+1} = - \frac{1}{2} $$
 
-therefore for $\frac{1}{2} < x \in \mathbb{R}$ to be a fixed point,
-$\cos(\pi x)$ must also be close to $\frac{1}{2}$.
+therefore the fixed points of the form $\frac{1}{2} < x \in \mathbb{R}$ are
+located where $\cos(\pi x)$ is close to $- \frac{1}{2}$, thus, they are in the
+vicinity of $\frac{2}{3}+2k$ and $\frac{4}{3}+2k$ for
+$\forall k \in \mathbb{N}$.
 
-Thus, the fixed points in question should fall close to $\frac{2}{3}+2k$ and
-$\frac{4}{3}+2k$ for $\forall k \in \mathbb{N}$. One can use
-[Newton's method][nm] with starting points from
-$x_0 \in \\{ \frac{2}{3}+2k, \frac{4}{3}+2k \mid k \in \mathbb{N} \\}$ to find
-them.
+One can use [Newton's method][newton] with starting points from
+$x_0 \in \\{ \frac{2}{3}+2k + \varepsilon, \frac{4}{3}+2k + \varepsilon \mid k \in \mathbb{N}, \varepsilon \in \mathbb{R} \\}$
+to find them.
 
-  [nm]: https://en.wikipedia.org/wiki/Newton%27s_method
+  [newton]: https://en.wikipedia.org/wiki/Newton%27s_method
 
 Note that $F$ does not have any positive integer fixed pointes, because the
 original Collatz function does not have any either.
