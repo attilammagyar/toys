@@ -54,8 +54,7 @@ For $k, n \in \mathbb{N}$:
 $$ C^{(k)}(n) =
 \begin{cases}
 n & \text{if $k = 0$} \\
-C(n) & \text{if $k = 1$} \\
-C^{(k-1)}(n) & \text{if $k > 1$}
+C(C^{(k-1)}(n)) & \text{if $k > 0$}
 \end{cases} $$
 
 The _stopping time_ for a given $n \in \mathbb{N}$ is defined as the smallest
