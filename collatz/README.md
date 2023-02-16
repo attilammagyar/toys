@@ -9,7 +9,7 @@ Table of Contents
  * [Table of Contents](#toc)
  * [The Collatz Conjecture](#conjecture)
  * [Extending to the Complex Plane](#extending)
- * [The Positive Real Fixed Points of F](#fixed-points)
+ * [Non-negative Real Fixed Points of F](#fixed-points)
  * [Properties of F](#properties)
  * [Visualizations of Convergence and Stopping Times](#visualizations)
     * [Convergence](#conv)
@@ -53,11 +53,16 @@ For $k, n \in \mathbb{N}$:
 
 $$ C^{(k)}(n) =
 \begin{cases}
+n & \text{if $k = 0$} \\
 C(n) & \text{if $k = 1$} \\
 C^{(k-1)}(n) & \text{if $k > 1$}
 \end{cases} $$
 
-A shortcut version of this function can be defined by exploiting that
+The _stopping time_ for a given $n \in \mathbb{N}$ is defined as the smallest
+$k \in \mathbb{N}$ for which $C^{(k)}(n) < n$. If no such $k$ exists, then the
+stopping time for $n$ is considered to be infinite.
+
+A shortcut version of the Collatz function can be defined by exploiting that
 
 $$ \forall n \in \mathbb{N} :
 n \equiv 1 \pmod 2 \Rightarrow 3n+1 \equiv 0 \pmod 2 $$
@@ -137,12 +142,13 @@ $$ F(z) = \frac{3}{4} \cdot \frac{2z+1}{\cos(\pi z)+2} - \frac{1}{4} $$
 
 <a name="fixed-points"></a>
 
-The Positive Real Fixed Points of F
+Non-negative Real Fixed Points of F
 -----------------------------------
 
-The original Collatz function does not have any positive integer fixed points,
-but $F$ has infinitely many non-negative real fixed points which can be
-obtained by solving ($x \in \mathbb{R}_{\ge 0}$):
+The original Collatz function does not have any positive integer fixed points
+(proof left for the reader), but $F$ has infinitely many non-negative real
+fixed points which can be obtained by solving the following equation for
+$x \in \mathbb{R}_{\ge 0}$:
 
 $$ (1) \quad F(x) =
 \frac{3}{4} \cdot \frac{2x+1}{\cos(\pi x)+2} - \frac{1}{4} = x $$
@@ -184,6 +190,9 @@ them.
 
   [nm]: https://en.wikipedia.org/wiki/Newton%27s_method
 
+Note that $F$ does not have any positive integer fixed pointes, because the
+original Collatz function does not have any either.
+
 <a name="properties"></a>
 
 Properties of $F$
@@ -197,15 +206,17 @@ Numerical experiments seem to suggest that:
  * For positive real numbers, even if the iteration starts from a value close
    to a fixed point, $F$ often converges to $1$ after a while.
 
- * $F$ tends to have lower _stopping times_ than other continuous extensions of
+ * $F$ tends to have lower stopping times than other continuous extensions of
    the Collatz function.
 
-   (The _stopping time_ for a given $G \colon \mathbb{C} \to \mathbb{C}$
-   continuous extension of the Collatz function to the complex plane, and a
-   given $z \in \mathbb{C}$, is defined as the smallest $k \in \mathbb{N}$ such
-   that $G^{(k)}(z) < z$, where $G^{(k)}(z)$ denotes repeated application of
-   the $G$ function starting from $z$, similarly to above. If no such $k$
-   exists, then the stopping time for $z$ is considered to be infinite.)
+The stopping time for a given $G \colon \mathbb{C} \to \mathbb{C}$ continuous
+extension of the Collatz function to the complex plane, and a given
+$z \in \mathbb{C}$, can be  defined as the smallest $k \in \mathbb{N}$ such
+that $\|G^{(k)}(z)\| < \|z\|$, where $G^{(k)}(z)$ denotes repeated application
+of the $G$ function starting from $z$, similarly to above. If no such $k$
+exists, then the stopping time for $z$ is considered to be infinite. (This
+definition is compatible with the original definition of stopping times for
+the discrete case.)
 
 <a name="visualizations"></a>
 
