@@ -189,7 +189,7 @@ to find them.
 
   [newton]: https://en.wikipedia.org/wiki/Newton%27s_method
 
-Note that $F$ does not have any positive integer fixed pointes, because the
+Note that $F$ does not have any positive integer fixed points, because the
 original Collatz function does not have any either.
 
 <a name="properties"></a>
