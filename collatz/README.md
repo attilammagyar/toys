@@ -106,11 +106,13 @@ $$ T \colon \mathbb{C} \to \mathbb{C}, \quad T(z) =
 
   [p3]: https://webbox.lafayette.edu/~reiterc/3x%2B1/w3x%2B1_pp.pdf
 
-A different approach might be to start from the $\frac{3n+1}{2}$ case alone,
-replace the $1$ with $\text{mod}_2(z) = \sin^2(\frac{\pi}{2}z)$ so that only
-odd values for $n$ are incremented after the multiplication, and then undo the
-multiplication for even numbers by dividing by 6. This is the idea behind the
-following extension:
+A different approach might be to extend only the $\frac{3n+1}{2}$ branch, which
+is obviously wrong for even numbers, but it can be corrected by undoing the
+operations that are unwanted in their case: subtract $1 - \text{mod}_2(z)$ from
+the numerator (this is equivalent to replacing the addition of $1$ with the
+addition of $\text{mod}_2(z)$ ), and add $4 \cdot (1 - \text{mod}_2(z))$ to the
+denominator, so that the division by $6$ cancels the multiplication by $3$.
+This is the idea behind the following extension:
 
 $$ F \colon \mathbb{C} \to \mathbb{C}, \quad
 F(z) = \frac{3z + \sin^2(\frac{\pi}{2} z)}{2 + 4 \cos^2(\frac{\pi}{2} z)} $$
