@@ -10,6 +10,7 @@ Table of Contents
  * [The Collatz Conjecture](#conjecture)
  * [Extending to the Complex Plane](#extending)
  * [Non-negative Real Fixed Points of F](#fixed-points)
+ * [Condition for x ≤ F(x) for 1/2 < x ∈ ℝ](#condition)
  * [Properties of F](#properties)
  * [Visualizations of Convergence and Stopping Times](#visualizations)
     * [Convergence](#conv)
@@ -149,8 +150,8 @@ $$ F(z) = \frac{3}{4} \cdot \frac{2z+1}{\cos(\pi z)+2} - \frac{1}{4} $$
 
 <a name="fixed-points"></a>
 
-Non-negative Real Fixed Points of F
------------------------------------
+Non-negative Real Fixed Points of $F$
+-------------------------------------
 
 The original Collatz function does not have any positive integer fixed points
 (proof left for the reader), but $F$ has infinitely many non-negative real
@@ -187,18 +188,49 @@ One way to solve this for $\frac{1}{2} < x \in \mathbb{R}$ is to notice that
 $$ \lim_{x \to \infty} - \frac{2x-1}{4x+1} = - \frac{1}{2} $$
 
 therefore the fixed points of the form $\frac{1}{2} < x \in \mathbb{R}$ are
-located where $\cos(\pi x)$ is close to $- \frac{1}{2}$, thus, they are in the
-vicinity of $\frac{2}{3}+2k$ and $\frac{4}{3}+2k$ for
-$\forall k \in \mathbb{N}$.
+located where $\cos(\pi x)$ is close to $- \frac{1}{2}$, thus, they are of the
+form $\frac{2}{3}+2k + \varepsilon_1(k)$ and
+$\frac{4}{3}+2k + \varepsilon_2(k)$ for $\forall k \in \mathbb{N}$, where
+$\varepsilon_1, \varepsilon_2 \colon \mathbb{N} \to \mathbb{R}$, and
+
+$$ \lim_{n \to \infty} \varepsilon_1(n) =
+\lim_{n \to \infty} \varepsilon_2(n) = 0 $$
+
+In other words, the positive real fixed points of $F$ that are greater than
+$\frac{1}{2}$ are located around odd positive integers, with a distance of
+roughly $\pm \frac{1}{3}$.
 
 One can use [Newton's method][newton] with starting points from
-$x_0 \in \\{ \frac{2}{3}+2k + \varepsilon, \frac{4}{3}+2k + \varepsilon \mid k \in \mathbb{N}, \varepsilon \in \mathbb{R} \\}$
+$x_0 \in \\{ \frac{2}{3}+2k + \varepsilon_1, \frac{4}{3}+2k + \varepsilon_2 \mid k \in \mathbb{N}, \varepsilon_1, \varepsilon_2 \in \mathbb{R} \\}$
 to find them.
 
   [newton]: https://en.wikipedia.org/wiki/Newton%27s_method
 
 Note that $F$ does not have any positive integer fixed points, because the
 original Collatz function does not have any either.
+
+<a name="condition"></a>
+
+Condition for $x \le F(x)$ for $\frac{1}{2} \lt x \in \mathbb{R}$
+-----------------------------------------------------------------
+
+$x \le F(x)$ can be solved for $\frac{1}{2} \lt x \in \mathbb{R}$ the same way
+it was presented for the fixed points, leading to the following statement for
+$\frac{1}{2} \lt x \in \mathbb{R}$:
+
+$$ x \le F(x) \quad \Longleftrightarrow \quad \exists k \in \mathbb{N} \quad
+\frac{2}{3}+2k + \varepsilon_1(k) \le x \le \frac{4}{3}+2k + \varepsilon_2(k) $$
+
+where $\varepsilon_1, \varepsilon_2 \colon \mathbb{N} \to \mathbb{R}$ are so
+that $\frac{2}{3}+2k + \varepsilon_1(k)$ and $\frac{4}{3}+2k + \varepsilon_2(k)$
+are fixed points of $F$, and
+
+$$ \lim_{n \to \infty} \varepsilon_1(n) =
+\lim_{n \to \infty} \varepsilon_2(n) = 0. $$
+
+In other words, for $\frac{1}{2} \lt x \in \mathbb{R}$, for $x \le F(x)$ to
+hold, $x$ must be inside a roughly $\frac{1}{3}$ radius of an odd positive
+integer.
 
 <a name="properties"></a>
 
