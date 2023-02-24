@@ -241,7 +241,7 @@ div.waveform-selector {
 }
 
 div.lfo,
-div.mcs {
+div.flex_ctl {
   width: 310px;
 }
 
