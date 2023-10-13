@@ -45,31 +45,31 @@
             "touch2x": "touch 2 X",
             "touch2y": "touch 2 Y"
         },
-        FLEX_CONTROLS = {
-            "mcs1": "Flex 1",
-            "mcs2": "Flex 2",
-            "mcs3": "Flex 3",
-            "mcs4": "Flex 4",
-            "mcs5": "Flex 5",
-            "mcs6": "Flex 6",
-            "mcs7": "Flex 7",
-            "mcs8": "Flex 8",
-            "mcs9": "Flex 9",
-            "mcs10": "Flex 10",
-            "mcs11": "Flex 11",
-            "mcs12": "Flex 12",
-            "mcs13": "Flex 13",
-            "mcs14": "Flex 14",
-            "mcs15": "Flex 15",
-            "mcs16": "Flex 16",
-            "mcs17": "Flex 17",
-            "mcs18": "Flex 18",
-            "mcs19": "Flex 19",
-            "mcs20": "Flex 20",
-            "mcs21": "Flex 21",
-            "mcs22": "Flex 22",
-            "mcs23": "Flex 23",
-            "mcs24": "Flex 24"
+        MACRO_CONTROLS = {
+            "mcs1": "Macro 1",
+            "mcs2": "Macro 2",
+            "mcs3": "Macro 3",
+            "mcs4": "Macro 4",
+            "mcs5": "Macro 5",
+            "mcs6": "Macro 6",
+            "mcs7": "Macro 7",
+            "mcs8": "Macro 8",
+            "mcs9": "Macro 9",
+            "mcs10": "Macro 10",
+            "mcs11": "Macro 11",
+            "mcs12": "Macro 12",
+            "mcs13": "Macro 13",
+            "mcs14": "Macro 14",
+            "mcs15": "Macro 15",
+            "mcs16": "Macro 16",
+            "mcs17": "Macro 17",
+            "mcs18": "Macro 18",
+            "mcs19": "Macro 19",
+            "mcs20": "Macro 20",
+            "mcs21": "Macro 21",
+            "mcs22": "Macro 22",
+            "mcs23": "Macro 23",
+            "mcs24": "Macro 24"
         },
         LFO_CONTROLS = {
             "lfo1": "LFO 1",
@@ -329,7 +329,7 @@
         LFO_HP_FLAG = 4,
         LFO_LP_FLAG = 8,
         LFOS = 8,
-        FLEX_CTLS = 24,
+        MACROS = 24,
         PRT_TIME_MIN = 0.0,
         PRT_TIME_MAX = 2.0,
         PRT_TIME_DEF = 0.0,
@@ -418,8 +418,8 @@
     {
         var i;
 
-        MIDI_CONTROLS = merge(BASE_MIDI_CONTROLS, FLEX_CONTROLS);
-        ALL_CONTROLS = merge(merge(BASE_MIDI_CONTROLS, LFO_CONTROLS), FLEX_CONTROLS);
+        MIDI_CONTROLS = merge(BASE_MIDI_CONTROLS, MACRO_CONTROLS);
+        ALL_CONTROLS = merge(merge(BASE_MIDI_CONTROLS, LFO_CONTROLS), MACRO_CONTROLS);
 
         // init_fold_curves();
 
@@ -1002,8 +1002,8 @@
 
         ct = audio_ctx.currentTime;
 
-        for (i = 0; i < FLEX_CTLS; ++i) {
-            ctl = new FlexibleController(this, "mcs" + String(i + 1));
+        for (i = 0; i < MACROS; ++i) {
+            ctl = new Macro(this, "mcs" + String(i + 1));
             this.controllers[ctl.key] = ctl;
         }
 
@@ -4849,7 +4849,7 @@
         this.set_value(value);
     };
 
-    function FlexibleController(synth, key)
+    function Macro(synth, key)
     {
         var input_1 = new MIDIControllableParam(synth, key + "_in", 0.0, 1.0, 0.0),
             input_2 = new MIDIControllableParam(synth, key + "_in2", 0.0, 1.0, 0.0),
@@ -4886,13 +4886,13 @@
         this.rnd.observers.push(this);
     }
 
-    FlexibleController.prototype.control = MIDIController.prototype.control;
-    FlexibleController.prototype.update_params = MIDIController.prototype.update_params;
-    FlexibleController.prototype.release = MIDIController.prototype.release;
-    FlexibleController.prototype.set_value = MIDIController.prototype.set_value;
-    FlexibleController.prototype.control_params = MIDIController.prototype.control_params;
+    Macro.prototype.control = MIDIController.prototype.control;
+    Macro.prototype.update_params = MIDIController.prototype.update_params;
+    Macro.prototype.release = MIDIController.prototype.release;
+    Macro.prototype.set_value = MIDIController.prototype.set_value;
+    Macro.prototype.control_params = MIDIController.prototype.control_params;
 
-    FlexibleController.prototype.update = function (param, new_value)
+    Macro.prototype.update = function (param, new_value)
     {
         var min = this.min.value,
             distortion = this.distortion.value,
@@ -5037,13 +5037,13 @@
             theremin = new ThereminUI(synth.theremin, synth),
             ctls = new NamedUIWidgetGroup("Controllers", "color-7", "controllers"),
             lfos = new ClosableNamedUIWidgetGroup("Low Frequency Oscillators", "color-7", "lfos"),
-            flex_ctls = new ClosableNamedUIWidgetGroup("Flexible Controllers", "color-7", "flex_ctls"),
+            macros = new ClosableNamedUIWidgetGroup("Macros", "color-7", "macros"),
             i, l, si, k;
 
         UIWidgetGroup.call(this, "color-0 horizontal");
 
         lfos.toggle();
-        flex_ctls.toggle();
+        macros.toggle();
 
         synth.observers.push(this);
         synth.comp_keyboard_target.observers.push(this);
@@ -5055,16 +5055,16 @@
             lfos.add(new LFOUI("LFO " + si, synth.controllers[k], synth));
         }
 
-        for (i = 0; i < FLEX_CTLS; ++i) {
+        for (i = 0; i < MACROS; ++i) {
             si = String(i + 1);
             k = "mcs" + String(si);
-            flex_ctls.add(
-                new FlexibleControllerUI("Flex " + si, synth.controllers[k], synth)
+            macros.add(
+                new MacroUI("Macro " + si, synth.controllers[k], synth)
             );
         }
 
         ctls.add(lfos);
-        ctls.add(flex_ctls);
+        ctls.add(macros);
 
         inputs.add(virt_ctls);
         inputs.add(sequencer);
@@ -5429,20 +5429,20 @@
         change_selection(this._select, new_value);
     };
 
-    function FlexibleControllerUI(name, flex_ctl, synth)
+    function MacroUI(name, macro, synth)
     {
-        var input_1 = new FaderUI("IN1", "Input 1", "%", 10000, 100, MIDI_CONTROLS, flex_ctl.input_1, synth),
-            input_2 = new FaderUI("IN2", "Input 2", "%", 10000, 100, MIDI_CONTROLS, flex_ctl.input_2, synth),
-            input_3 = new FaderUI("IN3", "Input 3", "%", 10000, 100, MIDI_CONTROLS, flex_ctl.input_3, synth),
-            amt = new FaderUI("AMT", "Amount", "%", 10000, 100, MIDI_CONTROLS, flex_ctl.amt, synth),
-            min = new FaderUI("MIN", "Minimum value", "%", 10000, 100, MIDI_CONTROLS, flex_ctl.min, synth),
-            max = new FaderUI("MAX", "Maximum value", "%", 10000, 100, MIDI_CONTROLS, flex_ctl.max, synth),
-            distortion = new FaderUI("DST", "Distortion", "%", 500, 5, MIDI_CONTROLS, flex_ctl.distortion, synth),
-            rnd = new FaderUI("RND", "Randomness", "%", 10000, 100, MIDI_CONTROLS, flex_ctl.rnd, synth);
+        var input_1 = new FaderUI("IN1", "Input 1", "%", 10000, 100, MIDI_CONTROLS, macro.input_1, synth),
+            input_2 = new FaderUI("IN2", "Input 2", "%", 10000, 100, MIDI_CONTROLS, macro.input_2, synth),
+            input_3 = new FaderUI("IN3", "Input 3", "%", 10000, 100, MIDI_CONTROLS, macro.input_3, synth),
+            amt = new FaderUI("AMT", "Amount", "%", 10000, 100, MIDI_CONTROLS, macro.amt, synth),
+            min = new FaderUI("MIN", "Minimum value", "%", 10000, 100, MIDI_CONTROLS, macro.min, synth),
+            max = new FaderUI("MAX", "Maximum value", "%", 10000, 100, MIDI_CONTROLS, macro.max, synth),
+            distortion = new FaderUI("DST", "Distortion", "%", 500, 5, MIDI_CONTROLS, macro.distortion, synth),
+            rnd = new FaderUI("RND", "Randomness", "%", 10000, 100, MIDI_CONTROLS, macro.rnd, synth);
 
-        NamedUIWidgetGroup.call(this, name, "horizontal flex_ctl color-6");
+        NamedUIWidgetGroup.call(this, name, "horizontal macro color-6");
 
-        this.dom_node.setAttribute("title", "Flexible Controller");
+        this.dom_node.setAttribute("title", "Macro");
 
         this.add(input_1);
         this.add(input_2);
@@ -5454,9 +5454,9 @@
         this.add(rnd);
     }
 
-    FlexibleControllerUI.prototype.update = NamedUIWidgetGroup.prototype.update;
-    FlexibleControllerUI.prototype.add = NamedUIWidgetGroup.prototype.add;
-    FlexibleControllerUI.prototype.set_description = NamedUIWidgetGroup.prototype.set_description;
+    MacroUI.prototype.update = NamedUIWidgetGroup.prototype.update;
+    MacroUI.prototype.add = NamedUIWidgetGroup.prototype.add;
+    MacroUI.prototype.set_description = NamedUIWidgetGroup.prototype.set_description;
 
     function LFOUI(name, lfo_ctl, synth)
     {
