@@ -1,5 +1,4 @@
-\documentclass{article}
-
+\documentclass[titlepage]{article}
 \usepackage{algorithm}
 \usepackage{algpseudocode}
 \usepackage{amsfonts}
@@ -8,11 +7,8 @@
 \usepackage{hyperref}
 \usepackage{pgfplots}
 \usepackage{xparse}
-
 \usetikzlibrary{shapes,matrix}
-
 \geometry{margin=1.2in}
-
 \hypersetup{
   colorlinks,
   citecolor=black,
@@ -20,22 +16,16 @@
   linkcolor=black,
   urlcolor=black
 }
-
 \pgfplotsset{compat=1.9}
-
 \setcounter{secnumdepth}{5}
 \setcounter{tocdepth}{5}
-
 \title{%
   Artificial Neural Networks (work in progress draft) \\
   \large Getting Up To Speed With The Math From Scratch
 }
 \author{Attila M. Magyar}
 \begin{document}
-
-  \maketitle
-
-  \newpage
+\begin{titlepage}\maketitle\end{titlepage}
 
   \tableofcontents
 
@@ -80,7 +70,7 @@
               (n) edge [->,very thick] (o1)
               (n) edge [->,very thick] (o2);
         \end{tikzpicture}
-        \caption{
+        \caption{%
           A neuron with 3 input connections with various weights,
           and 2 output connections.
         }
