@@ -1615,7 +1615,9 @@
       \end{algorithm}
 
       \begin{algorithm}
-        \caption{Initialize the network with random weights and biases.}
+        \caption{%
+          Initialize the network with random weights and biases.
+        } \label{alginit}
         \begin{algorithmic}
           \Procedure{Initialize}{}
             \For{$k \gets 0$ \textbf{to} $L$}
@@ -2450,7 +2452,7 @@
 
     \subsection{Optimizers}
 
-      \subsubsection{Momentum (inertia)}
+      \subsubsection{Momentum (inertia)}\label{momentum}
 
         This technique can sometimes speed up the learning process, and help
         with preventing the algorithm getting stuck in local minima. The idea
@@ -2463,16 +2465,17 @@
         \ref{algadjustweights}, \ref{algadjustweightsvec}) before modifying the
         weights.
 
-        With $\gamma \in \mathbb{R}, 0 \leq \gamma < 1$ denoting the amount to
-        keep from the previous gradient, algorithm \ref{algcleargradmom} is a
+        With $\beta \in \mathbb{R}, 0 \leq \beta < 1$ denoting the amount to
+        keep from the previous gradient (usually chosen to be close to $1$, e.g.
+        $0.8$, $0.9$, or even $0.99$), algorithm \ref{algmomentum} is a
         modification of algorithm \ref{algcleargrad} and \ref{algadjustweights}
-        with inertia.
+        with momentum.
 
         \begin{algorithm}
           \caption{%
             Modified version of algorithm \ref{algcleargrad} and
-            \ref{algadjustweights} with inertia.
-          } \label{algcleargradmom}
+            \ref{algadjustweights} with momentum.
+          } \label{algmomentum}
           \begin{algorithmic}
             \Procedure{ClearGradient}{}
               \For{$k \gets 1$ \textbf{to} $L$}
@@ -2493,9 +2496,9 @@
                   \For{$i \gets 0$ \textbf{to} $n_{k-1}$}
                     \State $
                       \nabla C_{j,i}^{(k)} \gets
-                        \gamma \cdot {\nabla C_{j,i}^{(k)}}^\text{prev}
+                        \beta \cdot {\nabla C_{j,i}^{(k)}}^\text{prev}
                         +
-                        \left( 1 - \gamma \right) \cdot \nabla C_{j,i}^{(k)}
+                        \left( 1 - \beta \right) \cdot \nabla C_{j,i}^{(k)}
                     $
                     \State $
                       w_{j,i}^{(k)} \gets
@@ -2510,7 +2513,7 @@
 
         \begin{algorithm}
           \caption{%
-            Algorithm \ref{algcleargradmom} with matrix-vector notation.
+            Algorithm \ref{algmomentum} with matrix-vector notation.
           }
           \begin{algorithmic}
             \Procedure{ClearGradient}{}
@@ -2522,12 +2525,12 @@
                 \State $\mathbf{\nabla C}^{(k)} \gets \mathbf{0}$
               \EndFor
             \EndProcedure
-            \Procedure{ApplyGradient}{$\alpha$}
+            \Procedure{ApplyGradient}{$\alpha, \beta$}
               \For{$k \gets 1$ \textbf{to} $L$}
                 \State $
                   \mathbf{\nabla C}^{(k)} \gets
-                    \gamma \cdot {\mathbf{\nabla C}^{(k)}}^\text{prev}
-                    + \left( 1 - \gamma \right) \cdot \mathbf{\nabla C}^{(k)}
+                    \beta \cdot {\mathbf{\nabla C}^{(k)}}^\text{prev}
+                    + \left( 1 - \beta \right) \cdot \mathbf{\nabla C}^{(k)}
                 $
                 \State $
                   \mathbf{W}^{(k)} \gets
@@ -2538,13 +2541,122 @@
           \end{algorithmic}
         \end{algorithm}
 
-      \subsubsection{RMSProp}
+      \subsubsection{RMSProp (Root Mean Squared Propagation)}\label{rmsprop}
 
-        TODO
+        Similarly to the Momentum optimizer (\ref{momentum}), the goal of
+        RMSProp is to smoothen the zig-zag path of the mini-batch gradient
+        descent. The idea is to adjust the learning rate based on the current
+        and the previous values of the gradient: small weight adjustments will
+        be scaled up in order to speed up convergence, large weight adjustments
+        will be decreased in order to prevent overshooting.
 
-      \subsubsection{Adam}
+        Algorithm \ref{algrmsprop} is the modification of algorithm
+        \ref{alginit} and \ref{algadjustweights} with RMSProp. The
+        $\beta \in \mathbb{R}, 0 \leq \beta < 1$ parameter is called the "decay
+        rate", and it is usually set to be around $0.9$ or $0.999$. The purpose
+        of the $0 < \varepsilon \in \mathbb{R}$ parameter is to avoid division
+        by zero, and to prevent floating point rounding errors from making the
+        computation numerically unstable; its value is usually chosen to be
+        around $10^{-6}$ or $10^{-8}$.
 
-        TODO
+        \begin{algorithm}
+          \caption{%
+            Modified version of algorithm \ref{alginit} and
+            \ref{algadjustweights} with RMSProp.
+          } \label{algrmsprop}
+          \begin{algorithmic}
+            \Procedure{Initialize}{}
+              \For{$k \gets 0$ \textbf{to} $L$}
+                \State $a_0^{(k)} \gets 1$
+                \State $d_0^{(k)} \gets 1$
+              \EndFor
+
+              \For{$k \gets 1$ \textbf{to} $L$}
+                \For{$i \gets 0$ \textbf{to} $n_{k-1}$}
+                  \State $w_{0,i}^{(k)} \gets 1$
+
+                  \For{$j \gets 1$ \textbf{to} $n_k$}
+                    \State $w_{j,i}^{(k)} \gets$ random number
+                    \State $S_{j,i}^{(k)} \gets 0$
+                    \State $\nabla C_{j,i}^{(k)} \gets 0$
+                  \EndFor
+                \EndFor
+              \EndFor
+            \EndProcedure
+            \Procedure{ApplyGradient}{$\alpha, \beta, \varepsilon$}
+              \For{$k \gets 1$ \textbf{to} $L$}
+                \For{$j \gets 1$ \textbf{to} $n_k$}
+                  \For{$i \gets 0$ \textbf{to} $n_{k-1}$}
+                    \State $
+                      S_{j,i}^{(k)} \gets
+                        \beta \cdot S_{j,i}^{(k)}
+                        + \left( 1 - \beta \right)
+                        \cdot \left( \nabla C_{j,i}^{(k)} \right)^2
+                    $
+                    \State $
+                      w_{j,i}^{(k)} \gets
+                        w_{j,i}^{(k)}
+                        - \frac{\alpha}{\sqrt{S_{j,i}^{(k)} + \varepsilon}}
+                        \cdot \nabla C_{j,i}^{(k)}
+                    $
+                  \EndFor
+                \EndFor
+              \EndFor
+            \EndProcedure
+          \end{algorithmic}
+        \end{algorithm}
+
+      \subsubsection{Adam (ADAptive Moment estimation)}
+
+        The Adam optimizer combines the advantages of the Momentum optimizer
+        (\ref{momentum}) and the RMSProp optimizer (\ref{rmsprop}) by doing
+        both at the same time.
+
+        Algorithm \ref{algadam} shows a variation of algorithm
+        \ref{algadjustweights} with Adam optimizer. The Initialize procedure is
+        the same as in algorithm \ref{algrmsprop}, and the ClearGradient
+        procedure is the same as in \ref{algmomentum}.
+
+        The $0 < \varepsilon \in \mathbb{R}$ parameter is the same as in
+        algorithm \ref{algrmsprop}, and the
+        $\beta_1, \beta_2 \in \mathbb{R}, 0 \leq \beta_1, \beta_2 <1$ parameters
+        are chosen similarly to the ones in the case of the Momentum optimizer
+        (\ref{momentum}) and the RMSProp optimizer (\ref{rmsprop}) respectively.
+
+        \begin{algorithm}
+          \caption{%
+            Modified version of algorithm \ref{algadjustweights} with Adam
+            optimizer.
+          } \label{algadam}
+          \begin{algorithmic}
+            \Procedure{ApplyGradient}{$\alpha, \beta_1, \beta_2, \varepsilon$}
+              \For{$k \gets 1$ \textbf{to} $L$}
+                \For{$j \gets 1$ \textbf{to} $n_k$}
+                  \For{$i \gets 0$ \textbf{to} $n_{k-1}$}
+                    \State $
+                      S_{j,i}^{(k)} \gets
+                        \beta_2 \cdot S_{j,i}^{(k)}
+                        + \left( 1 - \beta_2 \right)
+                        \cdot \left( \nabla C_{j,i}^{(k)} \right)^2
+                    $ \Comment{RMSProp}
+                    \State $
+                      \nabla C_{j,i}^{(k)} \gets
+                        \beta_1 \cdot {\nabla C_{j,i}^{(k)}}^\text{prev}
+                        +
+                        \left( 1 - \beta_1 \right) \cdot \nabla C_{j,i}^{(k)}
+                    $ \Comment{Momentum}
+                    \State $
+                      w_{j,i}^{(k)} \gets
+                        w_{j,i}^{(k)}
+                        - \frac{\alpha}{\sqrt{S_{j,i}^{(k)} + \varepsilon}}
+                        \cdot \nabla C_{j,i}^{(k)}
+                    $
+                  \EndFor
+                \EndFor
+              \EndFor
+            \EndProcedure
+          \end{algorithmic}
+        \end{algorithm}
 
 \newpage
 
