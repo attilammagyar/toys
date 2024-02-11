@@ -1,5 +1,6 @@
 TARGETS = \
 	./index.html \
+	./ann/ann_notes.pdf \
 	./calcle/index.html \
 	./flashcards/index.html \
 	./js-80/index.html \
@@ -68,3 +69,6 @@ clean:
 		kanji-practice/src/kanji-practice.html \
 		kanji-practice/index.html \
 		5
+
+./ann/ann_notes.pdf: ./ann/ann_notes.tex
+	$(MAKE) -C ./ann
