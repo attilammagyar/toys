@@ -9,12 +9,12 @@ STYLE_PROBLEM_STRINGS = ["</style>"]
 
 def main(argv):
     if len(argv) != 4:
-        print(f"Usage: {os.path.basename(argv[0])} in.html out.html expected_conversions", file=sys.stderr)
+        print(f"Usage: {os.path.basename(argv[0])} in.html out.html number_of_all_input_files", file=sys.stderr)
         return 1
 
     out_lines = []
     conversions = []
-    expected_conversions = int(argv[3])
+    expected_conversions = int(argv[3]) - 1
     base_dir = os.path.dirname(argv[1]) or "."
     script_re = re.compile(r'<script *type="text/javascript" *src="([^"]+)"> *</script>')
     style_re = re.compile(r'<link *rel="stylesheet" *href="([^"]+)" */>')
