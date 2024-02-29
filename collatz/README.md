@@ -169,7 +169,7 @@ $$ F(0) =
 
 $\frac{1}{2}$ is also a fixed point of $F$, since
 
-$$ F(\frac{1}{2}) =
+$$ F \left( \frac{1}{2} \right) =
 \frac{3}{4} \cdot \frac{2 \cdot \frac{1}{2} + 1}{\cos(\frac{\pi}{2})+2} - \frac{1}{4} =
 \frac{3}{4} \cdot \frac{1+1}{0+2} - \frac{1}{4} = \frac{1}{2} $$
 
