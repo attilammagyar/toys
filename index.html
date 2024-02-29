@@ -24,14 +24,15 @@ html, body {
   margin: 0;
 }
 
-h1,
-p {
-  text-align: center;
-}
-
 body {
   font-family: sans-serif;
   font-size: 3vmin;
+}
+
+h1,
+h2,
+p {
+  text-align: center;
 }
 
 ul {
@@ -39,18 +40,18 @@ ul {
   padding: 0;
 }
 
-p,
 li {
   clear: both;
   margin: 3vw;
-}
-
-li {
   border-radius: 2vmin;
   background: #0e0f11;
-  padding: 0;
+  padding: 1vmin;
   line-height: 5vmin;
   box-shadow: 1vmin 1vmin 3vmin 1vmin #000;
+}
+
+li:hover {
+  background: #0e0f19;
 }
 
 a {
@@ -58,28 +59,43 @@ a {
   font-weight: bold;
 }
 
-li:hover {
-  background: #0e0f19;
+li h3 {
+  margin: 0.5vmin;
+  padding: 0;
 }
 
-li a {
-  color: #ddf;
-  font-weight: normal;
-  text-decoration: none;
-  display: inline-block;
-}
-
-img {
+li img {
   float: left;
-  margin: 1vw;
+  margin: 3vmin 1vw;
   max-width: 23vw;
   max-height: 48vh;
 }
 
-span {
+li p {
+  text-align: left;
+  margin-left: 25vw;
+  padding: 0.3vmin;
+}
+
+li div {
+  clear: both;
+  text-align: right;
+}
+
+li div a {
   display: inline-block;
-  margin: 1vw;
-  max-width: 60vw;
+  margin: 1.2vmin;
+  height: 7vmin;
+  padding: 1vmin 5vmin;
+  line-height: 7vmin;
+  font-size: 5vmin;
+  text-decoration: none;
+  border: outset 0.5vmin #606890;
+  border-radius: 1vmin;
+  background: #001838;
+  color: #e0e0f0;
+  min-width: 27vmin;
+  text-align: center;
 }
 
 </style>
@@ -90,74 +106,133 @@ span {
     Pet projects that are too small to be worth their own separate repositories
     and to be developed and maintained very rigorously.
   </p>
+  <p>
+    <a href="#language-learning">Language Learning</a>
+    | <a href="#games">Games</a>
+    | <a href="#audio">Audio</a>
+    | <a href="#math">Math</a>
+  </p>
+
+  <h2 id="language-learning">Language Learning</h2>
   <ul>
     <li>
-      <a href="chimp-mem-game/index.html">
-        <img src="chimp-mem-game/chimp-mem-game.jpg" alt="Screenshot of the Chimp Memory Game app" />
-        <span>
-          <strong>Chimp Memory Game</strong>
-          <br />
-          Memorize the randomly scattered numbers, then
-          click or touch them in ascending order - if you can.
-        </span>
-      </a>
+      <h3>Kanji Practice</h3>
+      <img src="kanji-practice/kanji-practice.jpg" alt="Screenshot of the Kanji Practice app" />
+      <p>
+        A writing based, minimalistic flashcard (SRS, Spaced Repetition System)
+        app for learning Japanese kanji.
+      </p>
+      <div>
+        <a href="kanji-practice/index.html" download="kanji-practice.html">Download</a>
+        <a href="kanji-practice/index.html">Open</a>
+      </div>
     </li>
     <li>
-      <a href="kanji-practice/index.html">
-        <img src="kanji-practice/kanji-practice.jpg" alt="Screenshot of the Kanji Practice app" />
-        <span>
-          <strong>Kanji Practice</strong>
-          <br/>
-          A writing based, minimalistic flashcard (SRS, Spaced Repetition System)
-          app for learning Japanese kanji.
-        </span>
-      </a>
-    </li>
-    <li>
-      <a href="flashcards/index.html">
-        <img src="flashcards/flashcards.jpg" alt="Screenshot of the Flashcards app" />
-        <span>
-          <strong>Flashcards</strong>
-          <br/>
-          A minimalistic flashcard (SRS, Spaced Repetition System) app for
-          language learning and more, with a dark color scheme.
-        </span>
-      </a>
-    </li>
-    <li>
-      <a href="js-80/index.html">
-        <img src="js-80/js-80.jpg" alt="Screenshot of the JS-80 software synthesizer" />
-        <span>
-          <strong>JS-80</strong>
-          <br/>
-          Play two flexible, polyphonic, 80's style synthesizers and a sequencer with a MIDI keyboard and your computer keyboard, all in a single browser window.
-        </span>
-      </a>
-    </li>
-    <li>
-      <a href="img2wav/index.html">
-        <img src="img2wav/img2wav.jpg" alt="Screenshot of the Image to WAV app" />
-        <span>
-          <strong>Image to WAV</strong>
-          <br/>
-          Turn an image into sound (sonification): this image synth toy can
-          generate a sound which reproduces a picture when you look at its
-          spectrogram.
-        </span>
-      </a>
-    </li>
-    <li>
-      <a href="calcle/index.html">
-        <img src="calcle/calcle.jpg" alt="Screenshot of Calcle" />
-        <span>
-          <strong>Calcle</strong>
-          <br />
-          A game where you have to assemble the longest correct calculation with the
-          highest result you can. New challenge every day. (Inspired by Wordle.)
-        </span>
-      </a>
+      <h3>Flashcards</h3>
+      <img src="flashcards/flashcards.jpg" alt="Screenshot of the Flashcards app" />
+      <p>
+        A minimalistic flashcard (SRS, Spaced Repetition System) app for
+        language learning and more, with a dark color scheme.
+      </p>
+      <div>
+        <a href="flashcards/index.html" download="flashcards.html">Download</a>
+        <a href="flashcards/index.html">Open</a>
+      </div>
     </li>
   </ul>
+
+  <h2 id="games">Games</h2>
+  <ul>
+    <li>
+      <h3>Chimp Memory Game</h3>
+      <img src="chimp-mem-game/chimp-mem-game.jpg" alt="Screenshot of the Chimp Memory Game app" />
+      <p>
+        Memorize the randomly scattered numbers, then
+        click or touch them in ascending order - if you can.
+      </p>
+      <div>
+        <a href="chimp-mem-game/index.html">Open</a>
+      </div>
+    </li>
+    <li>
+      <h3>Calcle</h3>
+      <img src="calcle/calcle.jpg" alt="Screenshot of Calcle" />
+      <p>
+        A game where you have to assemble the longest correct calculation with the
+        highest result you can. New challenge every day. (Inspired by Wordle.)
+      </p>
+      <div>
+        <a href="calcle/index.html" download="calcle.html">Download</a>
+        <a href="calcle/index.html">Open</a>
+      </div>
+    </li>
+  </ul>
+
+  <h2 id="audio">Audio</h2>
+  <ul>
+    <li>
+      <h3>Image to WAV</h3>
+      <img src="img2wav/img2wav.jpg" alt="Screenshot of the Image to WAV app" />
+      <p>
+        Turn an image into sound (sonification): this image synth toy can
+        generate a sound which reproduces a picture when you look at its
+        spectrogram.
+      </p>
+      <div>
+        <a href="img2wav/index.html">Open</a>
+      </div>
+    </li>
+    <li>
+      <h3>JS-80</h3>
+      <img src="js-80/js-80.jpg" alt="Screenshot of the JS-80 software synthesizer" />
+      <p>
+        Play two flexible, polyphonic, 80's style synthesizers and a sequencer
+        with a MIDI keyboard and your computer keyboard, all in a single
+        browser window.
+      </p>
+      <div>
+        <a href="js-80/index.html" download="js-80.html">Download</a>
+        <a href="js-80/index.html">Open</a>
+      </div>
+    </li>
+  </ul>
+
+  <h2 id="math">Math</h2>
+  <ul>
+    <li>
+      <h3>Artificial Neural Network Notes (work in progress draft)</h3>
+      <img src="ann/ann.jpg" alt="Screenshot of Artificial Neural Network Notes" />
+      <p>
+        I decided to brush up my knowledge on the math behind artificial neural
+        networks, and these are the notes that I've taken along the way.
+      </p>
+      <p>
+        The appendix contains a collection of notations, definitions, and theorems
+        from the fields of linear algebra and calculus that are used throughout
+        the document.
+      </p>
+      <div>
+        <a href="ann/ann_notes.pdf">Download</a>
+      </div>
+    </li>
+    <li>
+      <h3>Yet Another Continuous Extension of the Collatz Function</h3>
+      <img src="collatz/collatz.jpg" alt="Visualization of a continuous extension of the Collatz function" />
+      <p>
+        I have found a continuous extension of the
+        <a href="https://en.wikipedia.org/wiki/Collatz_conjecture">Collatz function</a>
+        which seems to have no cycle besides <code>(1;2)</code>
+        and its fixed points, and which converges to 1 even from the close
+        vicinity of its positive real fixed points, usually with lower stopping
+        times than other continuous extensions. I have rendered a few nice
+        visualizations of it on the complex plane.
+      </p>
+      <div>
+        <a href="https://github.com/attilammagyar/toys/tree/gh-pages/collatz">Open</a>
+      </div>
+    </li>
+  </ul>
+
   <p>
     <a href="https://github.com/attilammagyar/toys"
       target="_blank">Source code on GitHub</a>
