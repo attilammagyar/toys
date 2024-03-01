@@ -2,7 +2,7 @@
 
     "use strict";
 
-    var PATCH_VERSION = "3",
+    var PATCH_VERSION = "4",
         WAVEFORMS = {
             "sawtooth": "sawtooth",
             "invsaw": "inverse sawtooth",
@@ -354,9 +354,15 @@
         ENV_SUS_DEF = 0.7,
         SND_FREQ_MAX = 22050.0,
         SND_FREQ_MIN = 20.0,
+        SND_FREQ_DELTA = SND_FREQ_MAX - SND_FREQ_MIN,
         LFO_FREQ_MAX = 30.0,
         LFO_FREQ_MIN = 0.01,
         LFO_FREQ_DEF = 2.0,
+        FILTER_FREQ_MIN = 0.0,
+        FILTER_FREQ_MAX = 1.0,
+        FILTER_FREQ_CURVE_RESOLUTION = 1023,
+        FILTER_FREQ_RANGE = SND_FREQ_MAX / SND_FREQ_MIN,
+        FILTER_FREQ_SCALE = 1.0 / SND_FREQ_DELTA,
         FILTER_Q_MIN = 0.0,
         FILTER_Q_MAX = 30.0,
         FILTER_Q_DEF = 1.0,
@@ -402,6 +408,8 @@
         random_numbers = [],
         synth_ui = null,
         synth_obj = null,
+        filter_freq_curve_log,
+        filter_freq_curve_lin,
         presets,
         preset_names,
         patch_file_input,
@@ -422,6 +430,8 @@
         ALL_CONTROLS = merge(merge(BASE_MIDI_CONTROLS, LFO_CONTROLS), MACRO_CONTROLS);
 
         // init_fold_curves();
+
+        init_filter_freq_curves();
 
         $("main-form").onsubmit = stop_event;
 
@@ -500,6 +510,39 @@
 
         FOLD_CURVE = curve;
         FOLD_CURVE_INV = inv;
+    }
+
+    function init_filter_freq_curves()
+    {
+        var min = SND_FREQ_MIN,
+            max = SND_FREQ_MAX,
+            range = max / min,
+            scale = 1.0 / SND_FREQ_DELTA,
+            freqs = [],
+            resolution = Math.floor(FILTER_FREQ_CURVE_RESOLUTION / 2),
+            i, l;
+
+        for (i = 0; i < resolution; ++i) {
+            freqs.push(0.0);
+        }
+
+        freqs.push(0.0);
+
+        for (i = 1, l = resolution; i < l; ++i) {
+            freqs.push(ratio_to_log_filter_freq_ratio(i / resolution));
+        }
+
+        freqs.push(1.0);
+
+        filter_freq_curve_log = new Float32Array(freqs);
+        filter_freq_curve_lin = new Float32Array([-1.0, 0.0, 1.0]);
+    }
+
+    function ratio_to_log_filter_freq_ratio(ratio)
+    {
+        var min = SND_FREQ_MIN;
+
+        return (min * Math.pow(FILTER_FREQ_RANGE, ratio) - min) * FILTER_FREQ_SCALE;
     }
 
     function ask_for_confirmation(message, callback)
@@ -1395,6 +1438,8 @@
 
                 version = "2";
 
+                /* fallthrough */
+
             case "2":
                 upgraded["midi_o1_pfia"] = this._copy_or_default("midi_o1_pfia", patch, null);
                 upgraded["midi_o1_pfdlt"] = this._copy_or_default("midi_o1_pfdlt", patch, null);
@@ -1446,6 +1491,89 @@
                 upgraded["th_pfrt"] = this._copy_or_default("th_pfrt", patch, null);
                 upgraded["th_pfra"] = this._copy_or_default("th_pfra", patch, null);
 
+                /* fallthrough */
+
+            case "3":
+                upgraded["midi_o1_ehlg"] = ["off", "none"];
+                upgraded["midi_o1_ellg"] = ["off", "none"];
+                upgraded["midi_o1_h_lg"] = ["off", "none"];
+                upgraded["midi_o1_l_lg"] = ["off", "none"];
+
+                upgraded["midi_o2_ehlg"] = ["off", "none"];
+                upgraded["midi_o2_ellg"] = ["off", "none"];
+                upgraded["midi_o2_hlg"] = ["off", "none"];
+                upgraded["midi_o2_llg"] = ["off", "none"];
+
+                upgraded["cmp_o1_ehlg"] = ["off", "none"];
+                upgraded["cmp_o1_ellg"] = ["off", "none"];
+                upgraded["cmp_o1_h_lg"] = ["off", "none"];
+                upgraded["cmp_o1_l_lg"] = ["off", "none"];
+
+                upgraded["cmp_o2_ehlg"] = ["off", "none"];
+                upgraded["cmp_o2_ellg"] = ["off", "none"];
+                upgraded["cmp_o2_hlg"] = ["off", "none"];
+                upgraded["cmp_o2_llg"] = ["off", "none"];
+
+                upgraded["th_ehlg"] = ["off", "none"];
+                upgraded["th_ellg"] = ["off", "none"];
+                upgraded["th_hlg"] = ["off", "none"];
+                upgraded["th_llg"] = ["off", "none"];
+
+                upgraded["midi_o1_ehif"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("midi_o1_ehif", patch);
+                upgraded["midi_o1_ehpf"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("midi_o1_ehpf", patch);
+                upgraded["midi_o1_ehrf"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("midi_o1_ehrf", patch);
+                upgraded["midi_o1_ehsf"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("midi_o1_ehsf", patch);
+                upgraded["midi_o1_elif"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("midi_o1_elif", patch);
+                upgraded["midi_o1_elpf"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("midi_o1_elpf", patch);
+                upgraded["midi_o1_elrf"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("midi_o1_elrf", patch);
+                upgraded["midi_o1_elsf"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("midi_o1_elsf", patch);
+                upgraded["midi_o1_hf"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("midi_o1_hf", patch);
+                upgraded["midi_o1_lf"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("midi_o1_lf", patch);
+
+                upgraded["midi_o2_ehif"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("midi_o2_ehif", patch);
+                upgraded["midi_o2_ehpf"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("midi_o2_ehpf", patch);
+                upgraded["midi_o2_ehrf"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("midi_o2_ehrf", patch);
+                upgraded["midi_o2_ehsf"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("midi_o2_ehsf", patch);
+                upgraded["midi_o2_elif"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("midi_o2_elif", patch);
+                upgraded["midi_o2_elpf"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("midi_o2_elpf", patch);
+                upgraded["midi_o2_elrf"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("midi_o2_elrf", patch);
+                upgraded["midi_o2_elsf"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("midi_o2_elsf", patch);
+                upgraded["midi_o2_hf"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("midi_o2_hf", patch);
+                upgraded["midi_o2_lf"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("midi_o2_lf", patch);
+
+                upgraded["cmp_o1_ehif"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("cmp_o1_ehif", patch);
+                upgraded["cmp_o1_ehpf"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("cmp_o1_ehpf", patch);
+                upgraded["cmp_o1_ehrf"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("cmp_o1_ehrf", patch);
+                upgraded["cmp_o1_ehsf"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("cmp_o1_ehsf", patch);
+                upgraded["cmp_o1_elif"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("cmp_o1_elif", patch);
+                upgraded["cmp_o1_elpf"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("cmp_o1_elpf", patch);
+                upgraded["cmp_o1_elrf"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("cmp_o1_elrf", patch);
+                upgraded["cmp_o1_elsf"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("cmp_o1_elsf", patch);
+                upgraded["cmp_o1_hf"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("cmp_o1_hf", patch);
+                upgraded["cmp_o1_lf"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("cmp_o1_lf", patch);
+
+                upgraded["cmp_o2_ehif"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("cmp_o2_ehif", patch);
+                upgraded["cmp_o2_ehpf"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("cmp_o2_ehpf", patch);
+                upgraded["cmp_o2_ehrf"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("cmp_o2_ehrf", patch);
+                upgraded["cmp_o2_ehsf"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("cmp_o2_ehsf", patch);
+                upgraded["cmp_o2_elif"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("cmp_o2_elif", patch);
+                upgraded["cmp_o2_elpf"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("cmp_o2_elpf", patch);
+                upgraded["cmp_o2_elrf"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("cmp_o2_elrf", patch);
+                upgraded["cmp_o2_elsf"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("cmp_o2_elsf", patch);
+                upgraded["cmp_o2_hf"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("cmp_o2_hf", patch);
+                upgraded["cmp_o2_lf"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("cmp_o2_lf", patch);
+
+                upgraded["th_ehif"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("th_ehif", patch);
+                upgraded["th_ehpf"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("th_ehpf", patch);
+                upgraded["th_ehrf"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("th_ehrf", patch);
+                upgraded["th_ehsf"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("th_ehsf", patch);
+                upgraded["th_elif"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("th_elif", patch);
+                upgraded["th_elpf"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("th_elpf", patch);
+                upgraded["th_elrf"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("th_elrf", patch);
+                upgraded["th_elsf"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("th_elsf", patch);
+                upgraded["th_hf"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("th_hf", patch);
+                upgraded["th_lf"] = this._lin_filter_freq_to_loglin_filter_freq_or_default("th_lf", patch);
+
                 version = PATCH_VERSION;
 
                 break;
@@ -1485,7 +1613,7 @@
 
         exported = patch[key];
 
-        if ((!Array.isArray(exported)) && (exported.length !== 2)) {
+        if ((!Array.isArray(exported)) || (exported.length !== 2)) {
             return null;
         }
 
@@ -1497,6 +1625,23 @@
 
         return exported;
     }
+
+    Synth.prototype._lin_filter_freq_to_loglin_filter_freq_or_default = function (param_key, patch)
+    {
+        var param = this._params_by_key[param_key],
+            exported = this._parse_exported_param(patch, param_key);
+
+        if (exported === null) {
+            return [param.default_value, "none"];
+        }
+
+        exported[0] = Math.max(
+            0.0,
+            Math.min(1.0, (exported[0] - SND_FREQ_MIN) / SND_FREQ_DELTA)
+        );
+
+        return exported;
+    };
 
     Synth.prototype.handle_midi_message = function (message)
     {
@@ -2423,26 +2568,71 @@
         }
     };
 
-    function LFOCompatibleBiquadFilter(synth, key, filter_type, default_freq, output)
+    function LogLinBiquadFilter(synth, filter_type)
     {
         var filter = new BiquadFilterNode(
                 synth.audio_ctx,
                 {
                     "type": filter_type,
-                    "Q": FILTER_Q_DEF,
-                    "frequency": default_freq,
+                    "Q": 0.0,
+                    "frequency": SND_FREQ_MIN,
                     "gain": 0.0,
                     "channelCount": 1
                 }
-            );
+            ),
+            freq_cns = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1}),
+            freq_shaper = new WaveShaperNode(synth.audio_ctx, {"curve": filter_freq_curve_lin}),
+            freq_scale = new GainNode(synth.audio_ctx, {"gain": SND_FREQ_DELTA});
+
+        Observer.call(this);
+
+        freq_cns.offset.value = 0.0;
+        freq_cns.connect(freq_shaper);
+        freq_shaper.connect(freq_scale);
+        freq_scale.connect(filter.frequency)
+
+        freq_cns.start(0.0);
+
+        this._freq_cns = freq_cns;
+        this._freq_shaper = freq_shaper;
+        this._freq_scale = freq_scale;
+        this._log_freq = null;
+
+        this.filter = filter;
+        this.frequency = freq_cns.offset;
+        this.Q = filter.Q;
+    }
+
+    LogLinBiquadFilter.prototype.set_log_freq = function (log_freq)
+    {
+        this._log_freq = log_freq;
+
+        log_freq.observers.push(this);
+    }
+
+    LogLinBiquadFilter.prototype.update = function (log_freq, value)
+    {
+        if (value == "on") {
+            this._freq_shaper.curve = filter_freq_curve_log;
+        } else {
+            this._freq_shaper.curve = filter_freq_curve_lin;
+        }
+    }
+
+    function LFOCompatibleBiquadFilter(synth, key, filter_type, default_freq, output)
+    {
+        var filter = new LogLinBiquadFilter(synth, filter_type);
 
         Effect.call(this, synth, key, output);
 
         this._filter = filter;
-        this._input_connections = this._output_connections = [filter];
+        this._input_connections = this._output_connections = [filter.filter];
 
-        this.freq = new LFOControllableParam(synth, key + "f", filter.frequency, SND_FREQ_MIN, SND_FREQ_MAX, default_freq);
+        this.log_freq = new OnOffParam(synth, key + "lg", "on");
+        this.freq = new LFOControllableParam(synth, key + "f", filter.frequency, FILTER_FREQ_MIN, FILTER_FREQ_MAX, default_freq);
         this.q = new LFOControllableParam(synth, key + "q", filter.Q, FILTER_Q_MIN, FILTER_Q_MAX, FILTER_Q_DEF);
+
+        filter.set_log_freq(this.log_freq);
     }
 
     LFOCompatibleBiquadFilter.prototype.update = Effect.prototype.update;
@@ -2890,7 +3080,8 @@
             lfo_highpass_params, lfo_lowpass_params
     ) {
         var pan, waveform_key, custom_waveform_key, ehp_onoff_key, elp_onoff_key,
-            env_highpass_onoff, env_lowpass_onoff, folding_cns,
+            env_highpass_onoff, env_lowpass_onoff,
+            folding_cns,
             i;
 
         Observable.call(this);
@@ -2946,17 +3137,18 @@
 
         ehp_onoff_key = key + "_eho";
         this.env_highpass_onoff = env_highpass_onoff = new OnOffParam(synth, ehp_onoff_key);
+        this.env_highpass_log_freq = new OnOffParam(synth, key + "_ehlg", "on");
 
         this.env_highpass_params = [
-            new MIDIControllableParam(synth, key + "_ehif", SND_FREQ_MIN, SND_FREQ_MAX, SND_FREQ_MIN),
+            new MIDIControllableParam(synth, key + "_ehif", FILTER_FREQ_MIN, FILTER_FREQ_MAX, FILTER_FREQ_MIN),
             new MIDIControllableParam(synth, key + "_ehdlt", ENV_DEL_MIN, ENV_DEL_MAX, ENV_DEL_DEF),
             new MIDIControllableParam(synth, key + "_ehat", ENV_ATK_MIN, ENV_ATK_MAX, ENV_ATK_DEF),
-            new MIDIControllableParam(synth, key + "_ehpf", SND_FREQ_MIN, SND_FREQ_MAX, SND_FREQ_MIN),
+            new MIDIControllableParam(synth, key + "_ehpf", FILTER_FREQ_MIN, FILTER_FREQ_MAX, FILTER_FREQ_MIN),
             new MIDIControllableParam(synth, key + "_ehht", ENV_HLD_MIN, ENV_HLD_MAX, ENV_HLD_DEF),
             new MIDIControllableParam(synth, key + "_ehdt", ENV_DEC_MIN, ENV_DEC_MAX, ENV_DEC_DEF),
-            new MIDIControllableParam(synth, key + "_ehsf", SND_FREQ_MIN, SND_FREQ_MAX, SND_FREQ_MIN),
+            new MIDIControllableParam(synth, key + "_ehsf", FILTER_FREQ_MIN, FILTER_FREQ_MAX, FILTER_FREQ_MIN),
             new MIDIControllableParam(synth, key + "_ehrt", ENV_REL_MIN, ENV_REL_MAX, ENV_REL_DEF),
-            new MIDIControllableParam(synth, key + "_ehrf", SND_FREQ_MIN, SND_FREQ_MAX, SND_FREQ_MIN),
+            new MIDIControllableParam(synth, key + "_ehrf", FILTER_FREQ_MIN, FILTER_FREQ_MAX, FILTER_FREQ_MIN),
 
             new MIDIControllableParam(synth, key + "_ehqi", FILTER_Q_MIN, FILTER_Q_MAX, FILTER_Q_DEF),
             new MIDIControllableParam(synth, key + "_ehqdlt", ENV_DEL_MIN, ENV_DEL_MAX, ENV_DEL_DEF),
@@ -2971,17 +3163,18 @@
 
         elp_onoff_key = key + "_elo";
         this.env_lowpass_onoff = env_lowpass_onoff = new OnOffParam(synth, elp_onoff_key);
+        this.env_lowpass_log_freq = new OnOffParam(synth, key + "_ellg", "on");
 
         this.env_lowpass_params = [
-            new MIDIControllableParam(synth, key + "_elif", SND_FREQ_MIN, SND_FREQ_MAX, SND_FREQ_MAX),
+            new MIDIControllableParam(synth, key + "_elif", FILTER_FREQ_MIN, FILTER_FREQ_MAX, FILTER_FREQ_MAX),
             new MIDIControllableParam(synth, key + "_eldlt", ENV_DEL_MIN, ENV_DEL_MAX, ENV_DEL_DEF),
             new MIDIControllableParam(synth, key + "_elat", ENV_ATK_MIN, ENV_ATK_MAX, ENV_ATK_DEF),
-            new MIDIControllableParam(synth, key + "_elpf", SND_FREQ_MIN, SND_FREQ_MAX, SND_FREQ_MAX),
+            new MIDIControllableParam(synth, key + "_elpf", FILTER_FREQ_MIN, FILTER_FREQ_MAX, FILTER_FREQ_MAX),
             new MIDIControllableParam(synth, key + "_elht", ENV_HLD_MIN, ENV_HLD_MAX, ENV_HLD_DEF),
             new MIDIControllableParam(synth, key + "_eldt", ENV_DEC_MIN, ENV_DEC_MAX, ENV_DEC_DEF),
-            new MIDIControllableParam(synth, key + "_elsf", SND_FREQ_MIN, SND_FREQ_MAX, SND_FREQ_MAX),
+            new MIDIControllableParam(synth, key + "_elsf", FILTER_FREQ_MIN, FILTER_FREQ_MAX, FILTER_FREQ_MAX),
             new MIDIControllableParam(synth, key + "_elrt", ENV_REL_MIN, ENV_REL_MAX, ENV_REL_DEF),
-            new MIDIControllableParam(synth, key + "_elrf", SND_FREQ_MIN, SND_FREQ_MAX, SND_FREQ_MAX),
+            new MIDIControllableParam(synth, key + "_elrf", FILTER_FREQ_MIN, FILTER_FREQ_MAX, FILTER_FREQ_MAX),
 
             new MIDIControllableParam(synth, key + "_elqi", FILTER_Q_MIN, FILTER_Q_MAX, FILTER_Q_DEF),
             new MIDIControllableParam(synth, key + "_elqdlt", ENV_DEL_MIN, ENV_DEL_MAX, ENV_DEL_DEF),
@@ -3201,14 +3394,14 @@
             lfo_highpass, lfo_lowpass,
             note, i;
 
-        lfo_lowpass = new LFOCompatibleBiquadFilter(synth, key + "_l", "lowpass", SND_FREQ_MAX, null);
-        lfo_highpass = new LFOCompatibleBiquadFilter(synth, key + "_h", "highpass", SND_FREQ_MIN, lfo_lowpass.input);
+        lfo_lowpass = new LFOCompatibleBiquadFilter(synth, key + "_l", "lowpass", FILTER_FREQ_MAX, null);
+        lfo_highpass = new LFOCompatibleBiquadFilter(synth, key + "_h", "highpass", FILTER_FREQ_MIN, lfo_lowpass.input);
 
         MIDINoteBasedOscillator.call(
             this,
             synth, key, poliphony, frequencies, output,
-            [lfo_highpass.onoff, lfo_highpass.freq, lfo_highpass.q],
-            [lfo_lowpass.onoff, lfo_lowpass.freq, lfo_lowpass.q]
+            [lfo_highpass.onoff, lfo_highpass.log_freq, lfo_highpass.freq, lfo_highpass.q],
+            [lfo_lowpass.onoff, lfo_lowpass.log_freq, lfo_lowpass.freq, lfo_lowpass.q]
         );
 
         lfo_lowpass.output = this._pan;
@@ -3223,6 +3416,8 @@
                     this._vol_cns, this._detune_cns, this._fine_detune_cns, this._folding_cns
                 )
             );
+            note.env_highpass.set_log_freq(this.env_highpass_log_freq);
+            note.env_lowpass.set_log_freq(this.env_lowpass_log_freq);
         }
 
         this._notes = notes;
@@ -3239,8 +3434,8 @@
     function MIDINoteBasedModulator(synth, key, poliphony, frequencies, output, carrier_osc, am_vol_cns, fm_vol_cns)
     {
         var notes = [],
-            lfo_highpass_onoff, lfo_highpass_freq, lfo_highpass_q,
-            lfo_lowpass_onoff, lfo_lowpass_freq, lfo_lowpass_q,
+            lfo_highpass_onoff, lfo_highpass_log_freq, lfo_highpass_freq, lfo_highpass_q,
+            lfo_lowpass_onoff, lfo_lowpass_log_freq, lfo_lowpass_freq, lfo_lowpass_q,
             note, i;
 
         if (carrier_osc && carrier_osc._notes.length !== poliphony) {
@@ -3251,10 +3446,12 @@
         }
 
         lfo_highpass_onoff = new OnOffParam(synth, key + "_h_st");
+        lfo_highpass_log_freq = new OnOffParam(synth, key + "_h_lg", "on");
         lfo_highpass_freq = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1});
         lfo_highpass_q = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1});
 
         lfo_lowpass_onoff = new OnOffParam(synth, key + "_l_st");
+        lfo_lowpass_log_freq = new OnOffParam(synth, key + "_l_lg", "on");
         lfo_lowpass_freq = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1});
         lfo_lowpass_q = new ConstantSourceNode(synth.audio_ctx, {"channelCount": 1});
 
@@ -3272,12 +3469,14 @@
             synth, key, poliphony, frequencies, output,
             [
                 lfo_highpass_onoff,
-                new LFOControllableParam(synth, key + "_hf", lfo_highpass_freq.offset, SND_FREQ_MIN, SND_FREQ_MAX, SND_FREQ_MIN),
+                lfo_highpass_log_freq,
+                new LFOControllableParam(synth, key + "_hf", lfo_highpass_freq.offset, FILTER_FREQ_MIN, FILTER_FREQ_MAX, FILTER_FREQ_MIN),
                 new LFOControllableParam(synth, key + "_hq", lfo_highpass_q.offset, FILTER_Q_MIN, FILTER_Q_MAX, FILTER_Q_DEF)
             ],
             [
                 lfo_lowpass_onoff,
-                new LFOControllableParam(synth, key + "_lf", lfo_lowpass_freq.offset, SND_FREQ_MIN, SND_FREQ_MAX, SND_FREQ_MAX),
+                lfo_lowpass_log_freq,
+                new LFOControllableParam(synth, key + "_lf", lfo_lowpass_freq.offset, FILTER_FREQ_MIN, FILTER_FREQ_MAX, FILTER_FREQ_MAX),
                 new LFOControllableParam(synth, key + "_lq", lfo_lowpass_q.offset, FILTER_Q_MIN, FILTER_Q_MAX, FILTER_Q_DEF)
             ]
         );
@@ -3303,6 +3502,10 @@
                 )
             );
             note.output.connect(this._pan);
+            note.env_highpass.set_log_freq(this.env_highpass_log_freq);
+            note.env_lowpass.set_log_freq(this.env_lowpass_log_freq);
+            note.lfo_highpass.set_log_freq(lfo_highpass_log_freq);
+            note.lfo_lowpass.set_log_freq(lfo_lowpass_log_freq);
 
             am_vol_cns.connect(note.am_out.gain);
             fm_vol_cns.connect(note.fm_out.gain);
@@ -3395,14 +3598,14 @@
 
         note = new Note(synth, note_vol, null);
 
-        lfo_lowpass = new LFOCompatibleBiquadFilter(synth, "th_l", "lowpass", SND_FREQ_MAX, null);
-        lfo_highpass = new LFOCompatibleBiquadFilter(synth, "th_h", "highpass", SND_FREQ_MIN, lfo_lowpass.input);
+        lfo_lowpass = new LFOCompatibleBiquadFilter(synth, "th_l", "lowpass", FILTER_FREQ_MAX, null);
+        lfo_highpass = new LFOCompatibleBiquadFilter(synth, "th_h", "highpass", FILTER_FREQ_MIN, lfo_lowpass.input);
 
         ComplexOscillator.call(
             this,
             synth, "th", effects.input, note.osc_vol.gain,
-            [lfo_highpass.onoff, lfo_highpass.freq, lfo_highpass.q],
-            [lfo_lowpass.onoff, lfo_lowpass.freq, lfo_lowpass.q]
+            [lfo_highpass.onoff, lfo_highpass.log_freq, lfo_highpass.freq, lfo_highpass.q],
+            [lfo_lowpass.onoff, lfo_lowpass.log_freq, lfo_lowpass.freq, lfo_lowpass.q]
         );
 
         amp_env = this.amp_env_params;
@@ -3421,6 +3624,9 @@
         note_vol.connect(lfo_highpass.input);
 
         note_vol.gain.value = 0.0;
+
+        note.env_highpass.set_log_freq(this.env_highpass_log_freq);
+        note.env_lowpass.set_log_freq(this.env_lowpass_log_freq);
 
         this._audio_ctx = synth.audio_ctx;
         this._note = note;
@@ -3552,26 +3758,8 @@
             osc_vol = new GainNode(synth.audio_ctx, {"channelCount": 1}),
             vel_vol = new GainNode(synth.audio_ctx, {"channelCount": 1}),
             pan = new StereoPannerNode(synth.audio_ctx, {"channelCount": 2}),
-            env_highpass = new BiquadFilterNode(
-                synth.audio_ctx,
-                {
-                    "type": "highpass",
-                    "Q": FILTER_Q_DEF,
-                    "frequency": SND_FREQ_MIN,
-                    "gain": 0.0,
-                    "channelCount": 1
-                }
-            ),
-            env_lowpass = new BiquadFilterNode(
-                synth.audio_ctx,
-                {
-                    "type": "lowpass",
-                    "Q": FILTER_Q_DEF,
-                    "frequency": SND_FREQ_MAX,
-                    "gain": 0.0,
-                    "channelCount": 1
-                }
-            );
+            env_highpass = new LogLinBiquadFilter(synth, "highpass"),
+            env_lowpass = new LogLinBiquadFilter(synth, "lowpass");
 
         folder = new WaveShaperNode(synth.audio_ctx, {"curve": FOLD_CURVE, "channelCount": 1});
 
@@ -3601,8 +3789,6 @@
         this._fold_curve = FOLD_CURVE;
         this._fold_curve_inv = FOLD_CURVE_INV;
         this._vel_vol = vel_vol;
-        this._env_highpass = env_highpass;
-        this._env_lowpass = env_lowpass;
 
         this._is_triggered = false;
 
@@ -3638,15 +3824,17 @@
         this.osc_vol = osc_vol;
         this.folding_cns_target = fold_threshold.gain;
         this.fine_detune = osc.detune;
+        this.env_highpass = env_highpass;
+        this.env_lowpass = env_lowpass;
 
         this._chain_mask = 0;
         this._chain_mask_when_triggered = 0;
         this._chain_in = osc_vol;
         this._chains = [
             [vel_vol],
-            [env_highpass, vel_vol],
-            [env_lowpass, vel_vol],
-            [env_highpass, env_lowpass, vel_vol]
+            [env_highpass.filter, vel_vol],
+            [env_lowpass.filter, vel_vol],
+            [env_highpass.filter, env_lowpass.filter, vel_vol]
         ];
         this._chain = this._chains[0];
 
@@ -3739,7 +3927,7 @@
 
         if (0 < (chain_mask & 1)) {
             this._ehp_f_sustain_start = this._apply_envelope_dahds(
-                this._env_highpass.frequency,
+                this.env_highpass.frequency,
                 now,
                 when,
                 env_highpass_params[0].value,
@@ -3751,7 +3939,7 @@
                 this._ehp_f_sustain_level = env_highpass_params[6].value
             );
             this._ehp_q_sustain_start = this._apply_envelope_dahds(
-                this._env_highpass.Q,
+                this.env_highpass.Q,
                 now,
                 when,
                 env_highpass_params[9].value,
@@ -3774,7 +3962,7 @@
 
         if (0 < (chain_mask & 2)) {
             this._elp_f_sustain_start = this._apply_envelope_dahds(
-                this._env_lowpass.frequency,
+                this.env_lowpass.frequency,
                 now,
                 when,
                 env_lowpass_params[0].value,
@@ -3786,7 +3974,7 @@
                 this._elp_f_sustain_level = env_lowpass_params[6].value
             );
             this._elp_q_sustain_start = this._apply_envelope_dahds(
-                this._env_lowpass.Q,
+                this.env_lowpass.Q,
                 now,
                 when,
                 env_lowpass_params[9].value,
@@ -3858,7 +4046,7 @@
 
             if (0 < (chain_mask & 1)) {
                 this._apply_envelope_r(
-                    this._env_highpass.frequency,
+                    this.env_highpass.frequency,
                     when,
                     this._ehp_f_sustain_start,
                     this._ehp_f_sustain_level,
@@ -3866,7 +4054,7 @@
                     this._ehp_f_release_level
                 );
                 this._apply_envelope_r(
-                    this._env_highpass.Q,
+                    this.env_highpass.Q,
                     when,
                     this._ehp_q_sustain_start,
                     this._ehp_q_sustain_level,
@@ -3877,7 +4065,7 @@
 
             if (0 < (chain_mask & 2)) {
                 this._apply_envelope_r(
-                    this._env_lowpass.frequency,
+                    this.env_lowpass.frequency,
                     when,
                     this._elp_f_sustain_start,
                     this._elp_f_sustain_level,
@@ -3885,7 +4073,7 @@
                     this._elp_f_release_level
                 );
                 this._apply_envelope_r(
-                    this._env_lowpass.Q,
+                    this.env_lowpass.Q,
                     when,
                     this._elp_q_sustain_start,
                     this._elp_q_sustain_level,
@@ -3937,7 +4125,7 @@
 
             if (0 < (chain_mask & 1)) {
                 this._apply_envelope_r(
-                    this._env_highpass.frequency,
+                    this.env_highpass.frequency,
                     when,
                     this._ehp_f_sustain_start,
                     this._ehp_f_sustain_level,
@@ -3945,7 +4133,7 @@
                     this._ehp_f_release_level
                 );
                 this._apply_envelope_r(
-                    this._env_highpass.Q,
+                    this.env_highpass.Q,
                     when,
                     this._ehp_q_sustain_start,
                     this._ehp_q_sustain_level,
@@ -3956,7 +4144,7 @@
 
             if (0 < (chain_mask & 2)) {
                 this._apply_envelope_r(
-                    this._env_lowpass.frequency,
+                    this.env_lowpass.frequency,
                     when,
                     this._elp_f_sustain_start,
                     this._elp_f_sustain_level,
@@ -3964,7 +4152,7 @@
                     this._elp_f_release_level
                 );
                 this._apply_envelope_r(
-                    this._env_lowpass.Q,
+                    this.env_lowpass.Q,
                     when,
                     this._elp_q_sustain_start,
                     this._elp_q_sustain_level,
@@ -4196,26 +4384,8 @@
         var fm_freq = new GainNode(synth.audio_ctx, {"channelCount": 1}),
             am_out = new GainNode(synth.audio_ctx, {"channelCount": 1}),
             fm_out = new GainNode(synth.audio_ctx, {"channelCount": 1}),
-            lfo_highpass = new BiquadFilterNode(
-                synth.audio_ctx,
-                {
-                    "type": "highpass",
-                    "Q": 0.0,
-                    "frequency": 0.0,
-                    "gain": 0.0,
-                    "channelCount": 1
-                }
-            ),
-            lfo_lowpass = new BiquadFilterNode(
-                synth.audio_ctx,
-                {
-                    "type": "lowpass",
-                    "Q": 0.0,
-                    "frequency": 0.0,
-                    "gain": 0.0,
-                    "channelCount": 1
-                }
-            ),
+            lfo_highpass = new LogLinBiquadFilter(synth, "highpass"),
+            lfo_lowpass = new LogLinBiquadFilter(synth, "lowpass"),
             pan, vel_vol, env_highpass, env_lowpass;
 
         lfo_highpass.frequency.value = 0.0;
@@ -4232,13 +4402,13 @@
 
         pan = this.pan;
 
-        this._lfo_highpass = lfo_highpass;
-        this._lfo_lowpass = lfo_lowpass;
         this._fm_freq = fm_freq;
 
         this.fm_out = fm_out;
         this.am_out = am_out;
         this.output = pan;
+        this.lfo_highpass = lfo_highpass;
+        this.lfo_lowpass = lfo_lowpass;
 
         am_out.gain.value = 0.0;
         fm_out.gain.value = 0.0;
@@ -4247,8 +4417,8 @@
         fm_freq.connect(fm_out);
 
         vel_vol = this._vel_vol;
-        env_highpass = this._env_highpass;
-        env_lowpass = this._env_lowpass;
+        env_highpass = this.env_highpass;
+        env_lowpass = this.env_lowpass;
 
         vel_vol.connect(pan);
         vel_vol.connect(am_out);
@@ -4256,24 +4426,24 @@
 
         this._chains = [
             [vel_vol],
-            [env_highpass, vel_vol],
-            [env_lowpass, vel_vol],
-            [env_highpass, env_lowpass, vel_vol],
+            [env_highpass.filter, vel_vol],
+            [env_lowpass.filter, vel_vol],
+            [env_highpass.filter, env_lowpass.filter, vel_vol],
 
-            [lfo_highpass, vel_vol],
-            [env_highpass, lfo_highpass, vel_vol],
-            [env_lowpass, lfo_highpass, vel_vol],
-            [env_highpass, env_lowpass, lfo_highpass, vel_vol],
+            [lfo_highpass.filter, vel_vol],
+            [env_highpass.filter, lfo_highpass.filter, vel_vol],
+            [env_lowpass.filter, lfo_highpass.filter, vel_vol],
+            [env_highpass.filter, env_lowpass.filter, lfo_highpass.filter, vel_vol],
 
-            [lfo_lowpass, vel_vol],
-            [env_highpass, lfo_lowpass, vel_vol],
-            [env_lowpass, lfo_lowpass, vel_vol],
-            [env_highpass, env_lowpass, lfo_lowpass, vel_vol],
+            [lfo_lowpass.filter, vel_vol],
+            [env_highpass.filter, lfo_lowpass.filter, vel_vol],
+            [env_lowpass.filter, lfo_lowpass.filter, vel_vol],
+            [env_highpass.filter, env_lowpass.filter, lfo_lowpass.filter, vel_vol],
 
-            [lfo_highpass, lfo_lowpass, vel_vol],
-            [env_highpass, lfo_highpass, lfo_lowpass, vel_vol],
-            [env_lowpass, lfo_highpass, lfo_lowpass, vel_vol],
-            [env_highpass, env_lowpass, lfo_highpass, lfo_lowpass, vel_vol]
+            [lfo_highpass.filter, lfo_lowpass.filter, vel_vol],
+            [env_highpass.filter, lfo_highpass.filter, lfo_lowpass.filter, vel_vol],
+            [env_lowpass.filter, lfo_highpass.filter, lfo_lowpass.filter, vel_vol],
+            [env_highpass.filter, env_lowpass.filter, lfo_highpass.filter, lfo_lowpass.filter, vel_vol]
         ];
     }
 
@@ -4366,9 +4536,11 @@
         return this.valid_values.hasOwnProperty(value) ? value : null;
     };
 
-    function OnOffParam(synth, key)
+    function OnOffParam(synth, key, default_value)
     {
-        EnumParam.call(this, synth, key, {"on": "on", "off": "off"}, "off");
+        EnumParam.call(
+            this, synth, key, {"on": "on", "off": "off"}, default_value || "off"
+        );
     }
 
     OnOffParam.prototype.notify_observers = EnumParam.prototype.notify_observers;
@@ -5255,26 +5427,28 @@
     CustomWaveParamsUI.prototype.set_description = NamedUIWidgetGroup.prototype.set_description;
     CustomWaveParamsUI.prototype.toggle = ClosableNamedUIWidgetGroup.prototype.toggle;
 
-    function EnvelopeBiquadFilterUI(name, onoff_param, params, synth)
+    function EnvelopeBiquadFilterUI(name, onoff_param, log_freq_param, params, synth)
     {
         var onoff = new OnOffSwitch(onoff_param),
+            log_freq = new OnOffSwitch(log_freq_param, "log", "lin"),
             freq = new UIWidgetGroup("vertical"),
             q = new UIWidgetGroup("vertical");
 
         NamedUIWidgetGroup.call(this, name, "vertical");
 
         this._name.appendChild(onoff.dom_node);
+        this._name.appendChild(log_freq.dom_node);
         this._onoff = onoff;
 
-        freq.add(new FaderUI("IF", "Initial frequency", "Hz", 1, 1, MIDI_CONTROLS, params[0], synth));
+        freq.add(new LogLinFreqFaderUI("IF", "Initial frequency", MIDI_CONTROLS, params[0], synth, log_freq_param));
         freq.add(new FaderUI("DEL", "Delay", "s", 1000, 1000, MIDI_CONTROLS, params[1], synth));
         freq.add(new FaderUI("ATK", "Attack", "s", 1000, 1000, MIDI_CONTROLS, params[2], synth));
-        freq.add(new FaderUI("PF", "Peak frequency", "Hz", 1, 1, MIDI_CONTROLS, params[3], synth));
+        freq.add(new LogLinFreqFaderUI("PF", "Peak frequency", MIDI_CONTROLS, params[3], synth, log_freq_param));
         freq.add(new FaderUI("HLD", "Hold", "s", 1000, 1000, MIDI_CONTROLS, params[4], synth));
         freq.add(new FaderUI("DEC", "Decay", "s", 1000, 1000, MIDI_CONTROLS, params[5], synth));
-        freq.add(new FaderUI("SF", "Sustain frequency", "Hz", 1, 1, MIDI_CONTROLS, params[6], synth));
+        freq.add(new LogLinFreqFaderUI("SF", "Sustain frequency", MIDI_CONTROLS, params[6], synth, log_freq_param));
         freq.add(new FaderUI("REL", "Release", "s", 1000, 1000, MIDI_CONTROLS, params[7], synth));
-        freq.add(new FaderUI("RF", "Release frequency", "Hz", 1, 1, MIDI_CONTROLS, params[8], synth));
+        freq.add(new LogLinFreqFaderUI("RF", "Release frequency", MIDI_CONTROLS, params[8], synth, log_freq_param));
 
         q.add(new FaderUI("IQ", "Initial Q factor", "", 100, 100, MIDI_CONTROLS, params[9], synth));
         q.add(new FaderUI("DEL", "Delay", "s", 1000, 1000, MIDI_CONTROLS, params[10], synth));
@@ -5296,7 +5470,14 @@
 
     function EnvelopeHighpassUI(complex_osc, synth)
     {
-        EnvelopeBiquadFilterUI.call(this, "Highpass (envelope)", complex_osc.env_highpass_onoff, complex_osc.env_highpass_params, synth);
+        EnvelopeBiquadFilterUI.call(
+            this,
+            "Highpass (envelope)",
+            complex_osc.env_highpass_onoff,
+            complex_osc.env_highpass_log_freq,
+            complex_osc.env_highpass_params,
+            synth
+        );
     }
 
     EnvelopeHighpassUI.prototype.update = EnvelopeBiquadFilterUI.prototype.update;
@@ -5305,7 +5486,14 @@
 
     function EnvelopeLowpassUI(complex_osc, synth)
     {
-        EnvelopeBiquadFilterUI.call(this, "Lowpass (envelope)", complex_osc.env_lowpass_onoff, complex_osc.env_lowpass_params, synth);
+        EnvelopeBiquadFilterUI.call(
+            this,
+            "Lowpass (envelope)",
+            complex_osc.env_lowpass_onoff,
+            complex_osc.env_lowpass_log_freq,
+            complex_osc.env_lowpass_params,
+            synth
+        );
     }
 
     EnvelopeLowpassUI.prototype.update = EnvelopeBiquadFilterUI.prototype.update;
@@ -5314,15 +5502,21 @@
 
     function LFOCompatibleBiquadFilterUI(name, class_names, lfo_compatible_filter_params, synth)
     {
-        var onoff = new OnOffSwitch(lfo_compatible_filter_params[0]);
+        var onoff = new OnOffSwitch(lfo_compatible_filter_params[0]),
+            log_freq = new OnOffSwitch(lfo_compatible_filter_params[1], "log", "lin");
 
         NamedUIWidgetGroup.call(this, name, "vertical " + (class_names || ""));
 
         this._name.appendChild(onoff.dom_node);
+        this._name.appendChild(log_freq.dom_node);
         this._onoff = onoff;
 
-        this.add(new FaderUI("FRQ", "Frequency", "Hz", 1, 1, ALL_CONTROLS, lfo_compatible_filter_params[1], synth));
-        this.add(new FaderUI("Q", "Q factor", "", 100, 100, ALL_CONTROLS, lfo_compatible_filter_params[2], synth));
+        this.add(
+            new LogLinFreqFaderUI(
+                "FRQ", "Frequency", ALL_CONTROLS, lfo_compatible_filter_params[2], synth, lfo_compatible_filter_params[1]
+            )
+        );
+        this.add(new FaderUI("Q", "Q factor", "", 100, 100, ALL_CONTROLS, lfo_compatible_filter_params[3], synth));
     }
 
     LFOCompatibleBiquadFilterUI.prototype.update = NamedUIWidgetGroup.prototype.update;
@@ -5331,7 +5525,7 @@
 
     function LFOCompatibleHighpassUI(class_names, lfo_compatible_filter_params, synth)
     {
-        LFOCompatibleBiquadFilterUI.call(this, "Highpass (LFO compatible)", class_names, lfo_compatible_filter_params, synth);
+        LFOCompatibleBiquadFilterUI.call(this, "Highpass (LFO)", class_names, lfo_compatible_filter_params, synth);
     }
 
     LFOCompatibleHighpassUI.prototype.update = LFOCompatibleBiquadFilterUI.prototype.update;
@@ -5340,7 +5534,7 @@
 
     function LFOCompatibleLowpassUI(class_names, lfo_compatible_filter_params, synth)
     {
-        LFOCompatibleBiquadFilterUI.call(this, "Lowpass (LFO compatible)", class_names, lfo_compatible_filter_params, synth);
+        LFOCompatibleBiquadFilterUI.call(this, "Lowpass (LFO)", class_names, lfo_compatible_filter_params, synth);
     }
 
     LFOCompatibleLowpassUI.prototype.update = LFOCompatibleBiquadFilterUI.prototype.update;
@@ -5562,11 +5756,14 @@
     ReverbUI.prototype.add = NamedUIWidgetGroup.prototype.add;
     ReverbUI.prototype.set_description = NamedUIWidgetGroup.prototype.set_description;
 
-    function OnOffSwitch(param)
+    function OnOffSwitch(param, on_text, off_text)
     {
         var input = document.createElement("input"),
             label = document.createElement("label"),
             span = document.createElement("span");
+
+        this.on_text = on_text || "on";
+        this.off_text = off_text || "off";
 
         UIWidget.call(this, "onoff");
 
@@ -5575,7 +5772,7 @@
         input.setAttribute("type", "checkbox");
         input.onchange = bind(this, this.handle_input_change);
 
-        span.innerText = "off";
+        span.innerText = this.off_text;
 
         label.setAttribute("for", param.key);
         label.appendChild(input);
@@ -5593,10 +5790,11 @@
 
     OnOffSwitch.prototype.update = function (param, new_value)
     {
-        var value = param.value;
+        var value = param.value,
+            is_on = value === "on";
 
-        this._input.checked = value === "on";
-        this._span.innerText = value;
+        this._input.checked = is_on;
+        this._span.innerText = is_on ? this.on_text : this.off_text;
     };
 
     OnOffSwitch.prototype.handle_input_change = function ()
@@ -5604,7 +5802,7 @@
         var new_state = this._input.checked ? "on" : "off";
 
         this._param.set_value(new_state);
-        this._span.innerText = new_state;
+        this._span.innerText = (new_state === "on") ? this.on_text : this.off_text;
 
         return true;
     };
@@ -5689,7 +5887,7 @@
             return;
         }
 
-        this._input.value = Math.round(new_value * this._scale);
+        this._input.value = Math.round(this._param.value * this._scale);
 
         if (this._control !== null) {
             this._control.value = param.controller;
@@ -5763,9 +5961,7 @@
     {
         var ctl = this._param.controller;
 
-        this._value.innerText = String(
-            Math.round(this._input.value * 1000 / this._display_scale) / 1000
-        );
+        this._value.innerText = String(this._calculate_display_value());
 
         if (ctl === "none") {
             this._is_connected = false;
@@ -5784,6 +5980,38 @@
         } else {
             this.dom_node.setAttribute("class", "param connected-midi");
         }
+    };
+
+    FaderUI.prototype._calculate_display_value = function ()
+    {
+        return Math.round(this._input.value * 1000 / this._display_scale) / 1000;
+    };
+
+    function LogLinFreqFaderUI(label, name, controls, param, synth, log_freq)
+    {
+        this._log_freq = log_freq;
+
+        FaderUI.call(this, label, name, "Hz", 1000.0, 1000.0, controls, param, synth);
+
+        log_freq.observers.push(this);
+    }
+
+    LogLinFreqFaderUI.prototype.update = FaderUI.prototype.update;
+    LogLinFreqFaderUI.prototype.handle_wheel = FaderUI.prototype.handle_wheel;
+    LogLinFreqFaderUI.prototype.update_param = FaderUI.prototype.update_param;
+    LogLinFreqFaderUI.prototype.handle_input_change = FaderUI.prototype.handle_input_change;
+    LogLinFreqFaderUI.prototype.handle_control_change = FaderUI.prototype.handle_control_change;
+    LogLinFreqFaderUI.prototype.update_screen = FaderUI.prototype.update_screen;
+
+    LogLinFreqFaderUI.prototype._calculate_display_value = function ()
+    {
+        var value = this._input.value / this._display_scale;
+
+        if (this._log_freq.value == "on") {
+            value = ratio_to_log_filter_freq_ratio(value);
+        }
+
+        return Math.round(SND_FREQ_MIN + SND_FREQ_DELTA * value);
     };
 
     function VirtualControlsUI(synth)
