@@ -18,6 +18,8 @@ def main(argv):
         "vrt3": "mod",
         "note": "vrtnote",
         "vrtnote": "note",
+        "vel": "vrtvel",
+        "vrtvel": "vel",
     }
     c = 0
     preset_names = {}
@@ -40,6 +42,11 @@ def main(argv):
         presets[preset_id] = preset
         preset_names[preset_id] = preset_name
 
+        version = None
+
+        if "version" in preset:
+            version = preset["version"]
+
         if " - " in preset_name:
             c += 1
             swapped_preset_id = f"p{c}"
@@ -49,12 +56,20 @@ def main(argv):
 
             swapped_preset = {}
 
-            for key, (val, ctl) in preset.items():
+            if version is not None:
+                swapped_preset["version"] = version
+
+            for key, exported in preset.items():
+                if key == "version":
+                    swapped_preset["version"] = exported
+                    continue
+
                 if key.startswith("cmp_"):
                     key = "midi_" + key[4:]
                 elif key.startswith("midi_"):
                     key = "cmp_" + key[5:]
 
+                val, ctl = exported
                 ctl = ctls.get(ctl, ctl)
                 swapped_preset[key] = [val, ctl]
 
