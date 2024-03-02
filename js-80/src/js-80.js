@@ -535,7 +535,7 @@
         freqs.push(1.0);
 
         filter_freq_curve_log = new Float32Array(freqs);
-        filter_freq_curve_lin = new Float32Array([-1.0, 0.0, 1.0]);
+        filter_freq_curve_lin = new Float32Array([-1.0, 1.0]);
     }
 
     function ratio_to_log_filter_freq_ratio(ratio)
