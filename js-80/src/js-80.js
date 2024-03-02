@@ -3,7 +3,19 @@
     "use strict";
 
     var PATCH_VERSION = "4",
-        WAVEFORMS = {
+        OSC_WAVEFORMS = {
+            "sawtooth": "sawtooth",
+            "softsaw": "soft sawtooth",
+            "invsaw": "inverse sawtooth",
+            "softinvsaw": "soft inverse sawtooth",
+            "sine": "sine",
+            "square": "square",
+            "softsquare": "soft square",
+            "triangle": "triangle",
+            "softtriangle": "soft triangle",
+            "custom": "custom"
+        },
+        LFO_WAVEFORMS = {
             "sawtooth": "sawtooth",
             "invsaw": "inverse sawtooth",
             "sine": "sine",
@@ -410,6 +422,9 @@
         synth_obj = null,
         filter_freq_curve_log,
         filter_freq_curve_lin,
+        soft_saw_pw,
+        soft_sqr_pw,
+        soft_tri_pw,
         presets,
         preset_names,
         patch_file_input,
@@ -722,6 +737,8 @@
                 patch_audio_param(audio_ctx);
             }
 
+            init_waveforms(audio_ctx);
+
             synth_obj = new Synth(
                 audio_ctx,
                 Number($("comp-poliphony").value),
@@ -869,6 +886,63 @@
                 this._linearRampToValueAtTime(v, when);
             }
         };
+    }
+
+    function init_waveforms(audio_ctx)
+    {
+        var partials = 128,
+            soft_saw_coef = new Float32Array(partials),
+            soft_sqr_coef = new Float32Array(partials),
+            soft_tri_coef = new Float32Array(partials),
+            real = new Float32Array(partials),
+            plus_or_minus_one, i_pi, two_over_i_pi, softener,
+            i, j;
+
+        soft_saw_coef[0] = 0.0;
+        soft_sqr_coef[0] = 0.0;
+        soft_tri_coef[0] = 0.0;
+        real[0] = 0.0;
+
+        for (i = 0; i < partials; ++i) {
+            j = i + 1;
+            plus_or_minus_one = ((i & 1) == 1 ? -1.0 : 1.0);
+            i_pi = j * Math.PI;
+            two_over_i_pi = 2.0 / i_pi;
+            softener = 5.0 / (i + 5.0);
+
+            soft_saw_coef[j] = softener * plus_or_minus_one * two_over_i_pi;
+            soft_sqr_coef[j] = softener * (1 + plus_or_minus_one) * two_over_i_pi;
+            soft_tri_coef[j] = softener * (8.0 * Math.sin(i_pi / 2.0) / (i_pi * i_pi));
+            real[j]
+        }
+
+        soft_saw_pw = new PeriodicWave(
+            audio_ctx,
+            {
+                "channelCount": 1,
+                "disableNormalization": false,
+                "real": real,
+                "imag": soft_saw_coef
+            }
+        );
+        soft_sqr_pw = new PeriodicWave(
+            audio_ctx,
+            {
+                "channelCount": 1,
+                "disableNormalization": false,
+                "real": real,
+                "imag": soft_sqr_coef
+            }
+        );
+        soft_tri_pw = new PeriodicWave(
+            audio_ctx,
+            {
+                "channelCount": 1,
+                "disableNormalization": false,
+                "real": real,
+                "imag": soft_tri_coef
+            }
+        );
     }
 
     function restore_patch_from_local_storage()
@@ -3100,7 +3174,7 @@
         this._folding_cns = folding_cns;
 
         this._waveform_key = waveform_key = key + "_wf";
-        this.waveform = new EnumParam(synth, waveform_key, merge(WAVEFORMS, {"custom": "custom"}), "sine");
+        this.waveform = new EnumParam(synth, waveform_key, OSC_WAVEFORMS, "sine");
         this.waveform.observers.push(this);
 
         this._custom_waveform_key = custom_waveform_key = key + "_cwf";
@@ -3783,6 +3857,9 @@
         }
 
         this._osc = osc;
+        this._waveform = null;
+        this._periodic_wave = null;
+
         this._prefold_vol = prefold_vol;
         this._fold_threshold = fold_threshold;
         this._folder = folder;
@@ -4165,20 +4242,58 @@
 
     Note.prototype.set_waveform = function (new_waveform)
     {
-        if (new_waveform === "invsaw") {
-            new_waveform = "sawtooth";
-            this._folder.curve = this._fold_curve_inv;
-        } else {
-            this._folder.curve = this._fold_curve;
-        }
+        var osc = this._osc;
 
-        this._osc.type = this._waveform = new_waveform;
+        switch (new_waveform) {
+            case "softsaw":
+                this.set_custom_waveform(soft_saw_pw);
+                break;
+
+            case "invsaw":
+                if (osc !== null) {
+                    osc.type = "sawtooth";
+                }
+
+                this._waveform = "sawtooth";
+                this._folder.curve = this._fold_curve_inv;
+                break;
+
+            case "softinvsaw":
+                this.set_custom_waveform(soft_saw_pw);
+                this._folder.curve = this._fold_curve_inv;
+                break;
+
+            case "softsquare":
+                this.set_custom_waveform(soft_sqr_pw);
+                break;
+
+            case "softtriangle":
+                this.set_custom_waveform(soft_tri_pw);
+                break;
+
+            default:
+                if (osc !== null) {
+                    osc.type = new_waveform;
+                }
+
+                this._waveform = new_waveform;
+                this._folder.curve = this._fold_curve;
+                break;
+        }
     };
 
     Note.prototype.set_custom_waveform = function (periodic_wave)
     {
+        var osc = this._osc;
+
         this._folder.curve = this._fold_curve;
-        this._osc.setPeriodicWave(this._periodic_wave = periodic_wave);
+        this._periodic_wave = periodic_wave;
+
+        if (osc !== null) {
+            this._osc.setPeriodicWave(periodic_wave);
+        }
+
+        this._waveform = null;
     };
 
     Note.prototype.engage_filter = function (flag)
@@ -4222,9 +4337,6 @@
         this._fine_detune_cns = fine_detune_cns;
         this._freq_cns = freq_cns;
 
-        this._waveform = null;
-        this._periodic_wave = null;
-
         this.frequency = freq_cns.offset;
     }
 
@@ -4233,6 +4345,8 @@
     ZeroPhaseNote.prototype._apply_envelope_r = Note.prototype._apply_envelope_r;
     ZeroPhaseNote.prototype.engage_filter = Note.prototype.engage_filter;
     ZeroPhaseNote.prototype.bypass_filter = Note.prototype.bypass_filter;
+    ZeroPhaseNote.prototype.set_waveform = Note.prototype.set_waveform;
+    ZeroPhaseNote.prototype.set_custom_waveform = Note.prototype.set_custom_waveform;
 
     ZeroPhaseNote.prototype.trigger = function (
             now, when, freq, velocity, pan,
@@ -4281,39 +4395,6 @@
             prt_start_freq, prt_time,
             amp_env_params, env_prefold_amp_params, env_highpass_params, env_lowpass_params
         );
-    };
-
-    ZeroPhaseNote.prototype.set_waveform = function (new_waveform)
-    {
-        var osc = this._osc;
-
-        if (new_waveform === "invsaw") {
-            new_waveform = "sawtooth";
-            this._folder.curve = this._fold_curve_inv;
-        } else {
-            this._folder.curve = this._fold_curve;
-        }
-
-        if (osc !== null) {
-            osc.type = new_waveform;
-        }
-
-        this._waveform = new_waveform;
-        this._periodic_wave = null;
-    };
-
-    ZeroPhaseNote.prototype.set_custom_waveform = function (periodic_wave)
-    {
-        var osc = this._osc;
-
-        this._folder.curve = this._fold_curve;
-
-        if (osc !== null) {
-            osc.setPeriodicWave(periodic_wave);
-        }
-
-        this._periodic_wave = periodic_wave;
-        this._waveform = null;
     };
 
     ZeroPhaseNote.prototype.start = function (when)
@@ -4805,7 +4886,7 @@
 
         this.key = key;
 
-        this.waveform = new EnumParam(synth, key + "_wf", WAVEFORMS, "sine");
+        this.waveform = new EnumParam(synth, key + "_wf", LFO_WAVEFORMS, "sine");
         this.waveform.observers.push(this);
 
         this.frequency = new LFOControllableParam(synth, key + "_f", osc.frequency, LFO_FREQ_MIN, LFO_FREQ_MAX, LFO_FREQ_DEF);
