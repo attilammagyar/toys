@@ -6839,17 +6839,17 @@
 
     preset_names = {
         "p3": "Blank",
-        "p1": "Analog Pluck - Analog Brass",
-        "p10": "Fat Saw - Saw Pluck",
-        "p11": "Violin - Harpsichord",
-        "p12": "Harpsichord - Violin",
-        "p2": "Analog Brass - Analog Pluck",
-        "p4": "Bright Jazz Organ - Jazz Organ",
-        "p5": "Jazz Organ - Bright Jazz Organ",
-        "p6": "Canon In D",
-        "p7": "Nasty Growl - Add + AM + FM Organ",
         "p8": "Add + AM + FM Organ - Nasty Growl",
-        "p9": "Saw Pluck - Fat Saw"
+        "p2": "Analog Brass - Analog Pluck",
+        "p1": "Analog Pluck - Analog Brass",
+        "p4": "Bright Jazz Organ - Jazz Organ",
+        "p6": "Canon In D",
+        "p10": "Fat Saw - Saw Pluck",
+        "p12": "Harpsichord - Violin",
+        "p5": "Jazz Organ - Bright Jazz Organ",
+        "p7": "Nasty Growl - Add + AM + FM Organ",
+        "p9": "Saw Pluck - Fat Saw",
+        "p11": "Violin - Harpsichord"
     };
     presets = {
         "p1": {
