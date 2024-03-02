@@ -1697,7 +1697,7 @@
             return null;
         }
 
-        return exported;
+        return [exported[0], ctl];
     }
 
     Synth.prototype._lin_filter_freq_to_loglin_filter_freq_or_default = function (param_key, patch)
