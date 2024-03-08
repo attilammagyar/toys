@@ -1019,6 +1019,7 @@ h1 {
         editor_side_1_preview,
         editor_side_2_preview,
         editor_mode,
+        editor_card_ref,
         editor_buttons_new,
         editor_buttons_current,
         editor_button_save,
@@ -1247,17 +1248,23 @@ h1 {
 
         is_routing = true;
 
-        if (match = url.match(/#([qe])-([0-9]+)$/)) {
-            num = Number(match[2]) - 1;
+        if (match = url.match(/#q-([0-9]+)$/)) {
+            num = Number(match[1]) - 1;
 
             if (num >= 0 && num < deck["cards"].length) {
                 store_pick(num);
                 show_practice_screen();
                 show_current_card();
 
-                if (match[1] === "e") {
-                    edit_current_card();
-                }
+                is_routing = false;
+
+                return;
+            }
+        } else if (match = url.match(/#e-([0-9]+)$/)) {
+            num = Number(match[1]) - 1;
+
+            if (num >= 0 && num < deck["cards"].length) {
+                edit_card(num);
 
                 is_routing = false;
 
@@ -1700,7 +1707,7 @@ h1 {
                 "<dd>",
                     "<div>",
                         card_side_to_list_item_html(card["side_1"], deck["side_1_language"]),
-                        "<a class=\"edit\" href=\"#e-" + index + "\">Edit and learn this card</a>",
+                        "<a class=\"edit\" href=\"#e-" + index + "\">Edit this card</a>",
                     "</div>",
                     "<div class=\"notes\" lang=\"" + deck["notes_language"] + "\">",
                         format_notes(notes, card["note_refs"]),
@@ -1818,6 +1825,22 @@ h1 {
         push_history("e-" + String(current_card_ref + 1));
     }
 
+    function edit_card(card_ref)
+    {
+        var card = deck["cards"][card_ref];
+
+        push_history("e-" + String(card_ref + 1));
+
+        editor_card_ref = card_ref;
+
+        show_editor(
+            "random-card",
+            card["side_1"],
+            card["side_2"],
+            card["note_refs"]
+        );
+    }
+
     function push_history(hash)
     {
         var url;
@@ -1885,7 +1908,7 @@ h1 {
         editor_side_1_preview.setAttribute("lang", deck["side_1_language"]);
         editor_side_2_preview.setAttribute("lang", deck["side_2_language"]);
 
-        if (mode === "current-card") {
+        if (mode === "current-card" || mode == "random-card") {
             show(editor_buttons_current);
             hide(editor_buttons_new);
             editor_button_save.disabled = false;
@@ -1952,44 +1975,68 @@ h1 {
 
     function close_editor()
     {
-        if (current_card) {
-            show_current_card();
-        }
+        populate_editor("new-card", "", "", []);
 
-        show_editor("new-card", "", "", []);
-        show_practice_screen();
+        if (editor_mode == "random-card") {
+            show_all_cards();
+        } else {
+            if (current_card) {
+                show_current_card();
+            }
+
+            show_practice_screen();
+        }
     }
 
     function handle_edit_save_click(evt)
     {
-        replace_current_card(
-            editor_side_1.value,
-            editor_side_2.value,
-            collect_notes_from_editor()
-        );
-        close_editor();
-        show_message("Card #" + String(current_card_ref + 1) + " saved.", 2400);
-        show_current_card();
-        show_practice_screen();
+        if (editor_mode == "random-card") {
+            replace_card(
+                editor_card_ref,
+                editor_side_1.value,
+                editor_side_2.value,
+                collect_notes_from_editor()
+            );
+            close_editor();
+            show_message("Card #" + String(editor_card_ref + 1) + " saved.", 2400);
+            show_all_cards();
+        } else {
+            replace_current_card(
+                editor_side_1.value,
+                editor_side_2.value,
+                collect_notes_from_editor()
+            );
+            close_editor();
+            show_message("Card #" + String(current_card_ref + 1) + " saved.", 2400);
+            show_current_card();
+            show_practice_screen();
+        }
 
         return stop_event(evt);
     }
 
-    function replace_current_card(side_1, side_2, notes)
+    function replace_card(card_ref, side_1, side_2, notes)
     {
-        var new_note_created,
+        var card,
+            new_note_created,
             note_refs,
             tmp;
 
+        card = deck["cards"][card_ref];
         tmp = merge_notes(notes);
         new_note_created = tmp[0];
         note_refs = tmp[1];
 
-        current_card["side_1"] = side_1;
-        current_card["side_2"] = side_2;
-        current_card["note_refs"] = note_refs;
+        card["side_1"] = side_1;
+        card["side_2"] = side_2;
+        card["note_refs"] = note_refs;
 
         return new_note_created;
+    }
+
+    function replace_current_card(side_1, side_2, notes)
+    {
+        return replace_card(current_card_ref, side_1, side_2, notes);
     }
 
     function handle_menu_create_click(evt)
@@ -3280,6 +3327,79 @@ h1 {
                                 "Card-3 Side-1",
                                 "Card-3 Side-2",
                                 "2,1",
+                                ""
+                            ]
+                        ]
+                    }
+                );
+            });
+
+            QUnit.test("replace_card", function(assert) {
+                var new_note_created;
+
+                load_deck(
+                    {
+                        "name": "test deck",
+                        "side_1_language": "en",
+                        "side_2_language": "ja",
+                        "notes_language": "de",
+                        "notes": ["Note-1", "Note-2"],
+                        "cards": [
+                            [
+                                "Card-1 Side-1",
+                                "Card-1 Side-2",
+                                "0",
+                                ""
+                            ],
+                            [
+                                "Card-2 Side-1",
+                                "Card-2 Side-2",
+                                "1",
+                                ""
+                            ],
+                            [
+                                "Card-3 Side-1",
+                                "Card-3 Side-2",
+                                "0,1",
+                                ""
+                            ]
+                        ]
+                    }
+                );
+
+                new_note_created = replace_card(
+                    1,
+                    "Card-2 Side-1 modified",
+                    "Card-2 Side-2 modified",
+                    ["  Note-2  ", "  Note-3  "]
+                );
+
+                assert.equal(new_note_created, true);
+                assert.deepEqual(
+                    JSON.parse(export_deck(false)),
+                    {
+                        "name": "test deck",
+                        "side_1_language": "en",
+                        "side_2_language": "ja",
+                        "notes_language": "de",
+                        "notes": ["Note-1", "Note-2", "Note-3"],
+                        "cards": [
+                            [
+                                "Card-1 Side-1",
+                                "Card-1 Side-2",
+                                "0",
+                                ""
+                            ],
+                            [
+                                "Card-2 Side-1 modified",
+                                "Card-2 Side-2 modified",
+                                "1,2",
+                                ""
+                            ],
+                            [
+                                "Card-3 Side-1",
+                                "Card-3 Side-2",
+                                "0,1",
                                 ""
                             ]
                         ]
