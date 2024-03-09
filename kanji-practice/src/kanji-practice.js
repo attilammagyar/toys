@@ -21,7 +21,7 @@
         KANJIVG_SIZE = 109,
         SCALE = CANVAS_SIZE / KANJIVG_SIZE,
         FULL_CIRCLE = 2 * Math.PI,
-        GRADES = [
+        KANJI_GRADES = [
             "",
             "jōyō 1",
             "jōyō 2",
@@ -34,6 +34,7 @@
             "jinmeiyō (used in names)",
             "jinmeiyō (used in names)"
         ],
+        perfect_score,
         builtin_decks,
         kanjivg,
         kanjidic,
@@ -78,8 +79,15 @@
         confirm_modal,
         confirm_message,
         confirm_callback,
+        all_cards,
+        all_cards_list,
+        all_cards_studied,
+        all_cards_to_study,
+        all_cards_histogram,
+        all_cards_histogram_vis,
         deck_properties_screen,
         editor_screen,
+        editor_title,
         editor_kanji,
         editor_kanji_orig,
         editor_pronunciation,
@@ -90,8 +98,9 @@
         editor_notes_preview,
         editor_notes_orig,
         editor_mode,
+        editor_card_ref,
         editor_buttons_new,
-        editor_buttons_current,
+        editor_buttons_existing,
         editor_button_save,
         editor_button_save_new,
         is_drawing,
@@ -341,6 +350,7 @@
         kanjidic = window.kanjidic;
         initialize_languages();
         initialize_gui();
+        initialize_perfect_score();
         restore_state();
         route();
     }
@@ -353,8 +363,8 @@
         is_routing = true;
         stop_teaching();
 
-        if (match = url.match(/#([qe])-([0-9]+)(-([0-9]+))?$/)) {
-            num = Number(match[2]) - 1;
+        if (match = url.match(/#q-([0-9]+)(-([0-9]+))?$/)) {
+            num = Number(match[1]) - 1;
 
             if (num >= 0 && num < deck["cards"].length) {
                 hide(grade_form);
@@ -367,10 +377,8 @@
                 show_practice_screen();
                 show_current_card();
 
-                if (match[1] === "e") {
-                    edit_current_card();
-                } else if (match[4]) {
-                    num = Number(match[4]) - 1;
+                if (match[3]) {
+                    num = Number(match[3]) - 1;
 
                     if (num >= 0 && num < characters.length && num <= drawn_characters.length) {
                         current_character_ref = num;
@@ -384,6 +392,16 @@
                         show_next_character_prompt();
                     }
                 }
+
+                is_routing = false;
+
+                return;
+            }
+        } else if (match = url.match(/#e-([0-9]+)$/)) {
+            num = Number(match[1]) - 1;
+
+            if (num >= 0 && num < deck["cards"].length) {
+                edit_card(num);
 
                 is_routing = false;
 
@@ -410,6 +428,12 @@
         } else if (match = url.match(/#new$/)) {
             start_practising();
             show_card_editor("new-card", "", "", "", "");
+            is_routing = false;
+
+            return;
+        } else if (match = url.match(/#all$/)) {
+            start_practising();
+            show_all_cards();
             is_routing = false;
 
             return;
@@ -443,6 +467,19 @@
 
         is_routing = false;
         start_practising();
+    }
+
+    function initialize_perfect_score()
+    {
+        var perfect_grades = [],
+            perfect_grade = 0.6 * GRADE_GOOD + 0.4 * GRADE_EASY,
+            i;
+
+        for (i = 0; i < MAX_GRADES; ++i) {
+            perfect_grades.push(perfect_grade);
+        }
+
+        perfect_score = calculate_score(perfect_grades);
     }
 
     function initialize_gui()
@@ -481,12 +518,41 @@
         alert_message = $("alert-message");
         confirm_modal = $("confirm");
         confirm_message = $("confirm-message");
+        all_cards = $("all-cards");
+        all_cards_list = $("all-cards-list");
+        all_cards_studied = $("all-cards-studied");
+        all_cards_to_study = $("all-cards-to-study");
+        all_cards_histogram = [
+            $("histogram-0"),
+            $("histogram-1"),
+            $("histogram-2"),
+            $("histogram-3"),
+            $("histogram-4"),
+            $("histogram-5"),
+            $("histogram-6"),
+            $("histogram-7"),
+            $("histogram-8"),
+            $("histogram-9")
+        ];
+        all_cards_histogram_vis = [
+            $("histogram-vis-0"),
+            $("histogram-vis-1"),
+            $("histogram-vis-2"),
+            $("histogram-vis-3"),
+            $("histogram-vis-4"),
+            $("histogram-vis-5"),
+            $("histogram-vis-6"),
+            $("histogram-vis-7"),
+            $("histogram-vis-8"),
+            $("histogram-vis-9")
+        ];
         editor_screen = $("editor-screen");
+        editor_title = $("editor-title");
         deck_properties_screen = $("deck-properties-screen");
         editor_kanji = $("kanji");
         editor_pronunciation = $("pronunciation");
         editor_meaning = $("meaning");
-        editor_buttons_current = $("editor-buttons-current");
+        editor_buttons_existing = $("editor-buttons-existing");
         editor_buttons_new = $("editor-buttons-new");
         editor_button_save = $("edit-save");
         editor_button_save_new = $("edit-save-new");
@@ -540,6 +606,7 @@
         $("grade-soso").onclick = handle_grade_soso_click;
         $("grade-good").onclick = handle_grade_good_click;
         $("grade-easy").onclick = handle_grade_easy_click;
+        $("menu-show-all").onclick = handle_menu_show_all_click;
         $("menu-edit").onclick = handle_menu_edit_click;
         $("edit-cancel").onclick = handle_edit_cancel_click;
         $("menu-create").onclick = handle_menu_create_click;
@@ -1080,7 +1147,9 @@
             meanings,
             jlpt
     ) {
-        grade = (0 < grade && grade < GRADES.length) ? GRADES[grade] : "";
+        grade = (
+            (0 < grade && grade < KANJI_GRADES.length) ? KANJI_GRADES[grade] : ""
+        );
 
         return [
             "<" + kanji_node + " lang=\"ja\">" + quote_html(kanji) + "</" + kanji_node + ">",
@@ -1566,6 +1635,7 @@
         hide(menu);
 
         hide(about_screen);
+        hide(all_cards);
         hide(builtins_screen);
         hide(deck_properties_screen);
         hide(editor_screen);
@@ -1681,6 +1751,150 @@
     function handle_grade_easy_click(evt)
     {
         return handle_grade_click(evt, GRADE_EASY);
+    }
+
+    function handle_menu_show_all_click(evt)
+    {
+        show_all_cards();
+
+        return stop_event(evt);
+    }
+
+    function show_all_cards()
+    {
+        var cards = deck["cards"],
+            html = [],
+            histogram = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            studied_cards = 0,
+            cards_to_study = 0,
+            card,
+            percentage,
+            i, l;
+
+        push_history("all");
+        hide_all_screens();
+
+        all_cards_list.innerHTML = "";
+
+        for (i = 0, l = cards.length; i < l; ++i) {
+            card = cards[i];
+            percentage = calculate_score_percentage(card["grades"]);
+
+            if (percentage >= 0.0) {
+                ++histogram[Math.min(9, (Math.floor(percentage) / 10.0) | 0)];
+                ++studied_cards;
+            } else {
+                ++cards_to_study;
+            }
+
+            html.push(card_to_list_item_html(i, card, percentage));
+        }
+
+        all_cards_list.innerHTML = html.join("");
+        show_stats(histogram, studied_cards, cards_to_study);
+
+        show(all_cards);
+
+        window.scrollTo(0, 0);
+    }
+
+    function show_stats(histogram, studied_cards, cards_to_study)
+    {
+        var max, percentage, i, l;
+
+        all_cards_studied.innerText = String(studied_cards);
+        all_cards_to_study.innerText = String(cards_to_study);
+
+        max = 0;
+
+        for (i = 0; i < 10; ++i) {
+            if (histogram[i] > max) {
+                max = histogram[i];
+            }
+        }
+
+        for (i = 0; i < 10; ++i) {
+            if (max > 0) {
+                percentage = (
+                    (histogram[i] > 0) ? Math.max(0.0, histogram[i] / max) : 0
+                );
+            } else {
+                percentage = 0;
+            }
+
+            all_cards_histogram[i].innerText = String(histogram[i]);
+            all_cards_histogram_vis[i].style.height = (
+                String(20.0 * percentage) + "vh"
+            );
+            all_cards_histogram_vis[i].style.marginTop = (
+                String(20.0 * (1.0 - percentage)) + "vh"
+            );
+        }
+    }
+
+    function card_to_list_item_html(index, card, score_percentage)
+    {
+        var score_cls;
+
+        if (score_percentage >= 90) {
+            score_cls = "high";
+        } else if (score_percentage >= 80) {
+            score_cls = "medium-high";
+        } else if (score_percentage >= 50) {
+            score_cls = "medium";
+        } else if (score_percentage >= 20) {
+            score_cls = "medium-low";
+        } else {
+            score_cls = "low";
+        }
+
+        index = String(index + 1);
+
+        return [
+            "<li value=\"" + index + "\">",
+                "<div>",
+                    "<dt lang=\"ja\">",
+                        quote_html(card["kanji"]),
+                    "</dt>",
+                    "<dd>",
+                        "<div lang=\"ja\">",
+                            quote_html(card["pronunciation"]),
+                        "</div>",
+                        "<div lang=\"" + deck["meaning_language"] + "\">",
+                            quote_html(card["meaning"]),
+                        "</div>",
+                        "<div class=\"notes\" lang=\"" + deck["notes_language"] + "\">",
+                            format_text(card["notes"]),
+                        "</div>",
+                        (score_percentage >= 0.0)
+                            ? (
+                                "<div class=\"score " + score_cls + "\">"
+                                    + "Score: " + String(score_percentage)
+                                    + "%"
+                                + "</div>"
+                            )
+                            : "",
+                        "<div class=\"right\">",
+                            "<a class=\"button\" href=\"#e-" + index + "\">Edit</a>",
+                        "</div>",
+                    "</dd>",
+                "</div>",
+            "</li>"
+        ].join("");
+    }
+
+    function calculate_score_percentage(grades)
+    {
+        var count = Math.min(MAX_GRADES, grades.length);
+
+        if (count < 1) {
+            return -1.0;
+        }
+
+        return Math.min(
+            100.0,
+            Math.round(calculate_score(grades) * 100.0 / perfect_score)
+        );
     }
 
     function format_text(text)
@@ -1842,6 +2056,23 @@
         return stop_event(evt);
     }
 
+    function edit_card(card_ref)
+    {
+        var card = deck["cards"][card_ref];
+
+        push_history("e-" + String(card_ref + 1));
+
+        editor_card_ref = card_ref;
+
+        show_card_editor(
+            "random-card",
+            card["kanji"],
+            card["pronunciation"],
+            card["meaning"],
+            card["notes"]
+        );
+    }
+
     function edit_current_card()
     {
         show_card_editor(
@@ -1881,6 +2112,8 @@
     {
         editor_mode = mode;
 
+        editor_title.innerText = (mode === "new-card") ? "Create card" : "Edit card";
+
         editor_kanji.value = kanji;
         editor_kanji_orig = kanji;
 
@@ -1896,13 +2129,13 @@
         editor_notes_preview.setAttribute("lang", deck["notes_language"]);
         editor_notes_preview.innerHTML = format_text(notes);
 
-        if (mode === "current-card") {
-            show(editor_buttons_current);
+        if (mode === "current-card" || mode == "random-card") {
+            show(editor_buttons_existing);
             hide(editor_buttons_new);
             editor_button_save.disabled = false;
             editor_button_save_new.disabled = true;
         } else {
-            hide(editor_buttons_current);
+            hide(editor_buttons_existing);
             show(editor_buttons_new);
             editor_button_save.disabled = true;
             editor_button_save_new.disabled = false;
@@ -1939,12 +2172,21 @@
 
     function close_card_editor()
     {
-        if (current_card) {
-            show_current_card();
+        var mode = editor_mode;
+
+        populate_card_editor("new-card", "", "", "", "");
+
+        if (mode == "random-card") {
+            show_all_cards();
+        } else {
+            if (current_card) {
+                show_current_card();
+            }
+
+            show_practice_screen();
         }
 
-        show_card_editor("new-card", "", "", "", "");
-        show_practice_screen();
+        window.scrollTo(0, 0);
     }
 
     function handle_clear_click(evt)
@@ -2166,26 +2408,48 @@
             return stop_event(evt);
         }
 
-        replace_current_card(
-            kanji,
-            editor_pronunciation.value,
-            editor_meaning.value,
-            editor_notes.value
-        );
-        close_card_editor();
-        show_message("Card #" + String(current_card_ref + 1) + " saved.", 2400);
-        show_current_card();
-        show_practice_screen();
+        show_message("Card #" + String(editor_card_ref + 1) + " saved.", 2400);
+
+        if (editor_mode == "random-card") {
+            replace_card(
+                editor_card_ref,
+                kanji,
+                editor_pronunciation.value,
+                editor_meaning.value,
+                editor_notes.value
+            );
+            close_card_editor();
+            show_all_cards();
+        } else {
+            replace_current_card(
+                kanji,
+                editor_pronunciation.value,
+                editor_meaning.value,
+                editor_notes.value
+            );
+            close_card_editor();
+            show_current_card();
+            show_practice_screen();
+        }
 
         return stop_event(evt);
     }
 
+    function replace_card(card_ref, kanji, pronunciation, meaning, notes)
+    {
+        var card;
+
+        card = deck["cards"][card_ref];
+
+        card["kanji"] = kanji;
+        card["pronunciation"] = pronunciation;
+        card["meaning"] = meaning;
+        card["notes"] = notes;
+    }
+
     function replace_current_card(kanji, pronunciation, meaning, notes)
     {
-        current_card["kanji"] = kanji;
-        current_card["pronunciation"] = pronunciation;
-        current_card["meaning"] = meaning;
-        current_card["notes"] = notes;
+        replace_card(current_card_ref, kanji, pronunciation, meaning, notes);
     }
 
     function handle_menu_create_click(evt)
@@ -2216,6 +2480,7 @@
 
             return stop_event(evt);
         }
+
         add_card(
             kanji,
             editor_pronunciation.value,
@@ -2903,12 +3168,12 @@
     {
         var q = 0.55,
             weight = 1.0,
-            sum_grades = 0,
-            sum_weights = 0,
+            sum_grades = 0.0,
+            sum_weights = 0.0,
             i, l;
 
         if (grades.length < 1) {
-            return 0;
+            return 0.0;
         }
 
         for (i = 0, l = grades.length; i < l; ++i) {
@@ -3717,6 +3982,77 @@
                 );
             });
 
+            QUnit.test("replace_card", function(assert) {
+                load_deck(
+                    {
+                        "name": "test deck",
+                        "cards": [
+                            [
+                                "kanji 1",
+                                "pronunciation 1",
+                                "meaning 1",
+                                "notes 1",
+                                ""
+                            ],
+                            [
+                                "kanji 2",
+                                "pronunciation 2",
+                                "meaning 2",
+                                "notes 2",
+                                ""
+                            ],
+                            [
+                                "kanji 3",
+                                "pronunciation 3",
+                                "meaning 3",
+                                "notes 3",
+                                ""
+                            ]
+                        ]
+                    }
+                );
+
+                replace_card(
+                    1,
+                    "kanji 2 modified",
+                    "pronunciation 2 modified",
+                    "meaning 2 modified",
+                    "notes 2 modified"
+                );
+
+                assert.deepEqual(
+                    JSON.parse(export_deck_as_json_string(false)),
+                    {
+                        "name": "test deck",
+                        "meaning_language": "",
+                        "notes_language": "",
+                        "cards": [
+                            [
+                                "kanji 1",
+                                "pronunciation 1",
+                                "meaning 1",
+                                "notes 1",
+                                ""
+                            ],
+                            [
+                                "kanji 2 modified",
+                                "pronunciation 2 modified",
+                                "meaning 2 modified",
+                                "notes 2 modified",
+                                ""
+                            ],
+                            [
+                                "kanji 3",
+                                "pronunciation 3",
+                                "meaning 3",
+                                "notes 3",
+                                ""
+                            ]
+                        ]
+                    }
+                );
+            });
+
             QUnit.test("replace_current_card", function(assert) {
                 load_deck(
                     {
@@ -3758,6 +4094,80 @@
                         ]
                     }
                 );
+            });
+
+            QUnit.test("calculate_score_percentage", function(assert) {
+                var B = GRADE_BAD,
+                    S = GRADE_SOSO,
+                    G = GRADE_GOOD,
+                    E = GRADE_EASY;
+
+                function assert_score_percentage(expected, grades)
+                {
+                    var actual = calculate_score_percentage(grades),
+                        diff = Math.abs(expected - actual);
+
+                    assert.ok(
+                        diff < 0.1,
+                        (
+                            "Expected " + String(expected)
+                            + ", got " + String(actual)
+                            + " (diff: " + String(diff) + ")"
+                            + " for " + JSON.stringify(grades, null, 0)
+                        )
+                    );
+                }
+
+                initialize_perfect_score();
+
+                assert_score_percentage(-1.0, []);
+
+                assert_score_percentage(0.0, [B]);
+                assert_score_percentage(3.0, [S]);
+                assert_score_percentage(5.0, [G]);
+                assert_score_percentage(9.0, [E]);
+
+                assert_score_percentage(0.0, [B, B, B, B, B,  B, B, B, B, B,  B, B, B, B, B]);
+                assert_score_percentage(45.0, [S, S, S, S, S,  S, S, S, S, S,  S, S, S, S, S]);
+                assert_score_percentage(76.0, [G, G, G, G, G,  G, G, G, G, G,  G, G, G, G, G]);
+                assert_score_percentage(100.0, [E, E, E, E, E,  E, E, E, E, E,  E, E, E, E, E]);
+
+                assert_score_percentage(20.0, [S, B, B, B, B,  B, B, B, B, B,  B, B, B, B, B]);
+                assert_score_percentage(29.0, [S, B, S, B, S,  B, B, B, B, B,  B, B, B, B, B]);
+                assert_score_percentage(40.0, [S, S, S, B, S,  B, B, B, B, B,  B, B, B, B, B]);
+                assert_score_percentage(43.0, [S, S, S, S, S,  B, B, B, B, B,  B, B, B, B, B]);
+                assert_score_percentage(62.0, [G, G, S, S, B,  B, B, B, B, B,  B, B, B, B, B]);
+                assert_score_percentage(68.0, [G, G, G, S, S,  B, B, B, B, B,  B, B, B, B, B]);
+                assert_score_percentage(71.0, [G, G, G, G, S,  B, B, B, B, B,  B, B, B, B, B]);
+                assert_score_percentage(72.0, [G, G, G, G, G,  B, B, B, B, B,  B, B, B, B, B]);
+                assert_score_percentage(95.0, [E, E, B, B, B,  B, B, B, B, B,  B, B, B, B, B]);
+                assert_score_percentage(59.0, [G, S, S, S, S,  S, S, S, S, S,  B, B, B, B, B]);
+                assert_score_percentage(71.0, [G, G, G, S, S,  S, S, S, S, S,  B, B, B, B, B]);
+                assert_score_percentage(74.0, [G, G, G, G, G,  S, S, S, S, S,  B, B, B, B, B]);
+                assert_score_percentage(88.0, [E, G, B, S, S,  S, S, S, S, S,  B, B, B, B, B]);
+                assert_score_percentage(100.0, [E, E, G, B, S,  S, S, S, S, S,  S, B, B, B, B]);
+                assert_score_percentage(88.0, [E, B, E, G, B,  S, S, S, S, S,  S, B, B, B, B]);
+
+                assert_score_percentage(75.0, [B, E, E, E, E,  E, E, E, E, E,  E, E, E, E, E]);
+                assert_score_percentage(95.0, [S, E, E, E, E,  E, E, E, E, E,  E, E, E, E, E]);
+                assert_score_percentage(100.0, [G, E, E, E, E,  E, E, E, E, E,  E, E, E, E, E]);
+
+                assert_score_percentage(4.0, [S, B]);
+                assert_score_percentage(8.0, [S, S, B]);
+                assert_score_percentage(6.0, [S, S]);
+                assert_score_percentage(11.0, [G, S, B]);
+                assert_score_percentage(15.0, [G, G, G]);
+                assert_score_percentage(16.0, [G, S, B, B, B]);
+                assert_score_percentage(25.0, [G, G, G, G, G]);
+                assert_score_percentage(52.0, [E, G, G, S, S, S, B, B]);
+                assert_score_percentage(18.0, [E, E]);
+                assert_score_percentage(33.0, [E, E, G, G]);
+                assert_score_percentage(40.0, [E, E, G, G, G]);
+                assert_score_percentage(42.0, [G, E, E, E, G, G]);
+                assert_score_percentage(43.0, [E, E, E, G, G]);
+                assert_score_percentage(43.0, [G, G, E, E, E, G, G]);
+                assert_score_percentage(45.0, [G, G, G, E, E, E, G, G]);
+                assert_score_percentage(48.0, [G, G, G, G, E, E, E, G, G]);
             });
         });
 

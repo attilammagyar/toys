@@ -13,6 +13,13 @@ body {
   overscroll-behavior: contain;
 }
 
+#editor-buttons-existing,
+#editor-buttons-new,
+div.input.right,
+.right {
+  text-align: right;
+}
+
 #about-screen {
   padding: 3vmin;
   background-color: #111;
@@ -46,6 +53,7 @@ body {
 #load-screen.hidden,
 #practice-screen.hidden,
 #about-screen.hidden,
+#all-cards.hidden,
 #tsv-info.hidden,
 #practice-card.hidden {
   display: none;
@@ -160,6 +168,7 @@ a.button {
   border-width: 0.7vmin;
   border-radius: 3vmin;
   text-decoration: none;
+  text-align: center;
 }
 
 #hint-button {
@@ -244,6 +253,8 @@ div#stats {
 }
 
 #practice-kanji-details-close,
+#all-cards-back,
+#all-cards a.button,
 #about-back,
 #builtins-back,
 #menu-button {
@@ -483,6 +494,12 @@ h1 {
   padding: 2vmin;
 }
 
+#all-cards-stats h2 {
+  font-size: 3.8vmin;
+  text-align: center;
+  padding: 1vmin;
+}
+
 #alert,
 #confirm {
   position: fixed;
@@ -548,6 +565,152 @@ h1 {
 
 #editor-screen button {
   margin: 0.3vmin 2vmin;
+}
+
+#all-cards span,
+#all-cards rt,
+#all-cards dt,
+#all-cards dd,
+#all-cards ruby,
+#all-cards div,
+#all-cards li {
+  font-size: 3.6vmin;
+}
+
+#all-cards {
+  line-height: 5vmin;
+  background: #000;
+}
+
+#all-cards-stats {
+  max-width: 95vw;
+  overflow-x: auto;
+  margin: 3vmin;
+}
+
+#all-cards-stats > p {
+  text-align: center;
+}
+
+#all-cards-stats table {
+  margin: auto;
+  border-spacing: 0;
+  padding 0;
+}
+
+#all-cards-stats table th,
+#all-cards-stats table td {
+  margin: 0;
+  padding: 0.3vmin;
+  min-width: 5vw;
+}
+
+#all-cards-stats table tr,
+#all-cards-stats table th,
+#all-cards-stats table td {
+  border-collapse: collapse;
+  border: solid 1px #555;
+}
+
+#all-cards-stats table * {
+  border-spacing: 0;
+  font-weight: normal;
+  font-size: 2.3vmin;
+  text-align: center;
+  padding 0;
+}
+
+#all-cards a.button {
+  display: inline-block;
+  min-width: 21vmin;
+  text-align: center;
+}
+
+#all-cards span.furigana {
+  border-radius: 0.2em;
+  border: solid 1px #333;
+  background-color: transparent;
+  border-style: none;
+}
+
+#all-cards span.furigana ruby rt {
+  font-size: 57%;
+  color: rgba(220, 220, 220, 0.75);
+  opacity: 1.0;
+}
+
+#all-cards ol {
+  padding: 0.6em;
+}
+
+#all-cards ol li {
+  break-inside: avoid;
+  page-break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  margin-left: 2em;
+}
+
+#all-cards ol > li {
+  border: solid 1px #333;
+  padding: 0.2em;
+  margin: 0.2em;
+  margin-left: 3.5em;
+}
+
+#all-cards ol > li > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  align-self: flex-start;
+  flex-direction: row;
+}
+
+#all-cards dt {
+  display: block;
+  width: 48%;
+  min-width: 70vmin;
+  padding: 1%;
+}
+
+#all-cards dd {
+  display: block;
+  width: 48%;
+  min-width: 70vmin;
+  padding: 1%;
+}
+
+#all-cards div.score,
+#all-cards div.notes {
+  clear: both;
+  font-size: 80%;
+  margin-top: 0.2em;
+}
+
+div.score.low                   { color: #faa; }
+div.score.medium-low            { color: #fca; }
+div.score.medium                { color: #ffa; }
+div.score.medium-high           { color: #cfa; }
+div.score.high                  { color: #afa; }
+
+div.histogram-vis.low           { background: #faa; }
+div.histogram-vis.medium-low    { background: #fca; }
+div.histogram-vis.medium        { background: #ffa; }
+div.histogram-vis.medium-high   { background: #cfa; }
+div.histogram-vis.high          { background: #afa; }
+
+#all-cards div.notes rt {
+  font-size: 57%;
+}
+
+#all-cards div.with_furigana {
+  margin-top: 0.5em;
+  color: rgba(220, 220, 220, 0.85);
+}
+
+#all-cards-nav {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 1vmin;
 }
 
 @media all and (orientation:landscape) {
