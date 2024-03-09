@@ -59,9 +59,9 @@
         <label for="notes-language">Notes language:</label>
         <select id="notes-language" name="notes-language"></select><br/>
       </div>
-      <div class="input">
-        <button id="deck-save" type="submit">Save</button>
+      <div class="input right">
         <button id="deck-back">Back</button>
+        <button id="deck-save" type="submit">Save</button>
       </div>
     </form>
   </div>
@@ -305,6 +305,42 @@
   <div id="all-cards" class="hidden">
     <div id="all-cards-nav">
       <a id="all-cards-back" class="button" href="#">Back</a>
+    </div>
+    <h1>All cards</h1>
+    <div id="all-cards-stats">
+      <h2>Score distribution</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>&lt;10%</th>
+            <th>&lt;20%</th>
+            <th>&lt;30%</th>
+            <th>&lt;40%</th>
+            <th>&lt;50%</th>
+            <th>&lt;60%</th>
+            <th>&lt;70%</th>
+            <th>&lt;80%</th>
+            <th>&lt;90%</th>
+            <th>&le;100%</th>
+          </tr>
+        </thead>
+        <tbody>
+          <td><div class="histogram-vis low" id="histogram-vis-0"></div><div id="histogram-0"></div></td>
+          <td><div class="histogram-vis low" id="histogram-vis-1"></div><div id="histogram-1"></div></td>
+          <td><div class="histogram-vis medium-low" id="histogram-vis-2"></div><div id="histogram-2"></div></td>
+          <td><div class="histogram-vis medium-low" id="histogram-vis-3"></div><div id="histogram-3"></div></td>
+          <td><div class="histogram-vis medium-low" id="histogram-vis-4"></div><div id="histogram-4"></div></td>
+          <td><div class="histogram-vis medium" id="histogram-vis-5"></div><div id="histogram-5"></div></td>
+          <td><div class="histogram-vis medium" id="histogram-vis-6"></div><div id="histogram-6"></div></td>
+          <td><div class="histogram-vis medium" id="histogram-vis-7"></div><div id="histogram-7"></div></td>
+          <td><div class="histogram-vis medium-high" id="histogram-vis-8"></div><div id="histogram-8"></div></td>
+          <td><div class="histogram-vis high" id="histogram-vis-9"></div><div id="histogram-9"></div></td>
+        </tbody>
+      </table>
+      <p>
+        Studied cards: <span id="all-cards-studied"></span>,
+        yet to study: <span id="all-cards-to-study"></span>.
+      <p>
     </div>
     <ol id="all-cards-list"></ol>
   </div>

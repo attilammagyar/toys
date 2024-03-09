@@ -16,6 +16,7 @@
             "You have unsaved changes in the deck properties editor."
             + " Are you sure you want to navigate away and lose those changes?"
         ),
+        perfect_score,
         is_routing,
         deck,
         menu,
@@ -55,6 +56,10 @@
         confirm_callback,
         all_cards,
         all_cards_list,
+        all_cards_studied,
+        all_cards_to_study,
+        all_cards_histogram,
+        all_cards_histogram_vis,
         editor_screen,
         editor_form_title,
         editor_side_1,
@@ -275,6 +280,7 @@
     {
         initialize_languages();
         initialize_gui();
+        initialize_perfect_score();
         restore_state();
         route();
     }
@@ -361,6 +367,19 @@
         start_practising();
     }
 
+    function initialize_perfect_score()
+    {
+        var perfect_grades = [],
+            perfect_grade = 0.6 * GRADE_GOOD + 0.4 * GRADE_EASY,
+            i;
+
+        for (i = 0; i < MAX_GRADES; ++i) {
+            perfect_grades.push(perfect_grade);
+        }
+
+        perfect_score = calculate_score(perfect_grades);
+    }
+
     function initialize_gui()
     {
         var i, si, file_name, e;
@@ -400,6 +419,32 @@
         confirm_message = $("confirm-message");
         all_cards = $("all-cards");
         all_cards_list = $("all-cards-list");
+        all_cards_studied = $("all-cards-studied");
+        all_cards_to_study = $("all-cards-to-study");
+        all_cards_histogram = [
+            $("histogram-0"),
+            $("histogram-1"),
+            $("histogram-2"),
+            $("histogram-3"),
+            $("histogram-4"),
+            $("histogram-5"),
+            $("histogram-6"),
+            $("histogram-7"),
+            $("histogram-8"),
+            $("histogram-9")
+        ];
+        all_cards_histogram_vis = [
+            $("histogram-vis-0"),
+            $("histogram-vis-1"),
+            $("histogram-vis-2"),
+            $("histogram-vis-3"),
+            $("histogram-vis-4"),
+            $("histogram-vis-5"),
+            $("histogram-vis-6"),
+            $("histogram-vis-7"),
+            $("histogram-vis-8"),
+            $("histogram-vis-9")
+        ];
         editor_screen = $("editor-screen");
         editor_form_title = $("editor-form-title");
         editor_side_1 = $("side-1");
@@ -727,7 +772,11 @@
         var cards = deck["cards"],
             notes = deck["notes"],
             html = [],
+            histogram = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            studied_cards = 0,
+            cards_to_study = 0,
             card,
+            percentage,
             i, l;
 
         push_history("all");
@@ -737,17 +786,75 @@
 
         for (i = 0, l = cards.length; i < l; ++i) {
             card = cards[i];
-            html.push(card_to_list_item_html(i + 1, card, notes));
+            percentage = calculate_score_percentage(card["grades"]);
+
+            if (percentage >= 0.0) {
+                ++histogram[Math.min(9, (Math.floor(percentage) / 10.0) | 0)];
+                ++studied_cards;
+            } else {
+                ++cards_to_study;
+            }
+
+            html.push(card_to_list_item_html(i, card, notes, percentage));
         }
 
         all_cards_list.innerHTML = html.join("");
+        show_stats(histogram, studied_cards, cards_to_study);
 
         show(all_cards);
     }
 
-    function card_to_list_item_html(index, card, notes)
+    function show_stats(histogram, studied_cards, cards_to_study)
     {
-        index = String(index);
+        var max, percentage, i, l;
+
+        all_cards_studied.innerText = String(studied_cards);
+        all_cards_to_study.innerText = String(cards_to_study);
+
+        max = 0;
+
+        for (i = 0; i < 10; ++i) {
+            if (histogram[i] > max) {
+                max = histogram[i];
+            }
+        }
+
+        for (i = 0; i < 10; ++i) {
+            if (max > 0) {
+                percentage = (
+                    (histogram[i] > 0) ? Math.max(0.0, histogram[i] / max) : 0
+                );
+            } else {
+                percentage = 0;
+            }
+
+            all_cards_histogram[i].innerText = String(histogram[i]);
+            all_cards_histogram_vis[i].style.height = (
+                String(20.0 * percentage) + "vh"
+            );
+            all_cards_histogram_vis[i].style.marginTop = (
+                String(20.0 * (1.0 - percentage)) + "vh"
+            );
+        }
+    }
+
+    function card_to_list_item_html(index, card, notes, score_percentage)
+    {
+        var score_cls;
+
+        if (score_percentage >= 90) {
+            score_cls = "high";
+        } else if (score_percentage >= 80) {
+            score_cls = "medium-high";
+        } else if (score_percentage >= 50) {
+            score_cls = "medium";
+        } else if (score_percentage >= 20) {
+            score_cls = "medium-low";
+        } else {
+            score_cls = "low";
+        }
+
+        index = String(index + 1);
 
         return [
             "<li value=\"" + index + "\">",
@@ -762,9 +869,14 @@
                         "<div class=\"notes\" lang=\"" + deck["notes_language"] + "\">",
                             format_notes(notes, card["note_refs"]),
                         "</div>",
-                        "<div class=\"score\">",
-                            "Score: " + String(calculate_score_percentage(card)) + "%",
-                        "</div>",
+                        (score_percentage >= 0.0)
+                            ? (
+                                "<div class=\"score " + score_cls + "\">"
+                                    + "Score: " + String(score_percentage)
+                                    + "%"
+                                + "</div>"
+                            )
+                            : "",
                         "<div class=\"right\">",
                             "<a class=\"button\" href=\"#e-" + index + "\">Edit</a>",
                         "</div>",
@@ -774,20 +886,18 @@
         ].join("");
     }
 
-    function calculate_score_percentage(card)
+    function calculate_score_percentage(grades)
     {
-        var grades = card["grades"],
-            max = MAX_GRADES * 2,
-            sum = 0,
-            i, l;
+        var count = Math.min(MAX_GRADES, grades.length);
 
-        for (i = 0, l = grades.length; i < l; ++i) {
-            sum += grades[i];
+        if (count < 1) {
+            return -1.0;
         }
 
-        sum = Math.min(sum, max);
-
-        return Math.round(sum * 100.0 / max);
+        return Math.min(
+            100.0,
+            Math.round(calculate_score(grades) * 100.0 / perfect_score)
+        );
     }
 
     function card_side_to_list_item_html(side, lang)
@@ -1049,6 +1159,8 @@
 
     function handle_edit_save_click(evt)
     {
+        show_message("Card #" + String(editor_card_ref + 1) + " saved.", 2400);
+
         if (editor_mode == "random-card") {
             replace_card(
                 editor_card_ref,
@@ -1057,7 +1169,6 @@
                 collect_notes_from_editor()
             );
             close_editor();
-            show_message("Card #" + String(editor_card_ref + 1) + " saved.", 2400);
             show_all_cards();
         } else {
             replace_current_card(
@@ -1066,7 +1177,6 @@
                 collect_notes_from_editor()
             );
             close_editor();
-            show_message("Card #" + String(current_card_ref + 1) + " saved.", 2400);
             show_current_card();
             show_practice_screen();
         }
@@ -2513,6 +2623,80 @@
                         ]
                     }
                 );
+            });
+
+            QUnit.test("calculate_score_percentage", function(assert) {
+                var B = GRADE_BAD,
+                    S = GRADE_SOSO,
+                    G = GRADE_GOOD,
+                    E = GRADE_EASY;
+
+                function assert_score_percentage(expected, grades)
+                {
+                    var actual = calculate_score_percentage(grades),
+                        diff = Math.abs(expected - actual);
+
+                    assert.ok(
+                        diff < 0.1,
+                        (
+                            "Expected " + String(expected)
+                            + ", got " + String(actual)
+                            + " (diff: " + String(diff) + ")"
+                            + " for " + JSON.stringify(grades, null, 0)
+                        )
+                    );
+                }
+
+                initialize_perfect_score();
+
+                assert_score_percentage(-1.0, []);
+
+                assert_score_percentage(0.0, [B]);
+                assert_score_percentage(3.0, [S]);
+                assert_score_percentage(5.0, [G]);
+                assert_score_percentage(9.0, [E]);
+
+                assert_score_percentage(0.0, [B, B, B, B, B,  B, B, B, B, B,  B, B, B, B, B]);
+                assert_score_percentage(45.0, [S, S, S, S, S,  S, S, S, S, S,  S, S, S, S, S]);
+                assert_score_percentage(76.0, [G, G, G, G, G,  G, G, G, G, G,  G, G, G, G, G]);
+                assert_score_percentage(100.0, [E, E, E, E, E,  E, E, E, E, E,  E, E, E, E, E]);
+
+                assert_score_percentage(20.0, [S, B, B, B, B,  B, B, B, B, B,  B, B, B, B, B]);
+                assert_score_percentage(29.0, [S, B, S, B, S,  B, B, B, B, B,  B, B, B, B, B]);
+                assert_score_percentage(40.0, [S, S, S, B, S,  B, B, B, B, B,  B, B, B, B, B]);
+                assert_score_percentage(43.0, [S, S, S, S, S,  B, B, B, B, B,  B, B, B, B, B]);
+                assert_score_percentage(62.0, [G, G, S, S, B,  B, B, B, B, B,  B, B, B, B, B]);
+                assert_score_percentage(68.0, [G, G, G, S, S,  B, B, B, B, B,  B, B, B, B, B]);
+                assert_score_percentage(71.0, [G, G, G, G, S,  B, B, B, B, B,  B, B, B, B, B]);
+                assert_score_percentage(72.0, [G, G, G, G, G,  B, B, B, B, B,  B, B, B, B, B]);
+                assert_score_percentage(95.0, [E, E, B, B, B,  B, B, B, B, B,  B, B, B, B, B]);
+                assert_score_percentage(59.0, [G, S, S, S, S,  S, S, S, S, S,  B, B, B, B, B]);
+                assert_score_percentage(71.0, [G, G, G, S, S,  S, S, S, S, S,  B, B, B, B, B]);
+                assert_score_percentage(74.0, [G, G, G, G, G,  S, S, S, S, S,  B, B, B, B, B]);
+                assert_score_percentage(88.0, [E, G, B, S, S,  S, S, S, S, S,  B, B, B, B, B]);
+                assert_score_percentage(100.0, [E, E, G, B, S,  S, S, S, S, S,  S, B, B, B, B]);
+                assert_score_percentage(88.0, [E, B, E, G, B,  S, S, S, S, S,  S, B, B, B, B]);
+
+                assert_score_percentage(75.0, [B, E, E, E, E,  E, E, E, E, E,  E, E, E, E, E]);
+                assert_score_percentage(95.0, [S, E, E, E, E,  E, E, E, E, E,  E, E, E, E, E]);
+                assert_score_percentage(100.0, [G, E, E, E, E,  E, E, E, E, E,  E, E, E, E, E]);
+
+                assert_score_percentage(4.0, [S, B]);
+                assert_score_percentage(8.0, [S, S, B]);
+                assert_score_percentage(6.0, [S, S]);
+                assert_score_percentage(11.0, [G, S, B]);
+                assert_score_percentage(15.0, [G, G, G]);
+                assert_score_percentage(16.0, [G, S, B, B, B]);
+                assert_score_percentage(25.0, [G, G, G, G, G]);
+                assert_score_percentage(52.0, [E, G, G, S, S, S, B, B]);
+                assert_score_percentage(18.0, [E, E]);
+                assert_score_percentage(33.0, [E, E, G, G]);
+                assert_score_percentage(40.0, [E, E, G, G, G]);
+                assert_score_percentage(42.0, [G, E, E, E, G, G]);
+                assert_score_percentage(43.0, [E, E, E, G, G]);
+                assert_score_percentage(43.0, [G, G, E, E, E, G, G]);
+                assert_score_percentage(45.0, [G, G, G, E, E, E, G, G]);
+                assert_score_percentage(48.0, [G, G, G, G, E, E, E, G, G]);
             });
         });
 

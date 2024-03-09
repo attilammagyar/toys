@@ -11,6 +11,7 @@ html, body {
 
 #editor-buttons-existing,
 #editor-buttons-new,
+div.input.right,
 .right {
   text-align: right;
 }
@@ -191,6 +192,7 @@ a.button {
   border-radius: 3vmin;
   margin: 0.3vmin;
   text-decoration: none;
+  text-align: center;
 }
 
 #grade button {
@@ -465,6 +467,12 @@ h1 {
   padding: 2vmin;
 }
 
+#all-cards-stats h2 {
+  font-size: 3.8vmin;
+  text-align: center;
+  padding: 1vmin;
+}
+
 #alert,
 #confirm {
   position: fixed;
@@ -535,6 +543,50 @@ h1 {
   line-height: 5vmin;
 }
 
+#all-cards-stats {
+  max-width: 95vw;
+  overflow-x: auto;
+  margin: 3vmin;
+}
+
+#all-cards-stats > p {
+  text-align: center;
+}
+
+#all-cards-stats table {
+  margin: auto;
+  border-spacing: 0;
+  padding 0;
+}
+
+#all-cards-stats table th,
+#all-cards-stats table td {
+  margin: 0;
+  padding: 0.3vmin;
+  min-width: 5vw;
+}
+
+#all-cards-stats table tr,
+#all-cards-stats table th,
+#all-cards-stats table td {
+  border-collapse: collapse;
+  border: solid 1px #555;
+}
+
+#all-cards-stats table * {
+  border-spacing: 0;
+  font-weight: normal;
+  font-size: 2.3vmin;
+  text-align: center;
+  padding 0;
+}
+
+#all-cards a.button {
+  display: inline-block;
+  min-width: 21vmin;
+  text-align: center;
+}
+
 #all-cards span.furigana {
   border-radius: 0.2em;
   border: solid 1px #333;
@@ -592,6 +644,18 @@ h1 {
   font-size: 80%;
   margin-top: 0.2em;
 }
+
+div.score.low                   { color: #faa; }
+div.score.medium-low            { color: #fca; }
+div.score.medium                { color: #ffa; }
+div.score.medium-high           { color: #cfa; }
+div.score.high                  { color: #afa; }
+
+div.histogram-vis.low           { background: #faa; }
+div.histogram-vis.medium-low    { background: #fca; }
+div.histogram-vis.medium        { background: #ffa; }
+div.histogram-vis.medium-high   { background: #cfa; }
+div.histogram-vis.high          { background: #afa; }
 
 #all-cards div.notes rt {
   font-size: 57%;
@@ -676,5 +740,38 @@ h1 {
 
   #all-cards {
     line-height: 1.5em;
+  }
+
+  #all-cards h1 {
+    display: none;
+  }
+
+  #all-cards-stats h2 {
+    font-size: 15px;
+    font-family: serif;
+  }
+
+  #all-cards-stats table *,
+  #all-cards-stats span,
+  #all-cards-stats * {
+    font-size: 11px;
+    font-family: serif;
+    padding: 2px;
+    margin: 0;
+    min-width: auto;
+  }
+
+  div.score.low                   { color: #000; }
+  div.score.medium-low            { color: #000; }
+  div.score.medium                { color: #000; }
+  div.score.medium-high           { color: #000; }
+  div.score.high                  { color: #000; }
+
+  div.histogram-vis {
+    display: none;
+  }
+
+  div.score {
+    font-size: 11px;
   }
 }
