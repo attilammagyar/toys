@@ -27,6 +27,12 @@ html, body {
   background-color: #000;
 }
 
+#editor-buttons-existing,
+#editor-buttons-new,
+.right {
+  text-align: right;
+}
+
 #about-screen {
   padding: 3vmin;
   background-color: #111;
@@ -244,6 +250,7 @@ div#stats {
 }
 
 #all-cards-back,
+#all-cards a.button,
 #about-back,
 #export-button,
 #learn-button,
@@ -462,6 +469,7 @@ div.input button {
   background-color: rgba(70, 70, 35, 0.9);
   border-radius: 1vmin;
   transition: top 0.3s;
+  z-index: 100;
 }
 
 #message.hidden {
@@ -538,11 +546,11 @@ h1 {
 #all-cards ruby,
 #all-cards div,
 #all-cards li {
-  font-family: serif;
+  font-size: 3.6vmin;
 }
 
 #all-cards {
-  line-height: 1.6em;
+  line-height: 5vmin;
 }
 
 #all-cards span.furigana {
@@ -556,16 +564,44 @@ h1 {
   opacity: 1.0;
 }
 
+#all-cards ol {
+  padding: 0.6em;
+}
+
+#all-cards ol li {
+  break-inside: avoid;
+  page-break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  margin-left: 2em;
+}
+
+#all-cards ol > li {
+  border: solid 1px #333;
+  padding: 0.2em;
+  margin: 0.2em;
+  margin-left: 3.5em;
+}
+
+#all-cards ol > li > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  align-self: flex-start;
+  flex-direction: row;
+}
+
 #all-cards dt {
-  float: left;
-  width: 50%;
-  margin-right: 1em;
+  display: block;
+  width: 48%;
+  min-width: 70vmin;
+  padding: 1%;
 }
 
 #all-cards dd {
-  display: table-cell;
-  width: 50%;
-  padding: 0;
+  display: block;
+  width: 48%;
+  min-width: 70vmin;
+  padding: 1%;
 }
 
 #all-cards div.score,
@@ -584,38 +620,10 @@ h1 {
   color: rgba(220, 220, 220, 0.85);
 }
 
-#all-cards div.expand {
-  clear: both;
-}
-
-#all-cards ol {
-  padding: 0.6em;
-}
-
-#all-cards ol li {
-  clear: both;
-  break-inside: avoid;
-  page-break-inside: avoid;
-  -webkit-column-break-inside: avoid;
-  margin-left: 2em;
-}
-
-#all-cards ol > li {
-  border: solid 1px #333;
-  padding: 0.2em;
-  margin: 0.2em;
-  margin-left: 3.5em;
-}
-
 #all-cards-nav {
   position: -webkit-sticky;
   position: sticky;
   top: 1vmin;
-}
-
-#all-cards a.edit {
-  color: #88e;
-  font-weight: bold;
 }
 
 #editor-screen button {
@@ -644,13 +652,48 @@ h1 {
     border: solid 1px #ddd;
   }
 
-  #all-cards span.furigana {
-    border: solid 1px #ddd;
+  #all-cards ol > li > div {
+    display: block;
   }
 
-  #all-cards a.edit,
+  #all-cards dt {
+    display: inline-block;
+    min-width: 48%;
+  }
+
+  #all-cards dd {
+    display: inline-block;
+    vertical-align: top;
+    min-width: 48%;
+  }
+
+  #all-cards span.furigana {
+    border: solid 1px #ddd;
+    vertical-align: top;
+  }
+
+  #all-cards a.button,
   #all-cards-nav {
     display: none;
+  }
+
+  #all-cards span,
+  #all-cards rt,
+  #all-cards dt,
+  #all-cards dd,
+  #all-cards ruby,
+  #all-cards div,
+  #all-cards li {
+    font-family: serif;
+    font-size: 14px;
+  }
+
+  #all-cards ruby {
+    font-size: 12px;
+  }
+
+  #all-cards {
+    line-height: 1.5em;
   }
 }
 
@@ -707,15 +750,7 @@ h1 {
 
   <div id="editor-screen" class="hidden">
     <form id="editor-form" action="#" method="get">
-      <h1>Edit card</h1>
-      <div class="input" id="editor-buttons-current">
-        <button id="edit-save" type="submit">Save</button>
-        <button id="edit-cancel">Cancel</button>
-      </div>
-      <div class="input" id="editor-buttons-new">
-        <button id="edit-save-new" type="submit">Save &amp; New</button>
-        <button id="edit-back">Back</button>
-      </div>
+      <h1 id="editor-form-title">Edit card</h1>
       <div id="format">
         <div>Markup:</div>
         <div class="example">
@@ -808,6 +843,14 @@ h1 {
         <div id="note-20-container" class="hidden">
           <input type="text" id="note-20" name="note-20" list="notes-datalist" />
         </div>
+      </div>
+      <div class="input" id="editor-buttons-existing">
+        <button id="edit-cancel">Cancel</button>
+        <button id="edit-save" type="submit">Save</button>
+      </div>
+      <div class="input" id="editor-buttons-new">
+        <button id="edit-back">Close</button>
+        <button id="edit-save-new" type="submit">Save &amp; New</button>
       </div>
     </form>
   </div>
@@ -1008,6 +1051,7 @@ h1 {
         all_cards,
         all_cards_list,
         editor_screen,
+        editor_form_title,
         editor_side_1,
         editor_side_2,
         editor_side_1_orig,
@@ -1021,7 +1065,7 @@ h1 {
         editor_mode,
         editor_card_ref,
         editor_buttons_new,
-        editor_buttons_current,
+        editor_buttons_existing,
         editor_button_save,
         editor_button_save_new,
         about_screen,
@@ -1352,12 +1396,13 @@ h1 {
         all_cards = $("all-cards");
         all_cards_list = $("all-cards-list");
         editor_screen = $("editor-screen");
+        editor_form_title = $("editor-form-title");
         editor_side_1 = $("side-1");
         editor_side_2 = $("side-2");
         editor_note_suggestions = $("notes-datalist");
         editor_side_1_preview = $("side-1-preview");
         editor_side_2_preview = $("side-2-preview");
-        editor_buttons_current = $("editor-buttons-current");
+        editor_buttons_existing = $("editor-buttons-existing");
         editor_buttons_new = $("editor-buttons-new");
         editor_button_save = $("edit-save");
         editor_button_save_new = $("edit-save-new");
@@ -1701,22 +1746,25 @@ h1 {
 
         return [
             "<li value=\"" + index + "\">",
-                "<dt>",
-                    card_side_to_list_item_html(card["side_2"], deck["side_2_language"]),
-                "</dt>",
-                "<dd>",
-                    "<div>",
-                        card_side_to_list_item_html(card["side_1"], deck["side_1_language"]),
-                        "<a class=\"edit\" href=\"#e-" + index + "\">Edit this card</a>",
-                    "</div>",
-                    "<div class=\"notes\" lang=\"" + deck["notes_language"] + "\">",
-                        format_notes(notes, card["note_refs"]),
-                    "</div>",
-                    "<div class=\"score\">",
-                        "Score: " + String(calculate_score_percentage(card)) + "%",
-                    "</div>",
-                "</dd>",
-                "<div class=\"expand\"></div>",
+                "<div>",
+                    "<dt>",
+                        card_side_to_list_item_html(card["side_2"], deck["side_2_language"]),
+                    "</dt>",
+                    "<dd>",
+                        "<div>",
+                            card_side_to_list_item_html(card["side_1"], deck["side_1_language"]),
+                        "</div>",
+                        "<div class=\"notes\" lang=\"" + deck["notes_language"] + "\">",
+                            format_notes(notes, card["note_refs"]),
+                        "</div>",
+                        "<div class=\"score\">",
+                            "Score: " + String(calculate_score_percentage(card)) + "%",
+                        "</div>",
+                        "<div class=\"right\">",
+                            "<a class=\"button\" href=\"#e-" + index + "\">Edit</a>",
+                        "</div>",
+                    "</dd>",
+                "</div>",
             "</li>"
         ].join("");
     }
@@ -1909,12 +1957,14 @@ h1 {
         editor_side_2_preview.setAttribute("lang", deck["side_2_language"]);
 
         if (mode === "current-card" || mode == "random-card") {
-            show(editor_buttons_current);
+            editor_form_title.innerText = "Edit card";
+            show(editor_buttons_existing);
             hide(editor_buttons_new);
             editor_button_save.disabled = false;
             editor_button_save_new.disabled = true;
         } else {
-            hide(editor_buttons_current);
+            editor_form_title.innerText = "Create card";
+            hide(editor_buttons_existing);
             show(editor_buttons_new);
             editor_button_save.disabled = true;
             editor_button_save_new.disabled = false;
@@ -1975,9 +2025,11 @@ h1 {
 
     function close_editor()
     {
+        var mode = editor_mode;
+
         populate_editor("new-card", "", "", []);
 
-        if (editor_mode == "random-card") {
+        if (mode == "random-card") {
             show_all_cards();
         } else {
             if (current_card) {
@@ -1986,6 +2038,8 @@ h1 {
 
             show_practice_screen();
         }
+
+        window.scrollTo(0, 0);
     }
 
     function handle_edit_save_click(evt)

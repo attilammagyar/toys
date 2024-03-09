@@ -68,15 +68,7 @@
 
   <div id="editor-screen" class="hidden">
     <form id="editor-form" action="#" method="get">
-      <h1>Edit card</h1>
-      <div class="input" id="editor-buttons-current">
-        <button id="edit-save" type="submit">Save</button>
-        <button id="edit-cancel">Cancel</button>
-      </div>
-      <div class="input" id="editor-buttons-new">
-        <button id="edit-save-new" type="submit">Save &amp; New</button>
-        <button id="edit-back">Back</button>
-      </div>
+      <h1 id="editor-form-title">Edit card</h1>
       <div id="format">
         <div>Markup:</div>
         <div class="example">
@@ -169,6 +161,14 @@
         <div id="note-20-container" class="hidden">
           <input type="text" id="note-20" name="note-20" list="notes-datalist" />
         </div>
+      </div>
+      <div class="input" id="editor-buttons-existing">
+        <button id="edit-cancel">Cancel</button>
+        <button id="edit-save" type="submit">Save</button>
+      </div>
+      <div class="input" id="editor-buttons-new">
+        <button id="edit-back">Close</button>
+        <button id="edit-save-new" type="submit">Save &amp; New</button>
       </div>
     </form>
   </div>

@@ -56,6 +56,7 @@
         all_cards,
         all_cards_list,
         editor_screen,
+        editor_form_title,
         editor_side_1,
         editor_side_2,
         editor_side_1_orig,
@@ -69,7 +70,7 @@
         editor_mode,
         editor_card_ref,
         editor_buttons_new,
-        editor_buttons_current,
+        editor_buttons_existing,
         editor_button_save,
         editor_button_save_new,
         about_screen,
@@ -400,12 +401,13 @@
         all_cards = $("all-cards");
         all_cards_list = $("all-cards-list");
         editor_screen = $("editor-screen");
+        editor_form_title = $("editor-form-title");
         editor_side_1 = $("side-1");
         editor_side_2 = $("side-2");
         editor_note_suggestions = $("notes-datalist");
         editor_side_1_preview = $("side-1-preview");
         editor_side_2_preview = $("side-2-preview");
-        editor_buttons_current = $("editor-buttons-current");
+        editor_buttons_existing = $("editor-buttons-existing");
         editor_buttons_new = $("editor-buttons-new");
         editor_button_save = $("edit-save");
         editor_button_save_new = $("edit-save-new");
@@ -749,22 +751,25 @@
 
         return [
             "<li value=\"" + index + "\">",
-                "<dt>",
-                    card_side_to_list_item_html(card["side_2"], deck["side_2_language"]),
-                "</dt>",
-                "<dd>",
-                    "<div>",
-                        card_side_to_list_item_html(card["side_1"], deck["side_1_language"]),
-                        "<a class=\"edit\" href=\"#e-" + index + "\">Edit this card</a>",
-                    "</div>",
-                    "<div class=\"notes\" lang=\"" + deck["notes_language"] + "\">",
-                        format_notes(notes, card["note_refs"]),
-                    "</div>",
-                    "<div class=\"score\">",
-                        "Score: " + String(calculate_score_percentage(card)) + "%",
-                    "</div>",
-                "</dd>",
-                "<div class=\"expand\"></div>",
+                "<div>",
+                    "<dt>",
+                        card_side_to_list_item_html(card["side_2"], deck["side_2_language"]),
+                    "</dt>",
+                    "<dd>",
+                        "<div>",
+                            card_side_to_list_item_html(card["side_1"], deck["side_1_language"]),
+                        "</div>",
+                        "<div class=\"notes\" lang=\"" + deck["notes_language"] + "\">",
+                            format_notes(notes, card["note_refs"]),
+                        "</div>",
+                        "<div class=\"score\">",
+                            "Score: " + String(calculate_score_percentage(card)) + "%",
+                        "</div>",
+                        "<div class=\"right\">",
+                            "<a class=\"button\" href=\"#e-" + index + "\">Edit</a>",
+                        "</div>",
+                    "</dd>",
+                "</div>",
             "</li>"
         ].join("");
     }
@@ -957,12 +962,14 @@
         editor_side_2_preview.setAttribute("lang", deck["side_2_language"]);
 
         if (mode === "current-card" || mode == "random-card") {
-            show(editor_buttons_current);
+            editor_form_title.innerText = "Edit card";
+            show(editor_buttons_existing);
             hide(editor_buttons_new);
             editor_button_save.disabled = false;
             editor_button_save_new.disabled = true;
         } else {
-            hide(editor_buttons_current);
+            editor_form_title.innerText = "Create card";
+            hide(editor_buttons_existing);
             show(editor_buttons_new);
             editor_button_save.disabled = true;
             editor_button_save_new.disabled = false;
@@ -1023,9 +1030,11 @@
 
     function close_editor()
     {
+        var mode = editor_mode;
+
         populate_editor("new-card", "", "", []);
 
-        if (editor_mode == "random-card") {
+        if (mode == "random-card") {
             show_all_cards();
         } else {
             if (current_card) {
@@ -1034,6 +1043,8 @@
 
             show_practice_screen();
         }
+
+        window.scrollTo(0, 0);
     }
 
     function handle_edit_save_click(evt)

@@ -9,6 +9,12 @@ html, body {
   background-color: #000;
 }
 
+#editor-buttons-existing,
+#editor-buttons-new,
+.right {
+  text-align: right;
+}
+
 #about-screen {
   padding: 3vmin;
   background-color: #111;
@@ -226,6 +232,7 @@ div#stats {
 }
 
 #all-cards-back,
+#all-cards a.button,
 #about-back,
 #export-button,
 #learn-button,
@@ -444,6 +451,7 @@ div.input button {
   background-color: rgba(70, 70, 35, 0.9);
   border-radius: 1vmin;
   transition: top 0.3s;
+  z-index: 100;
 }
 
 #message.hidden {
@@ -520,11 +528,11 @@ h1 {
 #all-cards ruby,
 #all-cards div,
 #all-cards li {
-  font-family: serif;
+  font-size: 3.6vmin;
 }
 
 #all-cards {
-  line-height: 1.6em;
+  line-height: 5vmin;
 }
 
 #all-cards span.furigana {
@@ -538,16 +546,44 @@ h1 {
   opacity: 1.0;
 }
 
+#all-cards ol {
+  padding: 0.6em;
+}
+
+#all-cards ol li {
+  break-inside: avoid;
+  page-break-inside: avoid;
+  -webkit-column-break-inside: avoid;
+  margin-left: 2em;
+}
+
+#all-cards ol > li {
+  border: solid 1px #333;
+  padding: 0.2em;
+  margin: 0.2em;
+  margin-left: 3.5em;
+}
+
+#all-cards ol > li > div {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  align-self: flex-start;
+  flex-direction: row;
+}
+
 #all-cards dt {
-  float: left;
-  width: 50%;
-  margin-right: 1em;
+  display: block;
+  width: 48%;
+  min-width: 70vmin;
+  padding: 1%;
 }
 
 #all-cards dd {
-  display: table-cell;
-  width: 50%;
-  padding: 0;
+  display: block;
+  width: 48%;
+  min-width: 70vmin;
+  padding: 1%;
 }
 
 #all-cards div.score,
@@ -566,38 +602,10 @@ h1 {
   color: rgba(220, 220, 220, 0.85);
 }
 
-#all-cards div.expand {
-  clear: both;
-}
-
-#all-cards ol {
-  padding: 0.6em;
-}
-
-#all-cards ol li {
-  clear: both;
-  break-inside: avoid;
-  page-break-inside: avoid;
-  -webkit-column-break-inside: avoid;
-  margin-left: 2em;
-}
-
-#all-cards ol > li {
-  border: solid 1px #333;
-  padding: 0.2em;
-  margin: 0.2em;
-  margin-left: 3.5em;
-}
-
 #all-cards-nav {
   position: -webkit-sticky;
   position: sticky;
   top: 1vmin;
-}
-
-#all-cards a.edit {
-  color: #88e;
-  font-weight: bold;
 }
 
 #editor-screen button {
@@ -626,12 +634,47 @@ h1 {
     border: solid 1px #ddd;
   }
 
-  #all-cards span.furigana {
-    border: solid 1px #ddd;
+  #all-cards ol > li > div {
+    display: block;
   }
 
-  #all-cards a.edit,
+  #all-cards dt {
+    display: inline-block;
+    min-width: 48%;
+  }
+
+  #all-cards dd {
+    display: inline-block;
+    vertical-align: top;
+    min-width: 48%;
+  }
+
+  #all-cards span.furigana {
+    border: solid 1px #ddd;
+    vertical-align: top;
+  }
+
+  #all-cards a.button,
   #all-cards-nav {
     display: none;
+  }
+
+  #all-cards span,
+  #all-cards rt,
+  #all-cards dt,
+  #all-cards dd,
+  #all-cards ruby,
+  #all-cards div,
+  #all-cards li {
+    font-family: serif;
+    font-size: 14px;
+  }
+
+  #all-cards ruby {
+    font-size: 12px;
+  }
+
+  #all-cards {
+    line-height: 1.5em;
   }
 }
