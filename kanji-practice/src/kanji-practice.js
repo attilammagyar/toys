@@ -34,6 +34,12 @@
             "jinmeiyō (used in names)",
             "jinmeiyō (used in names)"
         ],
+        FULL_WIDTH_ASCII_START = "！".charCodeAt(0),
+        FULL_WIDTH_ASCII_END = "～".charCodeAt(0),
+        FULL_WIDTH_ASCII_DIFF = FULL_WIDTH_ASCII_START - "!".charCodeAt(0),
+        HALF_WIDTH_KATAKANA = "｡｢｣､･ｦｧｨｩｪｫｬｭｮｯｰｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ",
+        HALF_WIDTH_KATAKANA_FULL = "。「」、・ヲァィゥェォャュョッーアイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワン",
+        is_debugging,
         perfect_score,
         builtin_decks,
         kanjivg,
@@ -345,9 +351,20 @@
 
     function main()
     {
+        var tilde_key = kanji_to_key("~");
+
+        is_debugging = String(window.location.href).match(/#debug/);
+
         builtin_decks = window.builtin_decks;
         kanjivg = window.kanjivg;
         kanjidic = window.kanjidic;
+
+        if (!kanjivg.hasOwnProperty(tilde_key)) {
+            kanjivg[tilde_key] = [
+                "~", ["M20.0,54.5 c34.5,-35.0,34.5,35.0,69.0,0.0"]
+            ];
+        }
+
         initialize_languages();
         initialize_gui();
         initialize_perfect_score();
@@ -3145,7 +3162,7 @@
         for (i = 0, l = kanji.length; i < l; ++i) {
             c = kanji.substring(i, i + 1);
 
-            if (!kanjivg.hasOwnProperty(kanji_to_key(c))) {
+            if (!look_up_kanjivg(c)) {
                 unknown_chars.push(
                     '"' + c + '" (0x' + c.charCodeAt(0).toString(16) + ")"
                 );
@@ -3162,6 +3179,54 @@
             + ' in "' + kanji + '": '
             + unknown_chars.join(", ")
         );
+    }
+
+    function look_up_kanjivg(kanji_char)
+    {
+        var data, char_code, error;
+
+        try {
+            data = get_kanjivg(kanji_char);
+
+            if (data) {
+                return data;
+            }
+
+            char_code = kanji_char.charCodeAt(0);
+
+            if (char_code >= FULL_WIDTH_ASCII_START && char_code <= FULL_WIDTH_ASCII_END) {
+                return get_kanjivg(
+                    String.fromCharCode(char_code - FULL_WIDTH_ASCII_DIFF)
+                );
+            }
+
+            char_code = HALF_WIDTH_KATAKANA.indexOf(kanji_char);
+
+            if (char_code > -1) {
+                return get_kanjivg(
+                    HALF_WIDTH_KATAKANA_FULL.substring(char_code, char_code + 1)
+                );
+            }
+        } catch (error) {
+            if (is_debugging) {
+                console.log(error);
+            }
+
+            return undefined;
+        }
+
+        return undefined;
+    }
+
+    function get_kanjivg(kanji_char)
+    {
+        var error;
+
+        try {
+            return kanjivg[kanji_to_key(kanji_char)];
+        } catch (error) {
+            return undefined;
+        }
     }
 
     function calculate_score(grades)
@@ -3291,10 +3356,9 @@
         set_revealed_chars(0);
 
         for (i = 0, l = kanji.length; i < l; ++i) {
-            c = kanji_to_key(kanji.substring(i, i + 1));
+            c = look_up_kanjivg(kanji.substring(i, i + 1));
 
-            if (kanjivg.hasOwnProperty(c)) {
-                c = kanjivg[c];
+            if (c) {
                 characters.push(
                     {
                         "components": c[0],
@@ -3449,10 +3513,19 @@
 
         for (i = 32; i < 127; ++i) {
             kanjivg[kanji_to_key(String.fromCharCode(i))] = [
-                "components",
-                ["path-1", "path-2"]
+                String.fromCharCode(i) + " (components)",
+                ["SVG path-1", "SVG path-2"]
             ];
         }
+
+        kanjivg[kanji_to_key("ア")] = [
+            "ア",
+            ["SVG path-1", "SVG path-2"]
+        ];
+        kanjivg[kanji_to_key("何")] = [
+            "何亻可丁一口亅",
+            ["SVG path-1", "SVG path-2"]
+        ];
 
         initialize_languages();
 
@@ -3681,6 +3754,29 @@
                         ]
                     }
                 );
+            });
+
+            QUnit.test("get_kanjivg", function(assert) {
+                function assert_kanjivg(expected, kanji_char)
+                {
+                    if (expected === undefined) {
+                        assert.strictEqual(undefined, look_up_kanjivg(kanji_char));
+                    } else {
+                        assert.strictEqual(
+                            expected,
+                            look_up_kanjivg(kanji_char)[0].substring(0, 1)
+                        );
+                    }
+                }
+
+                assert_kanjivg(undefined, "\t");
+                assert_kanjivg("a", "a");
+                assert_kanjivg("a", "ａ");
+                assert_kanjivg("~", "~");
+                assert_kanjivg("ア", "ア");
+                assert_kanjivg("ア", "ｱ");
+                assert_kanjivg("~", "～");
+                assert_kanjivg("何", "何");
             });
 
             QUnit.test("add_cards_from_tsv", function(assert) {
