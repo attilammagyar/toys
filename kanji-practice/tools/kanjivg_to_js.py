@@ -77,11 +77,7 @@ def process_kanji(file_name):
             prev_stroke = stroke_num
             paths.append(str(path.attrib["d"]))
 
-    return [
-        code,
-        "".join(elements),
-        paths
-    ]
+    return [code, "".join(elements), paths]
 
 
 if __name__ == "__main__":
