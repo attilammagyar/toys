@@ -1841,10 +1841,10 @@
 
             all_cards_histogram[i].innerText = String(histogram[i]);
             all_cards_histogram_vis[i].style.height = (
-                String(20.0 * percentage) + "vh"
+                String(12.0 * percentage) + "vh"
             );
             all_cards_histogram_vis[i].style.marginTop = (
-                String(20.0 * (1.0 - percentage)) + "vh"
+                String(12.0 * (1.0 - percentage)) + "vh"
             );
         }
     }
