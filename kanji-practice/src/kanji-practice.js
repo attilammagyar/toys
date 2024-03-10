@@ -1659,6 +1659,20 @@
         hide(load_screen);
         hide(practice_screen);
         hide(practice_kanji_details);
+
+        all_cards_list.innerHTML = "";
+
+        scroll_to_top();
+    }
+
+    function scroll_to_top()
+    {
+        var error;
+
+        try {
+            window.scrollTo(0, 0);
+        } catch (error) {
+        }
     }
 
     function handle_import_tsv_confirmation()
@@ -1811,8 +1825,6 @@
         show_stats(histogram, studied_cards, cards_to_study);
 
         show(all_cards);
-
-        window.scrollTo(0, 0);
     }
 
     function show_stats(histogram, studied_cards, cards_to_study)
@@ -2203,7 +2215,7 @@
             show_practice_screen();
         }
 
-        window.scrollTo(0, 0);
+        scroll_to_top();
     }
 
     function handle_clear_click(evt)
@@ -2536,7 +2548,7 @@
         }
 
         message_timeout = setTimeout(hide_message, hide_after);
-        window.scrollTo(0, 0);
+        scroll_to_top();
     }
 
     function handle_menu_export_json_click(evt)

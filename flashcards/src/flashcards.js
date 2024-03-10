@@ -613,6 +613,20 @@
         hide(load_screen);
         hide(no_cards);
         hide(practice_screen);
+
+        all_cards_list.innerHTML = "";
+
+        scroll_to_top();
+    }
+
+    function scroll_to_top()
+    {
+        var error;
+
+        try {
+            window.scrollTo(0, 0);
+        } catch (error) {
+        }
     }
 
     function handle_menu_load_click(evt)
@@ -1154,7 +1168,7 @@
             show_practice_screen();
         }
 
-        window.scrollTo(0, 0);
+        scroll_to_top();
     }
 
     function handle_edit_save_click(evt)
@@ -1314,7 +1328,7 @@
         }
 
         message_timeout = setTimeout(hide_message, hide_after);
-        window.scrollTo(0, 0);
+        scroll_to_top();
     }
 
     function handle_editor_note_input_blur(evt)
