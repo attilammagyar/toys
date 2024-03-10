@@ -53,6 +53,7 @@
         load_dragndrop,
         load_input,
         load_ignore_tsv_header,
+        load_fix_breaks,
         tsv_info,
         load_action,
         load_cancel,
@@ -517,6 +518,7 @@
         load_dragndrop = $("load-dragndrop");
         load_input = $("load-input");
         load_ignore_tsv_header = $("load-tsv-header");
+        load_fix_breaks = $("load-tsv-fix-breaks");
         tsv_info = $("tsv-info");
         load_screen = $("load-screen");
         load_screen_title = $("load-screen-title");
@@ -2760,7 +2762,12 @@
             file,
             function (name, contents)
             {
-                import_deck_from_tsv_string(name, contents, load_ignore_tsv_header.checked);
+                import_deck_from_tsv_string(
+                    name,
+                    contents,
+                    load_ignore_tsv_header.checked,
+                    load_fix_breaks.checked
+                );
 
                 if (!deck["name"]) {
                     deck["name"] = name;
@@ -2775,18 +2782,18 @@
         );
     }
 
-    function import_deck_from_tsv_string(name, tsv_str, ignore_tsv_header)
+    function import_deck_from_tsv_string(name, tsv_str, ignore_tsv_header, fix_line_breaks)
     {
         load_deck(
             {
                 "name": name,
                 "notes_language": "ja",
-                "cards": tsv_to_raw_cards(tsv_str, ignore_tsv_header, false)
+                "cards": tsv_to_raw_cards(tsv_str, ignore_tsv_header, false, fix_line_breaks)
             }
         );
     }
 
-    function tsv_to_raw_cards(tsv_str, ignore_tsv_header, ignore_grades)
+    function tsv_to_raw_cards(tsv_str, ignore_tsv_header, ignore_grades, fix_line_breaks)
     {
         var lines = tsv_str.replace(/\r/g, "\n").replace(/\n+/g, "\n").trim("\n").split("\n"),
             cards = [],
@@ -2804,7 +2811,17 @@
         i = ignore_tsv_header ? 1 : 0;
 
         for (l = lines.length; i < l; ++i) {
-            line = lines[i].split("\t");
+            line = String(lines[i]);
+
+            if (fix_line_breaks) {
+                j = i + 1;
+
+                for (; j < l && lines[j].indexOf("\t") === -1; ++j, ++i) {
+                    line += " " + String(lines[j]);
+                }
+            }
+
+            line = line.split("\t");
             ll = line.length;
 
             if (ll < 3) {
@@ -2903,7 +2920,12 @@
             file,
             function (name, contents)
             {
-                var added = add_cards_from_tsv_string(name, contents, load_ignore_tsv_header.checked);
+                var added = add_cards_from_tsv_string(
+                    name,
+                    contents,
+                    load_ignore_tsv_header.checked,
+                    load_fix_breaks.checked
+                );
 
                 show_message(
                     "Added " + String(added)
@@ -2919,10 +2941,10 @@
         );
     }
 
-    function add_cards_from_tsv_string(name, tsv_str, ignore_tsv_header)
+    function add_cards_from_tsv_string(name, tsv_str, ignore_tsv_header, fix_line_breaks)
     {
         var added = 0,
-            raw_cards = tsv_to_raw_cards(tsv_str, ignore_tsv_header, true),
+            raw_cards = tsv_to_raw_cards(tsv_str, ignore_tsv_header, true, fix_line_breaks),
             cards = deck["cards"],
             existing_cards = {},
             kanji, meaning, notes, pronunciation, error,
@@ -3665,7 +3687,9 @@
                         assert.throws(
                             function ()
                             {
-                                import_deck_from_tsv_string("example.tsv", invalid_decks[key], false);
+                                import_deck_from_tsv_string(
+                                    "example.tsv", invalid_decks[key], false, false
+                                );
                             },
                             /Invalid deck/,
                             key
@@ -3688,6 +3712,7 @@
                         "katakana 2\t\tmeaning 2\tnotes 2\t9\t3\t0\t\t\t",
                         ""
                     ].join("\r\n"),
+                    false,
                     false
                 );
                 assert.deepEqual(
@@ -3712,7 +3737,8 @@
                         "katakana 2\t\tmeaning 2\tnotes 2\t9\t5\t0\t\t",
                         ""
                     ].join("\r\n"),
-                    true
+                    true,
+                    false
                 );
                 assert.deepEqual(
                     JSON.parse(export_deck_as_json_string(false)),
@@ -3746,6 +3772,7 @@
                         "kanji 5\tpronunciation 5\tmeaning 5",
                         ""
                     ].join("\r\n"),
+                    false,
                     false
                 );
                 assert.deepEqual(
@@ -3759,7 +3786,32 @@
                             ["kanji 2", "pronunciation 2", "meaning 2", "notes 2", ""],
                             ["kanji 3", "pronunciation 3", "meaning 3", "", "53"],
                             ["kanji 4", "pronunciation 4", "meaning 4", "notes 4", "55"],
-                            ["kanji 5", "pronunciation 5", "meaning 5", "", ""],
+                            ["kanji 5", "pronunciation 5", "meaning 5", "", ""]
+                        ]
+                    }
+                );
+
+                import_deck_from_tsv_string(
+                    "example.tsv",
+                    [
+                        "kanji 1\tpronunciation 1\tthe\nmeaning\n1",
+                        "kanji 2\tpronunciation 2\tthe meaning 2\tthe\nnotes\n2",
+                        "kanji 3\tpronunciation 3\tthe meaning 3\t5\t3",
+                        ""
+                    ].join("\r\n"),
+                    false,
+                    true
+                );
+                assert.deepEqual(
+                    JSON.parse(export_deck_as_json_string(false)),
+                    {
+                        "name": "example.tsv",
+                        "meaning_language": "",
+                        "notes_language": "ja",
+                        "cards": [
+                            ["kanji 1", "pronunciation 1", "the meaning 1", "", ""],
+                            ["kanji 2", "pronunciation 2", "the meaning 2", "the notes 2", ""],
+                            ["kanji 3", "pronunciation 3", "the meaning 3", "", "53"]
                         ]
                     }
                 );
@@ -3828,6 +3880,7 @@
                                 add_cards_from_tsv_string(
                                     "example.tsv",
                                     invalid_decks[key],
+                                    false,
                                     false
                                 );
                             },
@@ -3848,6 +3901,7 @@
                         "kanji 4\tpronunciation 4\tmeaning 4\t3\t3\t3",
                         ""
                     ].join("\r\n"),
+                    false,
                     false
                 )
                 added_with_ignored_header = add_cards_from_tsv_string(
@@ -3860,7 +3914,8 @@
                         "kanji 4\tpronunciation 4\tmeaning 4\tnotes are optional\t5\t5\t5",
                         ""
                     ].join("\r\n"),
-                    true
+                    true,
+                    false
                 )
                 assert.deepEqual(
                     JSON.parse(export_deck_as_json_string(false)),
@@ -3890,7 +3945,8 @@
                         "kanji 1\tpronunciation 1\tmeaning 1\tnotes 1\t5\t3",
                         ""
                     ].join("\r\n"),
-                    true
+                    true,
+                    false
                 )
                 assert.deepEqual(
                     JSON.parse(export_deck_as_json_string(false)),
@@ -3900,6 +3956,29 @@
                         "notes_language": "",
                         "cards": [
                             ["kanji 1", "pronunciation 1", "meaning 1", "notes 1", ""],
+                        ]
+                    }
+                );
+
+                load_deck({"name": "test deck", "cards": []});
+                add_cards_from_tsv_string(
+                    "example.tsv",
+                    [
+                        "Word\tPronunciation\tMeaning (header row)\tNotes (header row)\tGrade\tGrade",
+                        "kanji 1\tpronunciation 1\tthe\nmeaning\n1",
+                        ""
+                    ].join("\r\n"),
+                    true,
+                    true
+                )
+                assert.deepEqual(
+                    JSON.parse(export_deck_as_json_string(false)),
+                    {
+                        "name": "test deck",
+                        "meaning_language": "",
+                        "notes_language": "",
+                        "cards": [
+                            ["kanji 1", "pronunciation 1", "the meaning 1", "", ""],
                         ]
                     }
                 );
