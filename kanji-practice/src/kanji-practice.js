@@ -2789,12 +2789,9 @@
             format = "KANJI <TAB> PRONUNCIATION <TAB> MEANING <TAB> NOTES <TAB> GRADE (0-2) <TAB> GRADE (0-2) <TAB> ...";
         }
 
-        for (i = 0, l = lines.length; i < l; ++i) {
-            if (ignore_tsv_header && i < 1) {
-                ignore_tsv_header = false;
-                continue;
-            }
+        i = ignore_tsv_header ? 1 : 0;
 
+        for (l = lines.length; i < l; ++i) {
             line = lines[i].split("\t");
             ll = line.length;
 
