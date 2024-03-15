@@ -911,9 +911,9 @@
             softener = 5.0 / (i + 5.0);
 
             soft_saw_coef[j] = softener * plus_or_minus_one * two_over_i_pi;
-            soft_sqr_coef[j] = softener * (1 + plus_or_minus_one) * two_over_i_pi;
+            soft_sqr_coef[j] = softener * (1.0 + plus_or_minus_one) * two_over_i_pi;
             soft_tri_coef[j] = softener * (8.0 * Math.sin(i_pi / 2.0) / (i_pi * i_pi));
-            real[j]
+            real[j] = 0.0;
         }
 
         soft_saw_pw = new PeriodicWave(
@@ -6622,8 +6622,8 @@
         params.add(new FaderUI("PAN", "Panning", "%", 100, 1, ALL_CONTROLS, theremin.pan, synth));
         params.add(new FaderUI("WID", "Width", "%", 100, 1, MIDI_CONTROLS, theremin.width, synth));
         params.add(new FaderUI("PX", "Pixelate", "", 1, 1, MIDI_CONTROLS, theremin.resolution, synth));
-        params.add(new FaderUI("MIN", "Minimum frequencey", "Hz", 1, 1, MIDI_CONTROLS, theremin.min_freq, synth));
-        params.add(new FaderUI("MAX", "Maximum frequencey", "Hz", 1, 1, MIDI_CONTROLS, theremin.max_freq, synth));
+        params.add(new FaderUI("MIN", "Minimum frequency", "Hz", 1, 1, MIDI_CONTROLS, theremin.min_freq, synth));
+        params.add(new FaderUI("MAX", "Maximum frequency", "Hz", 1, 1, MIDI_CONTROLS, theremin.max_freq, synth));
         params.add(new FaderUI("ATK", "Attack time", "s", 1000, 1000, MIDI_CONTROLS, theremin.amp_env_params[1], synth));
         params.add(new FaderUI("REL", "Release time", "s", 1000, 1000, MIDI_CONTROLS, theremin.amp_env_params[6], synth));
         params.add(new FaderUI("FLD", "Folding", "%", 1000 / FOLD_MAX, 10, ALL_CONTROLS, theremin.folding, synth));
