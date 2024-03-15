@@ -2,6 +2,7 @@ TARGETS = \
 	./index.html \
 	./ann/ann_notes.pdf \
 	./calcle/index.html \
+	./chimp-mem-game/index.html \
 	./flashcards/index.html \
 	./js-80/index.html \
 	./kanji-practice/index.html
@@ -23,6 +24,12 @@ clean:
 
 ./calcle/index.html: \
 		./calcle/src/calcle.html ./calcle/src/calcle.css ./calcle/src/calcle.js
+	$(BUILD_SINGLE_HTML)
+
+./chimp-mem-game/index.html: \
+		./chimp-mem-game/src/chimp-mem-game.html \
+		./chimp-mem-game/src/chimp-mem-game.css \
+		./chimp-mem-game/src/chimp-mem-game.js
 	$(BUILD_SINGLE_HTML)
 
 ./flashcards/index.html: \

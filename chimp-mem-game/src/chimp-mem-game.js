@@ -54,6 +54,16 @@ var CTH = {
     memorization_times: [],
     memorization_start: 0,
     hiding_timer: null,
+    audio_ctx: null,
+    soft_saw_wave: null,
+    soft_sqr_wave: null,
+    win_frequency: 1108.73,
+    win_lfo_freq_shaper_curve: null,
+    win_lfo_amp_shaper_curve: null,
+    wrong_frequency_1: 311.13,
+    wrong_frequency_2: null,
+    wrong_freq_curve: null,
+    wrong_amp_curve: null,
 
     now: function ()
     {
@@ -144,6 +154,204 @@ var CTH = {
         }
     },
 
+    is_mute: function ()
+    {
+        return CTH.mute_node.checked || CTH.audio_ctx === null;
+    },
+
+    play_click_sound: function ()
+    {
+        var osc, gain_env, start, ac;
+
+        if (CTH.is_mute()) {
+            return;
+        }
+
+        ac = CTH.audio_ctx;
+
+        osc = new OscillatorNode(ac, {"channelCount": 1});
+        gain_env = new GainNode(ac, {"channelCount": 1, "gain": 0.0});
+
+        start = ac.currentTime + 0.05;
+
+        CTH.start_envelope(gain_env, start, 0.002, 0.005, 0.02);
+
+        osc.type = "square";
+        osc.frequency.value = 660.0;
+
+        osc.connect(gain_env);
+        gain_env.connect(ac.destination);
+
+        osc.start(start);
+
+        setTimeout(
+            function ()
+            {
+                gain_env.disconnect(ac.destination);
+                osc.disconnect(gain_env);
+            },
+            300
+        );
+    },
+
+    start_envelope: function (gain_env, time, attack, hold, decay)
+    {
+        gain_env.gain.setValueAtTime(0.0, time);
+
+        time += attack;
+        gain_env.gain.linearRampToValueAtTime(0.5, time);
+
+        time += hold;
+        gain_env.gain.setValueAtTime(0.5, time);
+
+        time += decay;
+        gain_env.gain.linearRampToValueAtTime(0.0, time);
+    },
+
+    play_win_sound: function ()
+    {
+        var osc, gain_env, gain_amp,
+            lfo_freq, lfo_freq_shaper,
+            lfo_amp, lfo_amp_shaper,
+            start, ac;
+
+        if (CTH.is_mute()) {
+            return;
+        }
+
+        ac = CTH.audio_ctx;
+
+        osc = new OscillatorNode(
+            ac,
+            {
+                "channelCount": 1,
+                "type": "sine",
+                "frequency": CTH.win_frequency
+            }
+        );
+        gain_env = new GainNode(ac, {"channelCount": 1, "gain": 0.0});
+        gain_amp = new GainNode(ac, {"channelCount": 1, "gain": 0.0});
+        lfo_freq = new OscillatorNode(
+            ac,
+            {
+                "channelCount": 1,
+                "periodicWave": CTH.soft_saw_wave,
+                "frequency": 12.0
+            }
+        );
+        lfo_freq_shaper = new WaveShaperNode(
+            ac, {"channelCount": 1, "curve": CTH.win_lfo_freq_shaper_curve}
+        );
+        lfo_amp = new OscillatorNode(
+            ac, {"channelCount": 1, "type": "triangle", "frequency": 6.0}
+        );
+        lfo_amp_shaper = new WaveShaperNode(
+            ac, {"channelCount": 1, "curve": CTH.win_lfo_amp_shaper_curve}
+        );
+
+        start = ac.currentTime + 0.05;
+
+        CTH.start_envelope(gain_env, start, 0.03, 1.2, 0.05);
+
+        osc.connect(gain_amp);
+        gain_amp.connect(gain_env);
+        gain_env.connect(ac.destination);
+
+        lfo_freq.connect(lfo_freq_shaper);
+        lfo_freq_shaper.connect(osc.frequency);
+
+        lfo_amp.connect(lfo_amp_shaper);
+        lfo_amp_shaper.connect(gain_amp.gain);
+
+        lfo_freq.start(start);
+        lfo_amp.start(start);
+        osc.start(start);
+
+        setTimeout(
+            function ()
+            {
+                gain_env.disconnect(ac.destination);
+                gain_amp.disconnect(gain_env);
+                osc.disconnect(gain_amp);
+                lfo_freq_shaper.disconnect(osc.frequency);
+                lfo_freq.disconnect(lfo_freq_shaper);
+                lfo_amp_shaper.disconnect(gain_amp.gain);
+                lfo_amp.disconnect(lfo_amp_shaper);
+            },
+            2000
+        );
+    },
+
+    play_wrong_sound: function ()
+    {
+        var modulator, carrier,
+            amp_shaper, freq_shaper,
+            gain_env, gain_amp,
+            start, ac;
+
+        if (CTH.is_mute()) {
+            return;
+        }
+
+        ac = CTH.audio_ctx;
+
+        carrier = new OscillatorNode(
+            ac,
+            {
+                "channelCount": 1,
+                "periodicWave": CTH.soft_saw_wave,
+                "frequency": CTH.wrong_frequency_1
+            }
+        );
+        modulator = new OscillatorNode(
+            ac,
+            {
+                "channelCount": 1,
+                "periodicWave": CTH.soft_sqr_wave,
+                "frequency": CTH.wrong_frequency_2
+            }
+        );
+        gain_env = new GainNode(ac, {"channelCount": 1, "gain": 0.0});
+        gain_amp = new GainNode(ac, {"channelCount": 1, "gain": 0.0});
+        amp_shaper = new WaveShaperNode(
+            ac, {"channelCount": 1, "curve": CTH.wrong_amp_curve}
+        );
+        freq_shaper = new WaveShaperNode(
+            ac, {"channelCount": 1, "curve": CTH.wrong_freq_curve}
+        );
+
+        start = ac.currentTime + 0.05;
+
+        CTH.start_envelope(gain_env, start, 0.003, 0.6, 0.03);
+
+        modulator.connect(amp_shaper);
+        amp_shaper.connect(gain_amp.gain);
+
+        modulator.connect(freq_shaper);
+        freq_shaper.connect(carrier.frequency);
+
+        carrier.connect(gain_amp);
+        gain_amp.connect(gain_env);
+        gain_env.connect(ac.destination);
+
+        modulator.start(start);
+        carrier.start(start);
+
+        setTimeout(
+            function ()
+            {
+                gain_env.disconnect(ac.destination);
+                gain_amp.disconnect(gain_env);
+                carrier.disconnect(gain_amp);
+                modulator.disconnect(amp_shaper);
+                amp_shaper.disconnect(gain_amp.gain);
+                modulator.disconnect(freq_shaper);
+                freq_shaper.disconnect(carrier.frequency);
+            },
+            2000
+        );
+    },
+
     handle_wrong_card: function (clicked_card_index, expected_value)
     {
         var i;
@@ -158,14 +366,14 @@ var CTH = {
             }
         }
         CTH.card_nodes[clicked_card_index].setAttribute("class", "card revealed wrong");
-        CTH.play_audio("audio-wrong");
+        CTH.play_wrong_sound();
 
         setTimeout(CTH.prepare_next_round, 1000);
     },
 
     handle_perfect_round: function ()
     {
-        CTH.play_audio("audio-win");
+        CTH.play_win_sound();
         CTH.prepare_next_round();
         ++CTH.perfect_rounds;
     },
@@ -218,7 +426,7 @@ var CTH = {
             return;
         }
 
-        CTH.play_audio("audio-click");
+        CTH.play_click_sound();
 
         CTH.expected_values = CTH.expected_values.slice(1);
         CTH.score += CTH.difficulty * (CTH.numbers - CTH.expected_values.length);
@@ -485,7 +693,11 @@ var CTH = {
 
     start_game: function ()
     {
-        var key, radio_btn;
+        var key, radio_btn, ex;
+
+        if (CTH.audio_ctx === null) {
+            CTH.init_audio();
+        }
 
         for (key in CTH.card_num_nodes) {
             if (CTH.card_num_nodes.hasOwnProperty(key)) {
@@ -562,6 +774,73 @@ var CTH = {
     {
         CTH.select();
         navigator.clipboard.writeText(CTH.copy_text_node.value);
+    },
+
+    init_audio: function ()
+    {
+        var partials = 24,
+            soft_saw_coef = new Float32Array(partials),
+            soft_sqr_coef = new Float32Array(partials),
+            real = new Float32Array(partials),
+            plus_or_minus_one, two_over_i_pi, softener,
+            i, j;
+
+        try {
+            CTH.audio_ctx = new AudioContext();
+        } catch (ex) {
+            return;
+        }
+
+        soft_saw_coef[0] = 0.0;
+        soft_sqr_coef[0] = 0.0;
+        real[0] = 0.0;
+
+        for (i = 0; i < partials; ++i) {
+            j = i + 1;
+            plus_or_minus_one = ((i & 1) == 1 ? -1.0 : 1.0);
+            two_over_i_pi = 2.0 / (j * Math.PI);
+            softener = 5.0 / (i + 5.0);
+
+            soft_saw_coef[j] = softener * plus_or_minus_one * two_over_i_pi;
+            soft_sqr_coef[j] = (
+                softener * (1.0 + plus_or_minus_one) * two_over_i_pi
+            );
+            real[j] = 0.0;
+        }
+
+        CTH.soft_saw_wave = new PeriodicWave(
+            CTH.audio_ctx,
+            {
+                "channelCount": 1,
+                "disableNormalization": false,
+                "real": real,
+                "imag": soft_saw_coef
+            }
+        );
+        CTH.soft_sqr_wave = new PeriodicWave(
+            CTH.audio_ctx,
+            {
+                "channelCount": 1,
+                "disableNormalization": false,
+                "real": real,
+                "imag": soft_sqr_coef
+            }
+        );
+
+        CTH.win_lfo_freq_shaper_curve = new Float32Array(
+            [0.0, CTH.win_frequency]
+        );
+        CTH.win_lfo_amp_shaper_curve = new Float32Array(
+            [1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+        );
+
+        CTH.wrong_frequency_2 = (
+            CTH.wrong_frequency_1 * Math.pow(2.0, -19.0 / 12.0)
+        );
+        CTH.wrong_amp_curve = new Float32Array([-1.0, 1.0]);
+        CTH.wrong_freq_curve = new Float32Array(
+            [0.0, CTH.wrong_frequency_1 * 2.5]
+        );
     },
 
     init: function ()
