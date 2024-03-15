@@ -522,6 +522,8 @@ var CARDS = 40,
     SHARE_PERFECT_ROUNDS = " I had {perfect_rounds}.",
     SHARE_HASHTAGS = " #MindField",
 
+    VOLUME = 0.35,
+
     start_round_btn_node = null,
     mute_node = null,
     tweet_node = null,
@@ -558,6 +560,7 @@ var CARDS = 40,
     memorization_start = 0,
     hiding_timer = null,
     audio_ctx = null,
+    is_audio_suspended = false,
     soft_saw_wave = null,
     soft_sqr_wave = null,
     win_frequency = 1108.73,
@@ -649,7 +652,39 @@ function update_status()
 
 function is_mute()
 {
-    return mute_node.checked || audio_ctx === null;
+    if (audio_ctx === null) {
+        return true;
+    }
+
+    if (mute_node.checked) {
+        suspend_audio();
+
+        return true;
+    }
+
+    resume_audio();
+
+    return false;
+}
+
+function suspend_audio()
+{
+    if (is_audio_suspended) {
+        return;
+    }
+
+    is_audio_suspended = true;
+    audio_ctx.suspend();
+}
+
+function resume_audio()
+{
+    if (!is_audio_suspended) {
+        return;
+    }
+
+    is_audio_suspended = false;
+    audio_ctx.resume();
 }
 
 function play_click_sound()
@@ -692,10 +727,10 @@ function start_envelope(gain_env, time, attack, hold, decay)
     gain_env.gain.setValueAtTime(0.0, time);
 
     time += attack;
-    gain_env.gain.linearRampToValueAtTime(0.5, time);
+    gain_env.gain.linearRampToValueAtTime(VOLUME, time);
 
     time += hold;
-    gain_env.gain.setValueAtTime(0.5, time);
+    gain_env.gain.setValueAtTime(VOLUME, time);
 
     time += decay;
     gain_env.gain.linearRampToValueAtTime(0.0, time);
@@ -869,6 +904,7 @@ function handle_card_touch(evt)
 
     if (!accept_card_touches) {
         clear_selection();
+
         return;
     }
 
@@ -878,6 +914,7 @@ function handle_card_touch(evt)
 
     if (!clicked_card_index) {
         accept_card_touches = true;
+
         return;
     }
 
@@ -890,11 +927,13 @@ function handle_card_touch(evt)
 
     if (!card_node) {
         accept_card_touches = true;
+
         return;
     }
 
     if (done_memorizing && card_node.getAttribute("class").match(/revealed/)) {
         accept_card_touches = true;
+
         return;
     }
 
@@ -902,11 +941,13 @@ function handle_card_touch(evt)
 
     if (difficulty == EASY && !card_value) {
         accept_card_touches = true;
+
         return;
     }
 
     if (card_value != expected_values[0]) {
         handle_wrong_card(clicked_card_index, expected_values[0]);
+
         return;
     }
 
@@ -918,11 +959,13 @@ function handle_card_touch(evt)
 
     if (!done_memorizing) {
         done_memorizing = true;
+
         if (auto_hide <= 0) {
             memorization_times.push(now - memorization_start);
         } else {
             memorization_times.push(auto_hide / 1000);
         }
+
         hide_card_values();
     }
 
@@ -931,6 +974,7 @@ function handle_card_touch(evt)
 
     if (expected_values.length === 0) {
         handle_perfect_round();
+
         return
     }
 
@@ -1017,11 +1061,15 @@ function hide_card_value(i)
             } else {
                 card_node.setAttribute("class", "card hidden");
             }
+
             break;
+
         case MEDIUM:
         case HARD:
             card_node.setAttribute("class", "card value_hidden");
+
             break;
+
         default:
             card_node.setAttribute("class", "card hidden");
     }
@@ -1060,6 +1108,7 @@ function prepare_next_round()
             {
                 hide_cards();
                 update_status();
+
                 if (auto_hide > 0) {
                     setTimeout(prepare_round, 500);
                 } else {
@@ -1069,7 +1118,7 @@ function prepare_next_round()
             500
         );
     } else {
-        setTimeout(show_end_screen, 1000);
+        setTimeout(show_end_screen, 1500);
     }
 }
 
@@ -1108,6 +1157,7 @@ function show_end_screen()
         share_text;
 
     hide_cards();
+    suspend_audio();
 
     share_text = (
         SHARE_TEXT
@@ -1296,6 +1346,14 @@ function init_audio()
         real[j] = 0.0;
     }
 
+    win_lfo_amp_shaper_curve = new Float32Array(
+        [1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+    );
+    win_lfo_freq_shaper_curve = new Float32Array([0.0, win_frequency]);
+    wrong_amp_curve = new Float32Array([-1.0, 1.0]);
+    wrong_freq_curve = new Float32Array([0.0, wrong_frequency_1 * 2.5]);
+    wrong_frequency_2 = wrong_frequency_1 * Math.pow(2.0, -19.0 / 12.0);
+
     soft_saw_wave = new PeriodicWave(
         audio_ctx,
         {
@@ -1315,20 +1373,8 @@ function init_audio()
         }
     );
 
-    win_lfo_freq_shaper_curve = new Float32Array(
-        [0.0, win_frequency]
-    );
-    win_lfo_amp_shaper_curve = new Float32Array(
-        [1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0]
-    );
-
-    wrong_frequency_2 = (
-        wrong_frequency_1 * Math.pow(2.0, -19.0 / 12.0)
-    );
-    wrong_amp_curve = new Float32Array([-1.0, 1.0]);
-    wrong_freq_curve = new Float32Array(
-        [0.0, wrong_frequency_1 * 2.5]
-    );
+    audio_ctx.suspend();
+    is_audio_suspended = true;
 }
 
 function main()
