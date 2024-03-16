@@ -22,6 +22,8 @@ var CARDS = 40,
 
     VOLUME = 0.35,
 
+    STATS_HISTORY_MAX_LENGTH = 1000,
+
     start_round_btn_node = null,
     mute_node = null,
     tweet_node = null,
@@ -32,6 +34,8 @@ var CARDS = 40,
     game_node = null,
     end_node = null,
     intro_node = null,
+    stats_history = null,
+    stats_history_download_node = null,
     stats_mem_time_mean_node = null,
     stats_mem_time_min_node = null,
     stats_mem_time_max_node = null,
@@ -726,6 +730,24 @@ function show_end_screen()
         stats_mem_time_max_node.innerHTML = stats["max_str"] + "s";
         stats_mem_time_median_node.innerHTML = stats["median_str"] + "s";
         stats_mem_time_sd_node.innerHTML = stats["sd_str"] + "s";
+
+        stats_history.push(
+            [
+                memorization_start,
+                difficulty,
+                numbers,
+                rounds,
+                auto_hide === null ? 0 : auto_hide,
+                score,
+                perfect_rounds,
+                stats["mean"],
+                stats["sd"],
+                stats["median"],
+                stats["min"],
+                stats["max"]
+            ]
+        );
+        stats_history = truncate_stats_history(stats_history);
     } else {
         stats_mem_time_mean_node.innerHTML = "N/A";
         stats_mem_time_min_node.innerHTML = "N/A";
@@ -886,11 +908,182 @@ function init_audio()
     is_audio_suspended = true;
 }
 
+function restore_stats_history(data)
+{
+    var h = [], i, l, d, ex, min, max, rounds, auto_hide;
+
+    try {
+        data = JSON.parse(data);
+    } catch (ex) {
+        console.log("Error parsing historical statistics: " + ex);
+
+        return [];
+    }
+
+    if (!(data && Array.isArray(data))) {
+        console.log("history is empty");
+        return [];
+    }
+
+    for (i = 0, l = data.length; i < l; ++i) {
+        d = data[i];
+
+        if (!(Array.isArray(d) && d.length === 12)) {
+            console.log(
+                "Ignoring invalid entry in historical statistics: wrong length;"
+                + JSON.stringify(d)
+            );
+
+            continue;
+        }
+
+        try {
+            rounds = validate_int(d[3], 5, 20);
+            auto_hide = validate_number(d[4], 0.0, 8.0);
+            min = validate_number(d[10], 0.0, null);
+            max = validate_number(d[11], min, null);
+
+            h.push(
+                [
+                    validate_number(d[0], 0.0, null),       /* start */
+                    validate_int(d[1], EASY, HARD),         /* difficulty */
+                    validate_int(d[2], 3, 9),               /* numbers */
+                    rounds,                                 /* rounds */
+                    auto_hide,                              /* auto-hide */
+                    validate_int(d[5], 0, null),            /* score */
+                    validate_int(d[6], 0, rounds),          /* perfect rounds */
+                    validate_number(d[7], min, max),        /* mean memorization time */
+                    validate_number(d[8], 0.0, max - min),  /* standard deviation */
+                    validate_number(d[9], min, max),        /* median memorization time */
+                    min,                                    /* fastest memorization time */
+                    max                                     /* slowest memorization time */
+                ]
+            );
+        } catch (ex) {
+            console.log(
+                "Ignoring invalid entry in historical statistics: "
+                + String(ex)
+                + "; "
+                + JSON.stringify(d)
+            );
+        }
+    }
+
+    return truncate_stats_history(h);
+}
+
+function truncate_stats_history(h)
+{
+    if (h.length > STATS_HISTORY_MAX_LENGTH) {
+        return h.slice(h.length - STATS_HISTORY_MAX_LENGTH);
+    }
+
+    return h;
+}
+
+function validate_int(num, min, max)
+{
+    return validate_number(num, min, max) | 0;
+}
+
+function validate_number(raw_num, min, max)
+{
+    var num = Number(raw_num);
+
+    if (max !== null && num > max) {
+        throw "Value " + String(raw_num) + " greater than " + String(max);
+    }
+
+    if (min !== null && num < min) {
+        throw "Value " + String(raw_num) + " less than " + String(min);
+    }
+
+    return num;
+}
+
+function handle_beforeunload()
+{
+    localStorage.setItem("chimp_mem_game", JSON.stringify(stats_history));
+}
+
+function export_stats_history(evt)
+{
+    var lines = [],
+        d = new Date(),
+        ds, m, i, l, s;
+
+    function format_time(t)
+    {
+        return (t < 10) ? "0" + String(t) : String(t);
+    }
+
+    lines.push(
+        [
+            "Game Start",
+            "Difficulty",
+            "Numbers",
+            "Rounds",
+            "Auto-hide",
+            "Score",
+            "Perfect Rounds",
+            "Mean Memorization Time",
+            "Standard Deviation",
+            "Median Memorization Time",
+            "Fastest Memorization Time",
+            "Slowest Memorization Time"
+        ].join("\t")
+    );
+
+    for (i = 0, l = stats_history.length; i < l; ++i) {
+        s = stats_history[i];
+        d.setTime(s[0] * 1000.0);
+        ds = [
+            String(d.getFullYear()),
+            "-",
+            format_time(d.getMonth() + 1),
+            "-",
+            format_time(d.getDate()),
+            " ",
+            format_time(d.getHours()),
+            ":",
+            format_time(d.getMinutes()),
+            ":",
+            format_time(d.getSeconds())
+        ].join("");
+
+        lines.push(
+            [
+                ds,
+                String(s[1]),
+                String(s[2]),
+                String(s[3]),
+                String(s[4]),
+                String(s[5]),
+                String(s[6]),
+                String(s[7]),
+                String(s[8]),
+                String(s[9]),
+                String(s[10]),
+                String(s[11])
+            ].join("\t")
+        );
+    }
+
+    stats_history_download_node.href = URL.createObjectURL(
+        new Blob([lines.join("\r\n")], {"type": "text/tab-separated-values"})
+    );
+    stats_history_download_node.download = "chimp-mem-game.tsv";
+
+    return true;
+}
+
 function main()
 {
     var game = $("game"),
         body = document.getElementsByTagName("body")[0],
         i, key, card_node;
+
+    stats_history = restore_stats_history(localStorage.getItem("chimp_mem_game"));
 
     for (i = 3; i < 10; ++i) {
         key = "cards-" + String(i);
@@ -922,6 +1115,7 @@ function main()
     game_node = game;
     end_node = $("end");
     intro_node = $("intro");
+    stats_history_download_node = $("stats-history-download");
     stats_mem_time_mean_node = $("stats-mem-time-mean");
     stats_mem_time_min_node = $("stats-mem-time-min");
     stats_mem_time_max_node = $("stats-mem-time-max");
@@ -953,6 +1147,10 @@ function main()
     start_round_btn_node.addEventListener("click", start_round);
     copy_text_node.addEventListener("click", select);
     $("copy-button").addEventListener("click", copy);
+
+    stats_history_download_node.addEventListener("click", export_stats_history);
+
+    window.addEventListener("beforeunload", handle_beforeunload);
 
     show_intro_screen();
 }
