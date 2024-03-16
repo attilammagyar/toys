@@ -13,11 +13,11 @@ var CARDS = 40,
     MEDIUM = 2,
     HARD = 3,
 
-    URL = "https://attilammagyar.github.io/toys/chimp-mem-game",
-    SHARE_TEXT = "I just scored {score} in the Chimp Memorization Game on {difficulty} difficulty with {numbers} numbers in {rounds} rounds.",
-    SHARE_STATS = " My fastest memorization time was {min}s (mean: {mean}s, median: {median}s, standard deviation: {sd}s).",
-    SHARE_AUTO_HIDE = " The numbers were automatically hidden after {auto-hide}s.",
-    SHARE_PERFECT_ROUNDS = " I had {perfect_rounds}.",
+    SHARE_URL = "https://attilammagyar.github.io/toys/chimp-mem-game",
+    SHARE_TEXT = "I just scored {score} in the Chimp Memorization Game on {difficulty} level with {numbers} numbers in {rounds} rounds.",
+    SHARE_STATS = " Fastest memorization time: {min}s (mean: {mean}s, median: {median}s, SD: {sd}s).",
+    SHARE_AUTO_HIDE = " Auto-hide: {auto-hide}s.",
+    SHARE_PERFECT_ROUNDS = " Perfect rounds: {perfect_rounds}.",
     SHARE_HASHTAGS = " #MindField",
 
     VOLUME = 0.35,
@@ -84,7 +84,7 @@ function num_cmp(a, b)
     return a - b;
 }
 
-function statistics(arr)
+function build_statistics(arr)
 {
     var l = arr.length,
         mean, sd, median, sum, i, m, d;
@@ -92,11 +92,16 @@ function statistics(arr)
     if (l < 1) {
         return {
             "valid": false,
-            "min": "?",
-            "max": "?",
-            "mean": "?",
-            "median": "?",
-            "sd": "?"
+            "min": 0,
+            "max": 0,
+            "mean": 0,
+            "median": 0,
+            "sd": 0,
+            "min_str": "?",
+            "max_str": "?",
+            "mean_str": "?",
+            "median_str": "?",
+            "sd_str": "?"
         };
     }
 
@@ -125,11 +130,16 @@ function statistics(arr)
 
     return {
         "valid": true,
-        "min": format_stats(arr[0]),
-        "max": format_stats(arr[l - 1]),
-        "mean": format_stats(mean),
-        "median": format_stats(median),
-        "sd": format_stats(sd)
+        "min": arr[0],
+        "max": arr[l - 1],
+        "mean": mean,
+        "median": median,
+        "sd": sd,
+        "min_str": format_stats(arr[0]),
+        "max_str": format_stats(arr[l - 1]),
+        "mean_str": format_stats(mean),
+        "median_str": format_stats(median),
+        "sd_str": format_stats(sd)
     };
 }
 
@@ -398,12 +408,12 @@ function handle_perfect_round()
 function handle_card_touch(evt)
 {
     var now = time(),
-        clicked_card_index, card_value, card_node;
+        delta, clicked_card_index, card_value, card_node;
 
     if (!accept_card_touches) {
         clear_selection();
 
-        return;
+        return false;
     }
 
     accept_card_touches = false;
@@ -413,9 +423,10 @@ function handle_card_touch(evt)
     if (!clicked_card_index) {
         accept_card_touches = true;
 
-        return;
+        return false;
     }
 
+    evt = evt || window.event;
     evt.stopPropagation();
     evt.preventDefault();
     clear_selection();
@@ -426,13 +437,13 @@ function handle_card_touch(evt)
     if (!card_node) {
         accept_card_touches = true;
 
-        return;
+        return false;
     }
 
     if (done_memorizing && card_node.getAttribute("class").match(/revealed/)) {
         accept_card_touches = true;
 
-        return;
+        return false;
     }
 
     card_value = Number(card_values[clicked_card_index]);
@@ -440,13 +451,13 @@ function handle_card_touch(evt)
     if (difficulty == EASY && !card_value) {
         accept_card_touches = true;
 
-        return;
+        return false;
     }
 
     if (card_value != expected_values[0]) {
         handle_wrong_card(clicked_card_index, expected_values[0]);
 
-        return;
+        return false;
     }
 
     play_click_sound();
@@ -457,11 +468,12 @@ function handle_card_touch(evt)
 
     if (!done_memorizing) {
         done_memorizing = true;
+        delta = now - memorization_start;
 
-        if (auto_hide <= 0) {
-            memorization_times.push(now - memorization_start);
+        if (auto_hide === null) {
+            memorization_times.push(delta);
         } else {
-            memorization_times.push(auto_hide / 1000);
+            memorization_times.push(Math.min(delta, auto_hide / 1000));
         }
 
         hide_card_values();
@@ -473,7 +485,7 @@ function handle_card_touch(evt)
     if (expected_values.length === 0) {
         handle_perfect_round();
 
-        return
+        return false;
     }
 
     accept_card_touches = true;
@@ -596,7 +608,7 @@ function prepare_next_round()
     ++round;
     accept_card_touches = false;
 
-    if (auto_hide > 0) {
+    if (auto_hide !== null) {
         start_round_btn_node.setAttribute("class", "");
     }
 
@@ -607,7 +619,7 @@ function prepare_next_round()
                 hide_cards();
                 update_status();
 
-                if (auto_hide > 0) {
+                if (auto_hide !== null) {
                     setTimeout(prepare_round, 500);
                 } else {
                     setTimeout(start_round, 500);
@@ -634,7 +646,7 @@ function start_round()
     done_memorizing = false;
     memorization_start = time();
 
-    if (auto_hide > 0) {
+    if (auto_hide !== null) {
         hiding_timer = setTimeout(hide_card_values, auto_hide);
     }
 }
@@ -650,8 +662,8 @@ function format_number_with_units(n, unit)
 
 function show_end_screen()
 {
-    var difficulty = ["easy", "medium", "hard"][difficulty - 1],
-        stats = statistics(memorization_times),
+    var difficulty_str = ["easy", "medium", "hard"][difficulty - 1],
+        stats = build_statistics(memorization_times),
         share_text;
 
     hide_cards();
@@ -661,11 +673,21 @@ function show_end_screen()
         SHARE_TEXT
             .replace("{score}", format_number_with_units(score, "point"))
             .replace("{numbers}", String(numbers))
-            .replace("{difficulty}", difficulty)
+            .replace("{difficulty}", difficulty_str)
             .replace("{rounds}", rounds)
     );
 
-    if (auto_hide > 0) {
+    if (stats["valid"]) {
+        share_text += (
+            SHARE_STATS
+                .replace("{min}", stats["min_str"])
+                .replace("{mean}", stats["mean_str"])
+                .replace("{sd}", stats["sd_str"])
+                .replace("{median}", stats["median_str"])
+        );
+    }
+
+    if (auto_hide !== null) {
         share_text += (
             SHARE_AUTO_HIDE
                 .replace(
@@ -673,22 +695,11 @@ function show_end_screen()
                     format_stats(auto_hide / 1000)
                 )
         );
-    } else {
-        if (stats["valid"]) {
-            share_text += (
-                SHARE_STATS
-                    .replace("{min}", stats["min"])
-                    .replace("{mean}", stats["mean"])
-                    .replace("{sd}", stats["sd"])
-                    .replace("{median}", stats["median"])
-            );
-        }
     }
 
     if (perfect_rounds > 0) {
         share_text += SHARE_PERFECT_ROUNDS.replace(
-            "{perfect_rounds}",
-            format_number_with_units(perfect_rounds, "perfect round")
+            "{perfect_rounds}", String(perfect_rounds)
         );
     }
 
@@ -700,21 +711,21 @@ function show_end_screen()
             "https://twitter.com/intent/tweet?text=",
             escape(share_text),
             "&url=",
-            escape(URL)
+            escape(SHARE_URL)
         ].join("")
     );
-    copy_text_node.value = share_text + " " + URL;
+    copy_text_node.value = share_text + " " + SHARE_URL;
 
     stats_round_node.innerHTML = rounds;
     stats_score_node.innerHTML = score;
     stats_perfect_rounds_node.innerHTML = perfect_rounds;
 
     if (stats["valid"]) {
-        stats_mem_time_mean_node.innerHTML = stats["mean"] + "s";
-        stats_mem_time_min_node.innerHTML = stats["min"] + "s";
-        stats_mem_time_max_node.innerHTML = stats["max"] + "s";
-        stats_mem_time_median_node.innerHTML = stats["median"] + "s";
-        stats_mem_time_sd_node.innerHTML = stats["sd"] + "s";
+        stats_mem_time_mean_node.innerHTML = stats["mean_str"] + "s";
+        stats_mem_time_min_node.innerHTML = stats["min_str"] + "s";
+        stats_mem_time_max_node.innerHTML = stats["max_str"] + "s";
+        stats_mem_time_median_node.innerHTML = stats["median_str"] + "s";
+        stats_mem_time_sd_node.innerHTML = stats["sd_str"] + "s";
     } else {
         stats_mem_time_mean_node.innerHTML = "N/A";
         stats_mem_time_min_node.innerHTML = "N/A";
@@ -794,7 +805,7 @@ function start_game()
     return false;
 }
 
-function restart_game()
+function show_intro_screen()
 {
     end_node.setAttribute("class", "screen");
     intro_node.setAttribute("class", "screen active");
@@ -896,7 +907,7 @@ function main()
         rounds_nodes[key] = $(key);
     }
 
-    for (i = 0; i < 8; ++i) {
+    for (i = 0; i < 10; ++i) {
         key = "auto-hide-" + String(i);
         auto_hide_nodes[key] = $(key);
     }
@@ -931,15 +942,19 @@ function main()
         "submit",
         function (evt)
         {
+            evt = evt || window.event;
             evt.stopPropagation();
             evt.preventDefault();
+            return false;
         }
     );
     $("start").addEventListener("click", start_game);
-    $("restart").addEventListener("click", restart_game);
+    $("restart").addEventListener("click", show_intro_screen);
     start_round_btn_node.addEventListener("click", start_round);
     copy_text_node.addEventListener("click", select);
     $("copy-button").addEventListener("click", copy);
+
+    show_intro_screen();
 }
 
 window.onload = main;
