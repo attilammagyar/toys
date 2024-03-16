@@ -152,6 +152,62 @@
         and in <a href="https://www.youtube.com/watch?v=zsXP8qeFF6A"
           target="_blank">this video from BBC Earth (3:42)</a>.
       </p>
+      <h1>Recent Games</h1>
+      <h2>Score Per Round</h2>
+      <div class="stats-history">
+        <svg id="stats-history-score" viewBox="0 0 630 110" xmlns="http://www.w3.org/2000/svg">
+          <style>
+            text {
+              font: 8px sans-serif;
+              fill: #ddd;
+              width: 23px;
+              text-align: right;
+            }
+
+            .easy { fill: #08f; }
+            .medium { fill: #ff0; }
+            .hard { fill: #f80; }
+          </style>
+          <g>
+            <path stroke-width="1" stroke="#bbb" d="M25,105 L629,105 M30,1 L30,109 M25,5 L629,5 M25,55 L629,55" />
+            <text id="stats-history-score-min" text-anchor="end" x="24" y="107"></text>
+            <text id="stats-history-score-mid" text-anchor="end" x="24" y="57"></text>
+            <text id="stats-history-score-max" text-anchor="end" x="24" y="7"></text>
+          </g>
+          <g id="stats-history-score-chart">
+          </g>
+        </svg>
+      </div>
+      <h2>Memorization Time</h2>
+      <div class="stats-history">
+        <svg id="stats-history-time" viewBox="0 0 630 110" xmlns="http://www.w3.org/2000/svg">
+          <style>
+            text {
+              font: 8px sans-serif;
+              fill: #ddd;
+              width: 23px;
+              text-align: right;
+            }
+
+            .easy { fill: #08f; }
+            .medium { fill: #ff0; }
+            .hard { fill: #f80; }
+          </style>
+          <g>
+            <path stroke-width="1" stroke="#bbb" d="M25,105 L629,105 M30,1 L30,109 M25,5 L629,5 M25,55 L629,55" />
+            <text id="stats-history-time-min" text-anchor="end" x="24" y="107"></text>
+            <text id="stats-history-time-mid" text-anchor="end" x="24" y="57"></text>
+            <text id="stats-history-time-max" text-anchor="end" x="24" y="7"></text>
+          </g>
+          <g id="stats-history-time-chart">
+          </g>
+        </svg>
+      </div>
+      <p class="small">
+        Horizontal ticks show the slowest, fastest, and the mean memorization
+        time, a circle shows the median, and the thick line shows the standard
+        deviation around the mean.
+      </p>
       <p>
         <a id="stats-history-download" href="#">Download statistics as tab-separated values (TSV)</a>.
       </p>

@@ -224,6 +224,7 @@ button {
 }
 
 .screen h1,
+.screen h2,
 .screen p {
   text-align: center;
   margin: 3vmin auto 2vmin auto;
@@ -234,9 +235,19 @@ button {
   font-size: 3.2vmax;
 }
 
+.screen h2 {
+  font-size: 2.3vmax;
+}
+
 .screen p {
   font-size: 2.2vmax;
   line-height: 3.6vmax;
+}
+
+.screen p.small {
+  margin: 0.5vmin auto 3vmin auto;
+  font-size: 1.4vmax;
+  line-height: 1.8vmax;
 }
 
 .screen p a {
@@ -311,6 +322,16 @@ button {
   border-radius: 1vmax;
   border: inset 0.3vmax #bbc;
   padding: 0.3vmax;
+}
+
+#stats-history-score,
+#stats-history-time {
+  width: 80vw;
+  height: 36vmin;
+}
+
+div.stats-history {
+  text-align: center;
 }
 
 </style>
@@ -449,6 +470,62 @@ button {
         and in <a href="https://www.youtube.com/watch?v=zsXP8qeFF6A"
           target="_blank">this video from BBC Earth (3:42)</a>.
       </p>
+      <h1>Recent Games</h1>
+      <h2>Score Per Round</h2>
+      <div class="stats-history">
+        <svg id="stats-history-score" viewBox="0 0 630 110" xmlns="http://www.w3.org/2000/svg">
+          <style>
+            text {
+              font: 8px sans-serif;
+              fill: #ddd;
+              width: 23px;
+              text-align: right;
+            }
+
+            .easy { fill: #08f; }
+            .medium { fill: #ff0; }
+            .hard { fill: #f80; }
+          </style>
+          <g>
+            <path stroke-width="1" stroke="#bbb" d="M25,105 L629,105 M30,1 L30,109 M25,5 L629,5 M25,55 L629,55" />
+            <text id="stats-history-score-min" text-anchor="end" x="24" y="107"></text>
+            <text id="stats-history-score-mid" text-anchor="end" x="24" y="57"></text>
+            <text id="stats-history-score-max" text-anchor="end" x="24" y="7"></text>
+          </g>
+          <g id="stats-history-score-chart">
+          </g>
+        </svg>
+      </div>
+      <h2>Memorization Time</h2>
+      <div class="stats-history">
+        <svg id="stats-history-time" viewBox="0 0 630 110" xmlns="http://www.w3.org/2000/svg">
+          <style>
+            text {
+              font: 8px sans-serif;
+              fill: #ddd;
+              width: 23px;
+              text-align: right;
+            }
+
+            .easy { fill: #08f; }
+            .medium { fill: #ff0; }
+            .hard { fill: #f80; }
+          </style>
+          <g>
+            <path stroke-width="1" stroke="#bbb" d="M25,105 L629,105 M30,1 L30,109 M25,5 L629,5 M25,55 L629,55" />
+            <text id="stats-history-time-min" text-anchor="end" x="24" y="107"></text>
+            <text id="stats-history-time-mid" text-anchor="end" x="24" y="57"></text>
+            <text id="stats-history-time-max" text-anchor="end" x="24" y="7"></text>
+          </g>
+          <g id="stats-history-time-chart">
+          </g>
+        </svg>
+      </div>
+      <p class="small">
+        Horizontal ticks show the slowest, fastest, and the mean memorization
+        time, a circle shows the median, and the thick line shows the standard
+        deviation around the mean.
+      </p>
       <p>
         <a id="stats-history-download" href="#">Download statistics as tab-separated values (TSV)</a>.
       </p>
@@ -549,6 +626,14 @@ var CARDS = 40,
     intro_node = null,
     stats_history = null,
     stats_history_download_node = null,
+    stats_score_history_chart_node = null,
+    stats_score_history_min_node = null,
+    stats_score_history_mid_node = null,
+    stats_score_history_max_node = null,
+    stats_time_history_chart_node = null,
+    stats_time_history_min_node = null,
+    stats_time_history_mid_node = null,
+    stats_time_history_max_node = null,
     stats_mem_time_mean_node = null,
     stats_mem_time_min_node = null,
     stats_mem_time_max_node = null,
@@ -565,6 +650,7 @@ var CARDS = 40,
     card_values = [],
     expected_values = [],
     done_memorizing = false,
+    score_bonus = 1.0,
     accept_card_touches = false,
     difficulty = 0,
     auto_hide = null,
@@ -971,30 +1057,32 @@ function handle_card_touch(evt)
         return false;
     }
 
+    play_click_sound();
+
     if (card_value != expected_values[0]) {
         handle_wrong_card(clicked_card_index, expected_values[0]);
 
         return false;
     }
 
-    play_click_sound();
-
-    expected_values = expected_values.slice(1);
-    score += difficulty * (numbers - expected_values.length);
-    update_status();
-
     if (!done_memorizing) {
         done_memorizing = true;
         delta = now - memorization_start;
 
-        if (auto_hide === null) {
-            memorization_times.push(delta);
-        } else {
-            memorization_times.push(Math.min(delta, auto_hide / 1000));
+        if (auto_hide !== null) {
+            delta = Math.min(delta, auto_hide / 1000);
         }
 
+        score_bonus = Math.max(1.0, 3.0 * (1.0 - delta));
+        memorization_times.push(delta);
         hide_card_values();
     }
+
+    expected_values = expected_values.slice(1);
+    score += Math.round(
+        score_bonus * difficulty * (numbers - expected_values.length)
+    );
+    update_status();
 
     reveal_card(clicked_card_index);
     card_node.setAttribute("class", "card revealed");
@@ -1161,6 +1249,7 @@ function start_round()
     reveal_cards();
     accept_card_touches = true;
     done_memorizing = false;
+    score_bonus = 1.0;
     memorization_start = time();
 
     if (auto_hide !== null) {
@@ -1342,8 +1431,226 @@ function start_game()
 
 function show_intro_screen()
 {
+    redraw_historical_scores();
+    redraw_historical_times();
     end_node.setAttribute("class", "screen");
     intro_node.setAttribute("class", "screen active");
+}
+
+function redraw_historical_scores()
+{
+    var g = document.createElementNS("http://www.w3.org/2000/svg", "g"),
+        history = stats_history.slice(Math.max(0, stats_history.length - 199)),
+        x_offset,
+        scores = [],
+        rounds,
+        score,
+        rect,
+        height,
+        cls,
+        min_score,
+        max_score,
+        scale,
+        i, l;
+
+    min_score = -1;
+    max_score = 0.001;
+
+    for (i = 0, l = history.length; i < l; ++i) {
+        rounds = history[i][3];
+
+        if (rounds < 1) {
+            continue;
+        }
+
+        score = history[i][5] / rounds;
+        scores.push([history[i][1], score]);
+
+        if (score > max_score) {
+            max_score = score;
+        }
+
+        if (min_score < 0 || score < min_score) {
+            min_score = score;
+        }
+    }
+
+    if (min_score < 0) {
+        min_score = 0;
+    }
+
+    max_score = Math.max(1.0, Math.ceil(max_score * 1.05));
+    min_score = Math.floor(min_score * 0.9);
+    scale = 100.0 / (max_score - min_score);
+    x_offset = 29 + 600 - scores.length * 3;
+
+    for (i = 0, l = scores.length; i < l; ++i) {
+        score = scores[i];
+
+        if (score[0] === MEDIUM) {
+            cls = "medium";
+        } else if (score[0] === HARD) {
+            cls = "hard";
+        } else {
+            cls = "easy";
+        }
+
+        height = scale * (score[1] - min_score);
+        rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        rect.setAttribute("class", cls);
+        rect.setAttribute("x", String(x_offset + i * 3 + 0.5));
+        rect.setAttribute("width", "2");
+        rect.setAttribute("y", String(105 - height));
+        rect.setAttribute("height", String(height));
+
+        g.appendChild(rect);
+    }
+
+    stats_score_history_min_node.innerHTML = String(min_score);
+    stats_score_history_mid_node.innerHTML = String(
+        Math.round(50.0 * (max_score + min_score)) / 100.0
+    );
+    stats_score_history_max_node.innerHTML = String(max_score);
+
+    stats_score_history_chart_node.innerHTML = "";
+    stats_score_history_chart_node.appendChild(g);
+}
+
+function redraw_historical_times()
+{
+    var g = document.createElementNS("http://www.w3.org/2000/svg", "g"),
+        history = stats_history.slice(Math.max(0, stats_history.length - 199)),
+        x_offset,
+        entry,
+        times = [],
+        rounds,
+        time,
+        obj,
+        x_center,
+        y_center,
+        x,
+        top_,
+        bottom,
+        height,
+        cls,
+        min_time,
+        max_time,
+        sd,
+        scale,
+        i, l;
+
+    min_time = -1;
+    max_time = 0.001;
+
+    for (i = 0, l = history.length; i < l; ++i) {
+        entry = history[i];
+
+        if (entry[11] > max_time) {
+            max_time = entry[11];
+        }
+
+        if (min_time < 0 || entry[10] < min_time) {
+            min_time = entry[10];
+        }
+
+        sd = entry[8];
+        min_time = Math.max(0.0, Math.min(entry[7] - sd, min_time));
+        max_time = Math.max(entry[7] + sd, max_time);
+    }
+
+    if (min_time < 0) {
+        min_time = 0;
+    }
+
+    max_time = Math.ceil(max_time * 10.5) / 10.0;
+    min_time = Math.floor(min_time * 9.0) / 10.0;
+    scale = 100.0 / (max_time - min_time);
+    x_offset = 29 + 600 - history.length * 3;
+
+    for (i = 0, l = history.length; i < l; ++i) {
+        entry = history[i];
+
+        if (entry[1] === MEDIUM) {
+            cls = "medium";
+        } else if (entry[1] === HARD) {
+            cls = "hard";
+        } else {
+            cls = "easy";
+        }
+
+        bottom = 105 - scale * (entry[10] - min_time);
+        top_ = 5 + scale * (max_time - entry[11]);
+        height = bottom - top_;
+        x_center = x_offset + i * 3 + 1.5;
+        y_center = (top_ + bottom) * 0.5;
+
+        /* min - max line */
+        obj = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        obj.setAttribute("class", cls);
+        obj.setAttribute("x", String(x_center - 0.3));
+        obj.setAttribute("width", "0.6");
+        obj.setAttribute("y", String(top_));
+        obj.setAttribute("height", String(height));
+        g.appendChild(obj);
+
+        /* max */
+        x = String(x_center - 1.5);
+        obj = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        obj.setAttribute("class", cls);
+        obj.setAttribute("x", x);
+        obj.setAttribute("width", "3.0");
+        obj.setAttribute("y", String(top_ - 0.6));
+        obj.setAttribute("height", "1.2");
+        g.appendChild(obj);
+
+        /* min */
+        obj = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        obj.setAttribute("class", cls);
+        obj.setAttribute("x", x);
+        obj.setAttribute("width", "3.0");
+        obj.setAttribute("y", String(bottom - 0.6));
+        obj.setAttribute("height", "1.2");
+        g.appendChild(obj);
+
+        /* mean */
+        y_center = 5 + scale * (max_time - entry[7]);
+        obj = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        obj.setAttribute("class", cls);
+        obj.setAttribute("x", x);
+        obj.setAttribute("width", "3.0");
+        obj.setAttribute("y", String(y_center - 0.6));
+        obj.setAttribute("height", "1.2");
+        g.appendChild(obj);
+
+        /* standard deviation */
+        sd = scale * entry[8];
+        top_ = Math.max(5.0, y_center - sd);
+        height = Math.min(105.0 - top_, 2.0 * sd);
+        obj = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        obj.setAttribute("class", cls);
+        obj.setAttribute("x", String(x_center - 0.75));
+        obj.setAttribute("width", "1.5");
+        obj.setAttribute("y", String(top_));
+        obj.setAttribute("height", String(height));
+        g.appendChild(obj);
+
+        /* median */
+        obj = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        obj.setAttribute("class", cls);
+        obj.setAttribute("cx", String(x_center));
+        obj.setAttribute("cy", String(5 + scale * (max_time - entry[9])));
+        obj.setAttribute("r", "1.5");
+        g.appendChild(obj);
+    }
+
+    stats_time_history_min_node.innerHTML = String(min_time);
+    stats_time_history_mid_node.innerHTML = String(
+        Math.round(50.0 * (max_time + min_time)) / 100.0
+    );
+    stats_time_history_max_node.innerHTML = String(max_time);
+
+    stats_time_history_chart_node.innerHTML = "";
+    stats_time_history_chart_node.appendChild(g);
 }
 
 function select()
@@ -1434,7 +1741,7 @@ function restore_stats_history(data)
     }
 
     if (!(data && Array.isArray(data))) {
-        console.log("history is empty");
+        console.log("No historical statistics found.");
         return [];
     }
 
@@ -1452,7 +1759,7 @@ function restore_stats_history(data)
 
         try {
             rounds = validate_int(d[3], 5, 20);
-            auto_hide = validate_number(d[4], 0.0, 8.0);
+            auto_hide = validate_number(d[4], 0.0, 8000.0);
             min = validate_number(d[10], 0.0, null);
             max = validate_number(d[11], min, null);
 
@@ -1570,7 +1877,7 @@ function export_stats_history(evt)
                 String(s[1]),
                 String(s[2]),
                 String(s[3]),
-                String(s[4]),
+                String(s[4] / 1000.0),
                 String(s[5]),
                 String(s[6]),
                 String(s[7]),
@@ -1629,6 +1936,14 @@ function main()
     end_node = $("end");
     intro_node = $("intro");
     stats_history_download_node = $("stats-history-download");
+    stats_score_history_chart_node = $("stats-history-score-chart");
+    stats_score_history_min_node = $("stats-history-score-min");
+    stats_score_history_mid_node = $("stats-history-score-mid");
+    stats_score_history_max_node = $("stats-history-score-max");
+    stats_time_history_chart_node = $("stats-history-time-chart");
+    stats_time_history_min_node = $("stats-history-time-min");
+    stats_time_history_mid_node = $("stats-history-time-mid");
+    stats_time_history_max_node = $("stats-history-time-max");
     stats_mem_time_mean_node = $("stats-mem-time-mean");
     stats_mem_time_min_node = $("stats-mem-time-min");
     stats_mem_time_max_node = $("stats-mem-time-max");
