@@ -20,6 +20,8 @@ var CARDS = 40,
     SHARE_PERFECT_ROUNDS = " Perfect rounds: {perfect_rounds}.",
     SHARE_HASHTAGS = " #MindField",
 
+    LOCAL_STORAGE_KEY = "chimp_mem_game",
+
     VOLUME = 0.35,
 
     STATS_HISTORY_MAX_LENGTH = 1000,
@@ -760,6 +762,7 @@ function show_end_screen()
             ]
         );
         stats_history = truncate_stats_history(stats_history);
+        store_stats_history();
     } else {
         stats_mem_time_mean_node.innerHTML = "N/A";
         stats_mem_time_min_node.innerHTML = "N/A";
@@ -770,6 +773,11 @@ function show_end_screen()
 
     game_node.setAttribute("class", "screen");
     end_node.setAttribute("class", "screen active");
+}
+
+function store_stats_history()
+{
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(stats_history));
 }
 
 function start_game()
@@ -1231,11 +1239,6 @@ function validate_number(raw_num, min, max)
     return num;
 }
 
-function handle_beforeunload()
-{
-    localStorage.setItem("chimp_mem_game", JSON.stringify(stats_history));
-}
-
 function export_stats_history(evt)
 {
     var lines = [],
@@ -1313,7 +1316,9 @@ function main()
         body = document.getElementsByTagName("body")[0],
         i, key, card_node;
 
-    stats_history = restore_stats_history(localStorage.getItem("chimp_mem_game"));
+    stats_history = restore_stats_history(
+        localStorage.getItem(LOCAL_STORAGE_KEY)
+    );
 
     for (i = 3; i < 10; ++i) {
         key = "cards-" + String(i);
@@ -1387,8 +1392,6 @@ function main()
     $("copy-button").addEventListener("click", copy);
 
     stats_history_download_node.addEventListener("click", export_stats_history);
-
-    window.addEventListener("beforeunload", handle_beforeunload);
 
     show_intro_screen();
 }
