@@ -184,6 +184,15 @@ div.group.closed {
   min-width: 630px;
 }
 
+div.group.closed div.group,
+div.group.closed div.param {
+  display: none;
+}
+
+div.group.closed div.group.name {
+  display: flex;
+}
+
 div.group.closable > div.name {
   cursor: pointer;
 }

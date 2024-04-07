@@ -1041,6 +1041,8 @@
         this._update_dirty_custom_waves_timeout = null;
         this._update_dirty_custom_waves_func = null;
 
+        this._midi_running_status = 0;
+
         this.audio_ctx = audio_ctx;
         this.garbage = [];
         this.virt_detune = new DetuneParam(this, "vrt_dt", null, 1, -48, 48, 0);
@@ -1724,15 +1726,43 @@
             velocity, midi_ctl, ct;
 
         data = message.data;
-        d0 = data[0] & 0xf0;
-        d1 = data[1] & 0x7f;
-        d2 = data[2] & 0x7f;
+
+        d0 = data[0];
+
+        if ((d0 & 0x80) === 0) {
+            d0 = this._midi_running_status;
+
+            if ((d0 & 0x80) === 0) {
+                return true;
+            }
+
+            d1 = d0;
+            d2 = data[1];
+        } else {
+            d0 &= 0xf0;
+            this._midi_running_status = d0;
+
+            d1 = data[1];
+            d2 = data[2];
+        }
 
         // var channel = data[0] & 0x0f;
         // console.log([d0, d1, d2]);
 
         switch (d0) {
-            case 144: // note on, d1 = note, d2 = velocity
+            case 0x80: // note off, d1 = note, d2 = velocity
+                if (((d1 & 0x80) !== 0) || ((d2 & 0x80) !== 0)) {
+                    return true;
+                }
+
+                this.midi_voice.stop_note(this.audio_ctx.currentTime + 0.009, d1);
+                break;
+
+            case 0x90: // note on, d1 = note, d2 = velocity
+                if (((d1 & 0x80) !== 0) || ((d2 & 0x80) !== 0)) {
+                    return true;
+                }
+
                 velocity = d2 / 0x7f;
                 ct = this.audio_ctx.currentTime;
 
@@ -1747,21 +1777,25 @@
 
                 break;
 
-            case 128: // note off, d1 = note
-                this.midi_voice.stop_note(this.audio_ctx.currentTime + 0.009, d1);
-                break;
+            case 0xb0: // control change, d1 = controller number, d2 = value
+                if (((d1 & 0x80) !== 0) || ((d2 & 0x80) !== 0)) {
+                    return true;
+                }
 
-            case 224: // pitch bend change, d2 << 7 + d1 = bender position, 0x2000 = center
-                this._pitch_ctl.set_value(((d2 << 7) + d1) / 0x3fff);
-                break;
-
-            case 176: // control change, d1 = controller number, d2 = controller value
                 midi_ctl = this._midi_ctls[d1];
 
                 if (midi_ctl !== null) {
                     midi_ctl.set_value(d2 / 0x7f);
                 }
 
+                break;
+
+            case 0xe0: // pitch bend change, d2 = MSB, d1 = LSB
+                if (((d1 & 0x80) !== 0) || ((d2 & 0x80) !== 0)) {
+                    return true;
+                }
+
+                this._pitch_ctl.set_value(((d2 << 7) | d1) / 0x3fff);
                 break;
         }
 
