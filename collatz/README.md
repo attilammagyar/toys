@@ -9,9 +9,9 @@ Table of Contents
  * [Table of Contents](#toc)
  * [The Collatz Conjecture](#conjecture)
  * [Extending to the Complex Plane](#extending)
- * [Non-negative Real Fixed Points of F](#fixed-points)
- * [Condition for x ≤ F(x) for 1/2 < x ∈ ℝ](#condition)
- * [Properties of F](#properties)
+ * [Non-negative Real Fixed Points of F<sub>m</sub> (for a given m ∈ ℕ)](#fixed-points)
+ * [Condition for x ≤ F<sub>m</sub>(x) for m ∈ ℕ, 1/2 < x ∈ ℝ](#condition)
+ * [Properties of F<sub>m</sub> (for m ∈ ℕ)](#properties)
  * [Visualizations of Convergence and Stopping Times](#visualizations)
     * [Convergence](#conv)
        * [Region: (-20.000000, 11.250000), (20.000000, -11.250000)](#region-1)
@@ -134,7 +134,7 @@ and
 $$ \forall n \in \mathbb{N} \quad n \equiv 0 \pmod 2 \Rightarrow
 F(n) = \frac{3n + 0}{2 + 4 \cdot 1} = \frac{3n}{6} = \frac{n}{2} $$
 
-Therefore $F$ restricted to the positive integers is equivalent with the
+Therefore $F$ restricted to the positive integers is equivalent to the
 shortcut Collatz function $t$.
 
 Using the following trigonometric identities
@@ -148,105 +148,128 @@ $F$ can be written as
 
 $$ F(z) = \frac{3}{4} \cdot \frac{2z+1}{\cos(\pi z)+2} - \frac{1}{4} $$
 
+This format then inspires a family of extension functions: let
+$m \in \mathbb{N}$ be a non-negative integer, and let's define the following
+function:
+
+$$ F_m \colon \mathbb{C} \to \mathbb{C}, \quad
+F_m(z) = \frac{3}{4} \cdot \frac{2z+1}{\cos(\pi z)^{2m+1}+2} - \frac{1}{4} $$
+
 <a name="fixed-points"></a>
 
-Non-negative Real Fixed Points of $F$
--------------------------------------
+Non-negative Real Fixed Points of $F_m$ (for a given $m \in \mathbb{N}$)
+------------------------------------------------------------------------
 
 The original Collatz function does not have any positive integer fixed points
-(proof left for the reader), but $F$ has infinitely many non-negative real
-fixed points which can be obtained by solving the following equation for
-$0 \le x \in \mathbb{R}$:
+(proof left for the reader), but $\forall m \in \mathbb{N}$, $F_m$ has
+infinitely many non-negative real fixed points which can be obtained by solving
+the following equation for $0 \le x \in \mathbb{R}$:
 
-$$ (1) \quad F(x) =
-\frac{3}{4} \cdot \frac{2x+1}{\cos(\pi x)+2} - \frac{1}{4} = x $$
+$$ (1) \quad F_m(x) =
+\frac{3}{4} \cdot \frac{2x+1}{\cos(\pi x)^{2m+1}+2} - \frac{1}{4} = x $$
 
-$0$ is a fixed point of $F$, because
+$0$ is a fixed point of $F_m$, because
 
-$$ F(0) =
-\frac{3}{4} \cdot \frac{2 \cdot 0+1}{\cos(0 \cdot \pi)+2} - \frac{1}{4} =
+$$ F_m(0) =
+\frac{3}{4} \cdot \frac{2 \cdot 0+1}{\cos(0 \cdot \pi)^{2m+1}+2} - \frac{1}{4} =
 \frac{3}{4} \cdot \frac{1}{1+2} - \frac{1}{4} = 0 $$
 
-$\frac{1}{2}$ is also a fixed point of $F$, since
+$\frac{1}{2}$ is also a fixed point of $F_m$, since
 
-$$ F \left( \frac{1}{2} \right) =
-\frac{3}{4} \cdot \frac{2 \cdot \frac{1}{2} + 1}{\cos(\frac{\pi}{2})+2} - \frac{1}{4} =
+$$ F_m \left( \frac{1}{2} \right) =
+\frac{3}{4} \cdot \frac{2 \cdot \frac{1}{2} + 1}{\cos(\frac{\pi}{2})^{2m+1}+2} - \frac{1}{4} =
 \frac{3}{4} \cdot \frac{1+1}{0+2} - \frac{1}{4} = \frac{1}{2} $$
 
 It can be proven that
-$\forall x \in \mathbb{R} \quad 0 < x < \frac{1}{2} \Rightarrow F(x) \neq x$
+$\forall x \in \mathbb{R} \quad 0 < x < \frac{1}{2} \Rightarrow F_m(x) \neq x$
 (proof left for the reader).
 
 As for fixed points $\frac{1}{2} < x \in \mathbb{R}$, one can notice that
-$\forall \frac{1}{2} < x \in \mathbb{R} \quad \cos(\pi x)+2 > 0$ and $4x+1>0$,
-so $(1)$ can be rearranged as
+$\forall \frac{1}{2} < x \in \mathbb{R} \quad \cos(\pi x)^{2m+1}+2 > 0$ and
+$4x+1>0$, so $(1)$ can be rearranged as
 
-$$ (2) \quad \cos(\pi x) = - \frac{2x-1}{4x+1} $$
+$$ (2) \quad \cos(\pi x)^{2m+1} = - \frac{2x-1}{4x+1} $$
 
 One way to solve this for $\frac{1}{2} < x \in \mathbb{R}$ is to notice that
 
 $$ \lim_{x \to \infty} - \frac{2x-1}{4x+1} = - \frac{1}{2} $$
 
 therefore the fixed points of the form $\frac{1}{2} < x \in \mathbb{R}$ are
-located where $\cos(\pi x)$ is close to $- \frac{1}{2}$, thus, they are of the
-form $\frac{2}{3}+2k + \varepsilon_1(k)$ and
-$\frac{4}{3}+2k + \varepsilon_2(k)$ for $\forall k \in \mathbb{N}$, where
-$\varepsilon_1, \varepsilon_2 \colon \mathbb{N} \to \mathbb{R}$, and
+located where $\cos(\pi x)^{2m+1}$ is close to $- \frac{1}{2}$, thus, they are
+of the form
 
-$$ \lim_{n \to \infty} \varepsilon_1(n) =
-\lim_{n \to \infty} \varepsilon_2(n) = 0 $$
+$$ 2k + \frac{1}{\pi} \cdot \arccos \left( \sqrt[2m+1]{- \frac{1}{2}} \right) + \varepsilon_1(k) $$
 
-In other words, the positive real fixed points of $F$ that are greater than
-$\frac{1}{2}$ are located around odd positive integers, with a distance of
-roughly $\pm \frac{1}{3}$.
+and
 
-One can use [Newton's method][newton] with starting points from
-$x_0 \in \\{ \frac{2}{3}+2k + \varepsilon_1, \frac{4}{3}+2k + \varepsilon_2 \mid k \in \mathbb{N}, \varepsilon_1, \varepsilon_2 \in \mathbb{R} \\}$
-to find them.
+$$ 2k - \left( \frac{1}{\pi} \cdot \arccos \left( \sqrt[2m+1]{- \frac{1}{2}} \right) + \varepsilon_2(k) \right) $$
+
+where $k \in \mathbb{N}$, and $\varepsilon_1, \varepsilon_2 \colon \mathbb{N} \to \mathbb{R}$, and
+
+$$ \lim_{k \to \infty} \varepsilon_1(k) =
+\lim_{k \to \infty} \varepsilon_2(k) = 0 $$
+
+Notice that
+
+$$ \lim_{m \to \infty} \sqrt[2m+1]{- \frac{1}{2}} = \lim_{m \to \infty} - \frac{1}{\sqrt[2m+1]{2}} = -1 $$
+
+therefore:
+
+$$ \lim_{m \to \infty} \frac{1}{\pi} \cdot \arccos \left( \sqrt[2m+1]{- \frac{1}{2}} \right) = 1 $$
+
+In other words, the positive real fixed points of $F_m$ that are greater than
+$\frac{1}{2}$ are located in the vicinity of positive odd integers, and the
+greater $m$ is chosen, the closer the fixed points are to the corresponding
+positive odd integers. (One can use [Newton's method][newton] to find them.)
 
   [newton]: https://en.wikipedia.org/wiki/Newton%27s_method
 
-Note that $F$ does not have any positive integer fixed points, because the
+Note that $F_m$ does not have any positive integer fixed points, because the
 original Collatz function does not have any either.
 
 <a name="condition"></a>
 
-Condition for $x \le F(x)$ for $\frac{1}{2} \lt x \in \mathbb{R}$
------------------------------------------------------------------
+Condition for $x \le F_m(x)$ for $\frac{1}{2} \lt x \in \mathbb{R}, m \in \mathbb{N}$
+-------------------------------------------------------------------------------------
 
-$x \le F(x)$ can be solved for $\frac{1}{2} \lt x \in \mathbb{R}$ the same way
+$x \le F_m(x)$ can be solved for $\frac{1}{2} \lt x \in \mathbb{R}$ the same way
 it was presented for the fixed points, leading to the following statement for
 $\frac{1}{2} \lt x \in \mathbb{R}$:
 
-$$ x \le F(x) \quad \Longleftrightarrow \quad \exists k \in \mathbb{N} \quad
-\frac{2}{3}+2k + \varepsilon_1(k) \le x \le \frac{4}{3}+2k + \varepsilon_2(k) $$
+$$ x \le F_m(x) \quad \Longleftrightarrow \quad \exists k \in \mathbb{N} \quad
+2k + \frac{1}{\pi} \cdot \arccos \left( \sqrt[2m+1]{- \frac{1}{2}} \right) + \varepsilon_1(k) \le x $$
+
+and
+
+$$ x \le 2 \cdot (k + 1) - \left( \frac{1}{\pi} \cdot \arccos \left( \sqrt[2m+1]{- \frac{1}{2}} \right) + \varepsilon_2(k+1) \right) $$
 
 where $\varepsilon_1, \varepsilon_2 \colon \mathbb{N} \to \mathbb{R}$ are so
-that $\frac{2}{3}+2k + \varepsilon_1(k)$ and $\frac{4}{3}+2k + \varepsilon_2(k)$
-are fixed points of $F$, and
+that $2k + \frac{1}{\pi} \cdot \arccos \left( \sqrt[2m+1]{- \frac{1}{2}} \right) + \varepsilon_1(k)$
+and $2 \cdot (k + 1) - \left( \frac{1}{\pi} \cdot \arccos \left( \sqrt[2m+1]{- \frac{1}{2}} \right) + \varepsilon_2(k+1) \right)$
+are fixed points of $F_m$, and
 
-$$ \lim_{n \to \infty} \varepsilon_1(n) =
-\lim_{n \to \infty} \varepsilon_2(n) = 0. $$
+$$ \lim_{k \to \infty} \varepsilon_1(k) =
+\lim_{k \to \infty} \varepsilon_2(k) = 0 $$
 
-In other words, for $\frac{1}{2} \lt x \in \mathbb{R}$, for $x \le F(x)$ to
-hold, $x$ must be inside a roughly $\frac{1}{3}$ radius of an odd positive
-integer.
+In other words, for $\frac{1}{2} \lt x \in \mathbb{R}$, for $x \le F_m(x)$ to
+hold, $x$ must be inside a roughly $1 - \frac{1}{\pi} \cdot \arccos \left( \sqrt[2m+1]{- \frac{1}{2}} \right)$
+radius of an odd positive integer.
 
 <a name="properties"></a>
 
-Properties of $F$
------------------
+Properties of $F_m$ (for $m \in \mathbb{N}$)
+--------------------------------------------
 
 Numerical experiments seem to suggest that:
 
- * For positive real numbers, $F$ has no other cycles than $(1; \\, 2)$ and its
-   fixed points.
+ * For positive real numbers, the $F_m$ functions have no other cycles than
+   $(1; \\, 2)$ and their fixed points.
 
  * For positive real numbers, even if the iteration starts from a value close
-   to a fixed point, $F$ often converges to $1$ after a while.
+   to a fixed point, $F_m$ often converges to $1$ after a while.
 
- * $F$ tends to have lower stopping times than other continuous extensions of
-   the Collatz function.
+ * $F_m$ functions tend to have lower stopping times than other continuous
+   extensions of the Collatz function.
 
 The stopping time for a given $G \colon \mathbb{C} \to \mathbb{C}$ continuous
 extension of the Collatz function to the complex plane, and a given
