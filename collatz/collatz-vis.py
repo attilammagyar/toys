@@ -65,19 +65,19 @@ COLORS = {
 INFINITY = complex("inf+infj")
 
 
-def func_C(z):
+def func_C(z, p):
     c = INFINITY
     s = INFINITY
     piz = cpi * z / 2
 
     try:
-        c = ccos(piz) ** 2
+        c = ccos(piz) ** p
 
     except (OverflowError, ValueError):
         pass
 
     try:
-        s = csin(piz) ** 2
+        s = csin(piz) ** p
 
     except (OverflowError, ValueError):
         pass
@@ -85,37 +85,42 @@ def func_C(z):
     return (z * c) / 2 + ((3 * z + 1) / 2) * s
 
 
-def func_T(z):
+def func_T(z, p):
     s = INFINITY
-    p = INFINITY
+    pw = INFINITY
 
     try:
-        s = csin(cpi * z / 2) ** 2
-        p = 3 ** s
+        s = csin(cpi * z / 2) ** p
+        pw = 3 ** s
 
     except (OverflowError, ValueError, ZeroDivisionError):
         pass
 
-    return (p * z + s) / 2
+    return (pw * z + s) / 2
 
 
-def func_F(z):
+def func_F(z, p):
     c = INFINITY
     piz = cpi * z
 
     try:
-        c = ccos(piz)
+        c = ccos(piz) ** p
 
     except OverflowError:
         pass
+
+    # r = 1
+
+    # for i in range(p):
+        # r *= c
 
     return 0.75 * ((2 * z + 1) / (c + 2)) - 0.25
 
 
 FUNCTIONS = {
-    "C": (func_C, "f(z) = (z/2) * cos(z*pi/2)^2 + ((3*z+1)/2) * sin(z*pi/2)^2"),
-    "T": (func_T, "T(z) = (3^(sin(z*pi/2)^2) + sin(z*pi/2)^2) / 2"),
-    "F": (func_F, "F(z) = (3/4) * (2*z+1) / (cos(pi*z)+2) - 1/4"),
+    "C": (func_C, lambda m: 2 * m + 2, "f(z) = (z/2) * cos(z*pi/2)^{p} + ((3*z+1)/2) * sin(z*pi/2)^{p}"),
+    "T": (func_T, lambda m: 2 * m + 2, "T(z) = (3^(sin(z*pi/2)^{p}) + sin(z*pi/2)^{p}) / 2"),
+    "F": (func_F, lambda m: 2 * m + 1, "F(z) = (3/4) * (2*z+1) / (cos(pi*z)^{p}+2) - 1/4"),
 }
 
 
@@ -128,14 +133,18 @@ def main(argv):
         conv_threshold, esc_threshold = float(argv[6]), float(argv[7])
         left, top = float(argv[8]), float(argv[9])
         right, bottom = float(argv[10]), float(argv[11])
-        f, f_str = FUNCTIONS[func]
+        m = int(argv[12]) if len(argv) > 12 else 0
+        f, f_pow, f_str = FUNCTIONS[func]
 
         if width < 1 or height < 1:
             raise ValueError("width and height must be greater than 0")
 
+        if m < 0:
+            raise ValueError("m must be a non-negative integer")
+
     except:
         print(
-            "Usage: {} conv.png stop.png C|T|F width height conv_threshold esc_threshold left top right bottom\n".format(
+            "Usage: {} conv.png stop.png C|T|F width height conv_threshold esc_threshold left top right bottom [m]\n".format(
                 os.path.basename(argv[0])
             ),
             file=sys.stderr
@@ -176,6 +185,9 @@ def main(argv):
     max_stop = 0
     min_stop = ITERS + 1
     avg_stop = []
+    p = f_pow(m)
+
+    f_str = f_str.format(p=p)
 
     lines = []
 
@@ -202,7 +214,7 @@ def main(argv):
             z0 = x + y * 1j
             z_str = "({x}+i*{y})".format(x=x, y=y)
 
-            result, steps, stop, cycle, seq = repeat(f, z0, ITERS, conv_threshold, esc_threshold)
+            result, steps, stop, cycle, seq = repeat(f, p, z0, ITERS, conv_threshold, esc_threshold)
             line.append((result, steps, stop))
 
             if stop is not None:
@@ -358,31 +370,45 @@ def main(argv):
     return 0
 
 
-def repeat(f, z, iters, conv_threshold, esc_threshold):
+def repeat(f, p, z, iters, conv_threshold, esc_threshold):
     result = None
     stop = None
     seen = {z}
     seq = [z]
     cycle = []
     cycle_threshold = conv_threshold * 10
-    z0 = abs(z)
+
+    try:
+        az0 = abs(z)
+
+    except OverflowError:
+        return ESCAPE, 1, stop, cycle, seq
 
     for steps in range(ITERS):
-        z = f(z)
+        z = f(z, p)
         seq.append(z)
-        az = abs(z)
 
-        if stop is None and abs(z) < z0:
+        try:
+            az = abs(z)
+
+        except OverflowError:
+            return ESCAPE, steps + 1, stop, cycle, seq
+
+        if stop is None and az < az0:
             stop = steps + 1
 
-        if z in seen or min(abs(z - s) for s in seen) < conv_threshold:
-            cycle = build_cycle(f, z, cycle_threshold)
+        try:
+            is_cycle = z in seen or min(abs(z - s) for s in seen) < conv_threshold
+
+        except OverflowError:
+            return ESCAPE, steps + 1, stop, cycle, seq
+
+        if is_cycle:
+            cycle = build_cycle(f, p, z, cycle_threshold)
             result = analyze_cycle(cycle, cycle_threshold)
             break
 
         else:
-            az = abs(z)
-
             if az > esc_threshold or isnan(az):
                 result = ESCAPE
                 cycle.append(z)
@@ -393,13 +419,13 @@ def repeat(f, z, iters, conv_threshold, esc_threshold):
     return result, steps + 1, stop, cycle, seq
 
 
-def build_cycle(f, z, threshold):
+def build_cycle(f, p, z, threshold):
     cycle = [z]
-    z = f(z)
+    z = f(z, p)
 
     while (min(abs(z - c) for c in cycle) >= threshold) and (len(cycle) < CYCLE_MAX):
         cycle.append(z)
-        z = f(z)
+        z = f(z, p)
 
     return cycle
 

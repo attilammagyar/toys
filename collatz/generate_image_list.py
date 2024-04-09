@@ -5,8 +5,8 @@ import sys
 RAW_URL = "https://github.com/attilammagyar/toys/raw/gh-pages/collatz"
 DESCRIPTION_INDENT = " " * 8
 TITLES = {
-    "stop": "Stopping Times\n\nMaximum iterations: $500$",
-    "conv": "Convergence\n\nMaximum iterations: $500$, convergence threshold: $10^{-9}$, escape threshold:\n$10^{50}$"
+    "stop": "Stopping Times ({m})\n\nMaximum iterations: $500$",
+    "conv": "Convergence ({m})\n\nMaximum iterations: $500$, convergence threshold: $10^{{-9}}$, escape threshold:\n$10^{{50}}$"
 }
 FUNCS = {"f": "F", "c": "f", "t": "T"}
 
@@ -78,6 +78,13 @@ def main(argv):
 
 def store(imgs, file_name, img_type, func_name, left_top, right_bottom, description):
     if file_name != "" and len(description) > 0:
+        parts = file_name.split("_")
+
+        if len(parts) >= 15:
+            m = parts[14].split(".", 1)[0]
+        else:
+            m = "0"
+
         markdown = "".join(
             [
                 f" * {FUNCS[func_name]}: [`{file_name}`]({RAW_URL}/{file_name})\n",
@@ -89,6 +96,7 @@ def store(imgs, file_name, img_type, func_name, left_top, right_bottom, descript
 
         (
             imgs
+                .setdefault(m, {})
                 .setdefault(img_type, {})
                 .setdefault(region, {})
                 .setdefault(func_name, markdown)
@@ -100,29 +108,34 @@ def print_list(imgs):
     toc = []
     i = 0
 
-    for img_type in sorted(imgs.keys()):
-        title = TITLES.get(img_type, img_type)
-        toc_entry = title.split("\n", 1)[0]
-        toc.append(f"    * [{toc_entry}](#{img_type})")
-
-        print(f"<a name=\"{img_type}\"></a>")
-        print("")
-        print(f"### {title}")
-        print("")
-
-        for region in sorted(imgs[img_type].keys(), key=parse_region):
-            i += 1
-            title = f"Region: {region}"
+    for m in sorted(imgs.keys(), key=int):
+        for img_type in sorted(imgs[m]):
+            title = TITLES.get(img_type, img_type)
             toc_entry = title.split("\n", 1)[0]
-            toc.append(f"       * [{toc_entry}](#region-{i})")
 
-            print(f"<a name=\"region-{i}\"></a>")
+            title = title.format(m=f"$m = {m}$")
+            toc_entry = toc_entry.format(m=f"m = {m}")
+
+            toc.append(f"    * [{toc_entry}](#{img_type}-{m})")
+
+            print(f"<a name=\"{img_type}-{m}\"></a>")
             print("")
             print(f"#### {title}")
             print("")
 
-            for func_name in ("f", "c", "t"):
-                print(imgs[img_type][region][func_name])
+            for region in sorted(imgs[m][img_type].keys(), key=parse_region):
+                i += 1
+                title = f"Region: {region}"
+                toc_entry = title.split("\n", 1)[0]
+                toc.append(f"       * [{toc_entry}](#region-{i})")
+
+                print(f"<a name=\"region-{i}\"></a>")
+                print("")
+                print(f"##### {title}")
+                print("")
+
+                for func_name in ("f", "c", "t"):
+                    print(imgs[m][img_type][region][func_name])
 
     print("\n".join(toc))
 
