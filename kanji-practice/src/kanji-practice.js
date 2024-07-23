@@ -2429,6 +2429,7 @@
     function handle_edit_save_click(evt)
     {
         var kanji = editor_kanji.value,
+            card_ref,
             error;
 
         try {
@@ -2439,9 +2440,9 @@
             return stop_event(evt);
         }
 
-        show_message("Card #" + String(editor_card_ref + 1) + " saved.", 2400);
 
         if (editor_mode == "random-card") {
+            card_ref = editor_card_ref
             replace_card(
                 editor_card_ref,
                 kanji,
@@ -2452,6 +2453,7 @@
             close_card_editor();
             show_all_cards();
         } else {
+            card_ref = current_card_ref;
             replace_current_card(
                 kanji,
                 editor_pronunciation.value,
@@ -2462,6 +2464,8 @@
             show_current_card();
             show_practice_screen();
         }
+
+        show_message("Card #" + String(card_ref + 1) + " saved.", 2400);
 
         return stop_event(evt);
     }
