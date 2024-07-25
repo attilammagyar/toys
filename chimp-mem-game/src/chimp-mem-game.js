@@ -1221,18 +1221,20 @@ function truncate_stats_history(h)
 
 function validate_int(num, min, max)
 {
-    return validate_number(num, min, max) | 0;
+    return validate_number(num, min, max, 0.0) | 0;
 }
 
-function validate_number(raw_num, min, max)
+function validate_number(raw_num, min, max, tolerance)
 {
     var num = Number(raw_num);
 
-    if (max !== null && num > max) {
+    tolerance = tolerance || 0.000001;
+
+    if (max !== null && num > (max + tolerance)) {
         throw "Value " + String(raw_num) + " greater than " + String(max);
     }
 
-    if (min !== null && num < min) {
+    if (min !== null && num < (min - tolerance)) {
         throw "Value " + String(raw_num) + " less than " + String(min);
     }
 
