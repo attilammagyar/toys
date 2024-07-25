@@ -103,10 +103,11 @@ div.settings {
 
 div.options {
   display: inline-block;
-  height: 2.8vmax;
   margin: 0 0 0.2vmax 0;
   padding: 0;
   text-align: center;
+  width: 160vmin;
+  max-width: 96vw;
 }
 
 div.options div {
@@ -118,10 +119,10 @@ div.options div {
 div.options label {
   cursor: pointer;
   display: block;
-  height: 2.8vmax;
-  line-height: 2.8vmax;
-  font-size: 2.2vmax;
-  margin: 0.05vmax;
+  height: 2.3vmax;
+  line-height: 2.3vmax;
+  font-size: 2.1vmax;
+  margin: 0.03vmax;
   border: solid 0.3vmax #bbc;
   border-radius: 12vmax;
   background-color: #000;
@@ -133,7 +134,7 @@ div.rounds label {
 }
 
 div.difficulty label {
-  width: 15vmax;
+  width: 12vmax;
 }
 
 div.auto-hide label {
@@ -227,7 +228,7 @@ button {
 .screen h2,
 .screen p {
   text-align: center;
-  margin: 3vmin auto 2vmin auto;
+  margin: 2vmin auto 1vmin auto;
   width: 80vw;
 }
 
@@ -240,8 +241,8 @@ button {
 }
 
 .screen p {
-  font-size: 2.2vmax;
-  line-height: 3.6vmax;
+  font-size: 2.0vmax;
+  line-height: 3.0vmax;
 }
 
 .screen p.small {
@@ -402,8 +403,16 @@ div.stats-history {
             <label for="rounds-1">10</label>
           </div>
           <div class="rounds">
-            <input type="radio" id="rounds-2" name="rounds" value="20" />
-            <label for="rounds-2">20</label>
+            <input type="radio" id="rounds-2" name="rounds" value="15" />
+            <label for="rounds-2">15</label>
+          </div>
+          <div class="rounds">
+            <input type="radio" id="rounds-3" name="rounds" value="20" />
+            <label for="rounds-3">20</label>
+          </div>
+          <div class="rounds">
+            <input type="radio" id="rounds-4" name="rounds" value="30" />
+            <label for="rounds-4">30</label>
           </div>
         </div>
       </div>
@@ -415,40 +424,60 @@ div.stats-history {
             <label for="auto-hide-0">Off</label>
           </div>
           <div class="auto-hide">
-            <input type="radio" id="auto-hide-1" name="auto-hide" value="110" />
-            <label for="auto-hide-1">.11s</label>
+            <input type="radio" id="auto-hide-1" name="auto-hide" value="50" />
+            <label for="auto-hide-1">.05s</label>
           </div>
           <div class="auto-hide">
-            <input type="radio" id="auto-hide-2" name="auto-hide" value="210" />
-            <label for="auto-hide-2">.21s</label>
+            <input type="radio" id="auto-hide-2" name="auto-hide" value="110" />
+            <label for="auto-hide-2">.11s</label>
           </div>
           <div class="auto-hide">
-            <input type="radio" id="auto-hide-3" name="auto-hide" value="320" />
-            <label for="auto-hide-3">.32s</label>
+            <input type="radio" id="auto-hide-3" name="auto-hide" value="160" />
+            <label for="auto-hide-3">.16s</label>
           </div>
           <div class="auto-hide">
-            <input type="radio" id="auto-hide-4" name="auto-hide" value="430" />
-            <label for="auto-hide-4">.43s</label>
+            <input type="radio" id="auto-hide-4" name="auto-hide" value="210" />
+            <label for="auto-hide-4">.21s</label>
           </div>
           <div class="auto-hide">
-            <input type="radio" id="auto-hide-5" name="auto-hide" value="650" />
-            <label for="auto-hide-5">.65s</label>
+            <input type="radio" id="auto-hide-5" name="auto-hide" value="270" />
+            <label for="auto-hide-5">.27s</label>
           </div>
           <div class="auto-hide">
-            <input type="radio" id="auto-hide-6" name="auto-hide" value="1000" />
-            <label for="auto-hide-6">1s</label>
+            <input type="radio" id="auto-hide-6" name="auto-hide" value="320" />
+            <label for="auto-hide-6">.32s</label>
           </div>
           <div class="auto-hide">
-            <input type="radio" id="auto-hide-7" name="auto-hide" value="2000" />
-            <label for="auto-hide-7">2s</label>
+            <input type="radio" id="auto-hide-7" name="auto-hide" value="430" />
+            <label for="auto-hide-7">.43s</label>
           </div>
           <div class="auto-hide">
-            <input type="radio" id="auto-hide-8" name="auto-hide" value="4000" />
-            <label for="auto-hide-8">4s</label>
+            <input type="radio" id="auto-hide-8" name="auto-hide" value="540" />
+            <label for="auto-hide-8">.54s</label>
           </div>
           <div class="auto-hide">
-            <input type="radio" id="auto-hide-9" name="auto-hide" value="8000" />
-            <label for="auto-hide-9">8s</label>
+            <input type="radio" id="auto-hide-9" name="auto-hide" value="650" />
+            <label for="auto-hide-9">.65s</label>
+          </div>
+          <div class="auto-hide">
+            <input type="radio" id="auto-hide-10" name="auto-hide" value="830" />
+            <label for="auto-hide-10">.83s</label>
+          </div>
+          <div class="auto-hide">
+            <input type="radio" id="auto-hide-11" name="auto-hide" value="1000" />
+            <label for="auto-hide-11">1s</label>
+          </div>
+          <div class="auto-hide">
+            <input type="radio" id="auto-hide-12" name="auto-hide" value="2000" />
+            <label for="auto-hide-12">2s</label>
+          </div>
+          <div class="auto-hide">
+            <input type="radio" id="auto-hide-13" name="auto-hide" value="4000" />
+            <label for="auto-hide-13">4s</label>
+          </div>
+          <div class="auto-hide">
+            <input type="radio" id="auto-hide-14" name="auto-hide" value="8000" />
+            <label for="auto-hide-14">8s</label>
           </div>
         </div>
       </div>
@@ -527,7 +556,7 @@ div.stats-history {
         deviation around the mean.
       </p>
       <p>
-        <a id="stats-history-download" href="#">Download statistics as tab-separated values (TSV)</a>.
+        <a id="stats-history-save" href="#">Save statistics as tab-separated values (TSV)</a>.
       </p>
       <p>
         <a href="https://github.com/attilammagyar/toys"
@@ -627,7 +656,7 @@ var CARDS = 40,
     end_node = null,
     intro_node = null,
     stats_history = null,
-    stats_history_download_node = null,
+    stats_history_save_node = null,
     stats_score_history_chart_node = null,
     stats_score_history_min_node = null,
     stats_score_history_mid_node = null,
@@ -1351,6 +1380,7 @@ function show_end_screen()
                 stats["max"]
             ]
         );
+
         stats_history = truncate_stats_history(stats_history);
         store_stats_history();
     } else {
@@ -1459,6 +1489,7 @@ function redraw_historical_scores()
         min_score,
         max_score,
         scale,
+        width, x_offset_delta,
         i, l;
 
     min_score = -1;
@@ -1490,9 +1521,14 @@ function redraw_historical_scores()
     max_score = Math.max(1.0, Math.ceil(max_score * 1.05));
     min_score = Math.floor(min_score * 0.9);
     scale = 100.0 / (max_score - min_score);
-    x_offset = 29 + 600 - scores.length * 3;
+    l = scores.length;
+    width = (1 <= l) ? Math.max(2, Math.min(60, Math.floor(600 / l - 1))) : 60;
+    x_offset_delta = width + 1;
+    x_offset = 29 + 600 - l * x_offset_delta;
 
-    for (i = 0, l = scores.length; i < l; ++i) {
+    width = String(width);
+
+    for (i = 0; i < l; ++i) {
         score = scores[i];
 
         if (score[0] === MEDIUM) {
@@ -1506,8 +1542,8 @@ function redraw_historical_scores()
         height = scale * (score[1] - min_score);
         rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
         rect.setAttribute("class", cls);
-        rect.setAttribute("x", String(x_offset + i * 3 + 0.5));
-        rect.setAttribute("width", "2");
+        rect.setAttribute("x", String(x_offset + i * x_offset_delta + 0.5));
+        rect.setAttribute("width", width);
         rect.setAttribute("y", String(105 - height));
         rect.setAttribute("height", String(height));
 
@@ -1545,6 +1581,14 @@ function redraw_historical_times()
         max_time,
         sd,
         scale,
+        width,
+        width_o2,
+        width_o4,
+        width_o8,
+        width_str,
+        width_o2_str,
+        x_offset_delta,
+        x_offset_delta_half,
         i, l;
 
     min_time = -1;
@@ -1573,9 +1617,20 @@ function redraw_historical_times()
     max_time = Math.ceil(max_time * 10.5) / 10.0;
     min_time = Math.floor(min_time * 9.0) / 10.0;
     scale = 100.0 / (max_time - min_time);
-    x_offset = 29 + 600 - history.length * 3;
+    l = history.length;
+    width = (1 <= l) ? Math.max(2, Math.min(60, Math.floor(600 / l - 1))) : 60;
+    x_offset_delta = width + 1;
+    x_offset = 29 + 600 - l * x_offset_delta;
+    x_offset_delta_half = x_offset_delta / 2.0;
 
-    for (i = 0, l = history.length; i < l; ++i) {
+    width = Math.max(1.5, Math.min(10.0, width));
+    width_o2 = width / 2.0;
+    width_o4 = width / 4.0;
+    width_o8 = width / 8.0;
+    width_str = String(width);
+    width_o2_str = String(width_o2);
+
+    for (i = 0; i < l; ++i) {
         entry = history[i];
 
         if (entry[1] === MEDIUM) {
@@ -1589,24 +1644,24 @@ function redraw_historical_times()
         bottom = 105 - scale * (entry[10] - min_time);
         top_ = 5 + scale * (max_time - entry[11]);
         height = bottom - top_;
-        x_center = x_offset + i * 3 + 1.5;
+        x_center = x_offset + i * x_offset_delta + x_offset_delta_half;
         y_center = (top_ + bottom) * 0.5;
 
         /* min - max line */
         obj = document.createElementNS("http://www.w3.org/2000/svg", "rect");
         obj.setAttribute("class", cls);
-        obj.setAttribute("x", String(x_center - 0.3));
-        obj.setAttribute("width", "0.6");
+        obj.setAttribute("x", String(x_center - 0.35));
+        obj.setAttribute("width", "0.7");
         obj.setAttribute("y", String(top_));
         obj.setAttribute("height", String(height));
         g.appendChild(obj);
 
         /* max */
-        x = String(x_center - 1.5);
+        x = String(x_center - width_o2);
         obj = document.createElementNS("http://www.w3.org/2000/svg", "rect");
         obj.setAttribute("class", cls);
         obj.setAttribute("x", x);
-        obj.setAttribute("width", "3.0");
+        obj.setAttribute("width", width_str);
         obj.setAttribute("y", String(top_ - 0.6));
         obj.setAttribute("height", "1.2");
         g.appendChild(obj);
@@ -1615,7 +1670,7 @@ function redraw_historical_times()
         obj = document.createElementNS("http://www.w3.org/2000/svg", "rect");
         obj.setAttribute("class", cls);
         obj.setAttribute("x", x);
-        obj.setAttribute("width", "3.0");
+        obj.setAttribute("width", width_str);
         obj.setAttribute("y", String(bottom - 0.6));
         obj.setAttribute("height", "1.2");
         g.appendChild(obj);
@@ -1624,8 +1679,8 @@ function redraw_historical_times()
         y_center = 5 + scale * (max_time - entry[7]);
         obj = document.createElementNS("http://www.w3.org/2000/svg", "rect");
         obj.setAttribute("class", cls);
-        obj.setAttribute("x", x);
-        obj.setAttribute("width", "3.0");
+        obj.setAttribute("x", String(x_center - width_o2));
+        obj.setAttribute("width", width_str);
         obj.setAttribute("y", String(y_center - 0.6));
         obj.setAttribute("height", "1.2");
         g.appendChild(obj);
@@ -1636,8 +1691,8 @@ function redraw_historical_times()
         height = Math.min(105.0 - top_, 2.0 * sd);
         obj = document.createElementNS("http://www.w3.org/2000/svg", "rect");
         obj.setAttribute("class", cls);
-        obj.setAttribute("x", String(x_center - 0.75));
-        obj.setAttribute("width", "1.5");
+        obj.setAttribute("x", String(x_center - width_o4));
+        obj.setAttribute("width", width_o2_str);
         obj.setAttribute("y", String(top_));
         obj.setAttribute("height", String(height));
         g.appendChild(obj);
@@ -1647,7 +1702,7 @@ function redraw_historical_times()
         obj.setAttribute("class", cls);
         obj.setAttribute("cx", String(x_center));
         obj.setAttribute("cy", String(5 + scale * (max_time - entry[9])));
-        obj.setAttribute("r", "1.5");
+        obj.setAttribute("r", width_o2);
         g.appendChild(obj);
     }
 
@@ -1766,7 +1821,7 @@ function restore_stats_history(data)
         }
 
         try {
-            rounds = validate_int(d[3], 5, 20);
+            rounds = validate_int(d[3], 5, 30);
             auto_hide = validate_number(d[4], 0.0, 8000.0);
             min = validate_number(d[10], 0.0, null);
             max = validate_number(d[11], min, null);
@@ -1811,18 +1866,20 @@ function truncate_stats_history(h)
 
 function validate_int(num, min, max)
 {
-    return validate_number(num, min, max) | 0;
+    return validate_number(num, min, max, 0.0) | 0;
 }
 
-function validate_number(raw_num, min, max)
+function validate_number(raw_num, min, max, tolerance)
 {
     var num = Number(raw_num);
 
-    if (max !== null && num > max) {
+    tolerance = tolerance || 0.000001;
+
+    if (max !== null && num > (max + tolerance)) {
         throw "Value " + String(raw_num) + " greater than " + String(max);
     }
 
-    if (min !== null && num < min) {
+    if (min !== null && num < (min - tolerance)) {
         throw "Value " + String(raw_num) + " less than " + String(min);
     }
 
@@ -1892,10 +1949,10 @@ function export_stats_history(evt)
         );
     }
 
-    stats_history_download_node.href = URL.createObjectURL(
+    stats_history_save_node.href = URL.createObjectURL(
         new Blob([lines.join("\r\n")], {"type": "text/tab-separated-values"})
     );
-    stats_history_download_node.download = "chimp-mem-game.tsv";
+    stats_history_save_node.save = "chimp-mem-game.tsv";
 
     return true;
 }
@@ -1920,12 +1977,12 @@ function main()
         difficulty_nodes[key] = $(key);
     }
 
-    for (i = 0; i < 3; ++i) {
+    for (i = 0; i < 5; ++i) {
         key = "rounds-" + String(i);
         rounds_nodes[key] = $(key);
     }
 
-    for (i = 0; i < 10; ++i) {
+    for (i = 0; i < 15; ++i) {
         key = "auto-hide-" + String(i);
         auto_hide_nodes[key] = $(key);
     }
@@ -1940,7 +1997,7 @@ function main()
     game_node = game;
     end_node = $("end");
     intro_node = $("intro");
-    stats_history_download_node = $("stats-history-download");
+    stats_history_save_node = $("stats-history-save");
     stats_score_history_chart_node = $("stats-history-score-chart");
     stats_score_history_min_node = $("stats-history-score-min");
     stats_score_history_mid_node = $("stats-history-score-mid");
@@ -1981,7 +2038,7 @@ function main()
     copy_text_node.addEventListener("click", select);
     $("copy-button").addEventListener("click", copy);
 
-    stats_history_download_node.addEventListener("click", export_stats_history);
+    stats_history_save_node.addEventListener("click", export_stats_history);
 
     show_intro_screen();
 }
