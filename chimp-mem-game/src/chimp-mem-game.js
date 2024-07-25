@@ -761,6 +761,7 @@ function show_end_screen()
                 stats["max"]
             ]
         );
+
         stats_history = truncate_stats_history(stats_history);
         store_stats_history();
     } else {
@@ -869,6 +870,7 @@ function redraw_historical_scores()
         min_score,
         max_score,
         scale,
+        width, x_offset_delta,
         i, l;
 
     min_score = -1;
@@ -900,9 +902,14 @@ function redraw_historical_scores()
     max_score = Math.max(1.0, Math.ceil(max_score * 1.05));
     min_score = Math.floor(min_score * 0.9);
     scale = 100.0 / (max_score - min_score);
-    x_offset = 29 + 600 - scores.length * 3;
+    l = scores.length;
+    width = (1 <= l) ? Math.max(2, Math.min(60, Math.floor(600 / l - 1))) : 60;
+    x_offset_delta = width + 1;
+    x_offset = 29 + 600 - l * x_offset_delta;
 
-    for (i = 0, l = scores.length; i < l; ++i) {
+    width = String(width);
+
+    for (i = 0; i < l; ++i) {
         score = scores[i];
 
         if (score[0] === MEDIUM) {
@@ -916,8 +923,8 @@ function redraw_historical_scores()
         height = scale * (score[1] - min_score);
         rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
         rect.setAttribute("class", cls);
-        rect.setAttribute("x", String(x_offset + i * 3 + 0.5));
-        rect.setAttribute("width", "2");
+        rect.setAttribute("x", String(x_offset + i * x_offset_delta + 0.5));
+        rect.setAttribute("width", width);
         rect.setAttribute("y", String(105 - height));
         rect.setAttribute("height", String(height));
 
@@ -955,6 +962,14 @@ function redraw_historical_times()
         max_time,
         sd,
         scale,
+        width,
+        width_o2,
+        width_o4,
+        width_o8,
+        width_str,
+        width_o2_str,
+        x_offset_delta,
+        x_offset_delta_half,
         i, l;
 
     min_time = -1;
@@ -983,9 +998,20 @@ function redraw_historical_times()
     max_time = Math.ceil(max_time * 10.5) / 10.0;
     min_time = Math.floor(min_time * 9.0) / 10.0;
     scale = 100.0 / (max_time - min_time);
-    x_offset = 29 + 600 - history.length * 3;
+    l = history.length;
+    width = (1 <= l) ? Math.max(2, Math.min(60, Math.floor(600 / l - 1))) : 60;
+    x_offset_delta = width + 1;
+    x_offset = 29 + 600 - l * x_offset_delta;
+    x_offset_delta_half = x_offset_delta / 2.0;
 
-    for (i = 0, l = history.length; i < l; ++i) {
+    width = Math.max(1.5, Math.min(10.0, width));
+    width_o2 = width / 2.0;
+    width_o4 = width / 4.0;
+    width_o8 = width / 8.0;
+    width_str = String(width);
+    width_o2_str = String(width_o2);
+
+    for (i = 0; i < l; ++i) {
         entry = history[i];
 
         if (entry[1] === MEDIUM) {
@@ -999,24 +1025,24 @@ function redraw_historical_times()
         bottom = 105 - scale * (entry[10] - min_time);
         top_ = 5 + scale * (max_time - entry[11]);
         height = bottom - top_;
-        x_center = x_offset + i * 3 + 1.5;
+        x_center = x_offset + i * x_offset_delta + x_offset_delta_half;
         y_center = (top_ + bottom) * 0.5;
 
         /* min - max line */
         obj = document.createElementNS("http://www.w3.org/2000/svg", "rect");
         obj.setAttribute("class", cls);
-        obj.setAttribute("x", String(x_center - 0.3));
-        obj.setAttribute("width", "0.6");
+        obj.setAttribute("x", String(x_center - 0.35));
+        obj.setAttribute("width", "0.7");
         obj.setAttribute("y", String(top_));
         obj.setAttribute("height", String(height));
         g.appendChild(obj);
 
         /* max */
-        x = String(x_center - 1.5);
+        x = String(x_center - width_o2);
         obj = document.createElementNS("http://www.w3.org/2000/svg", "rect");
         obj.setAttribute("class", cls);
         obj.setAttribute("x", x);
-        obj.setAttribute("width", "3.0");
+        obj.setAttribute("width", width_str);
         obj.setAttribute("y", String(top_ - 0.6));
         obj.setAttribute("height", "1.2");
         g.appendChild(obj);
@@ -1025,7 +1051,7 @@ function redraw_historical_times()
         obj = document.createElementNS("http://www.w3.org/2000/svg", "rect");
         obj.setAttribute("class", cls);
         obj.setAttribute("x", x);
-        obj.setAttribute("width", "3.0");
+        obj.setAttribute("width", width_str);
         obj.setAttribute("y", String(bottom - 0.6));
         obj.setAttribute("height", "1.2");
         g.appendChild(obj);
@@ -1034,8 +1060,8 @@ function redraw_historical_times()
         y_center = 5 + scale * (max_time - entry[7]);
         obj = document.createElementNS("http://www.w3.org/2000/svg", "rect");
         obj.setAttribute("class", cls);
-        obj.setAttribute("x", x);
-        obj.setAttribute("width", "3.0");
+        obj.setAttribute("x", String(x_center - width_o2));
+        obj.setAttribute("width", width_str);
         obj.setAttribute("y", String(y_center - 0.6));
         obj.setAttribute("height", "1.2");
         g.appendChild(obj);
@@ -1046,8 +1072,8 @@ function redraw_historical_times()
         height = Math.min(105.0 - top_, 2.0 * sd);
         obj = document.createElementNS("http://www.w3.org/2000/svg", "rect");
         obj.setAttribute("class", cls);
-        obj.setAttribute("x", String(x_center - 0.75));
-        obj.setAttribute("width", "1.5");
+        obj.setAttribute("x", String(x_center - width_o4));
+        obj.setAttribute("width", width_o2_str);
         obj.setAttribute("y", String(top_));
         obj.setAttribute("height", String(height));
         g.appendChild(obj);
@@ -1057,7 +1083,7 @@ function redraw_historical_times()
         obj.setAttribute("class", cls);
         obj.setAttribute("cx", String(x_center));
         obj.setAttribute("cy", String(5 + scale * (max_time - entry[9])));
-        obj.setAttribute("r", "1.5");
+        obj.setAttribute("r", width_o2);
         g.appendChild(obj);
     }
 
