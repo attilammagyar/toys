@@ -37,7 +37,7 @@ var CARDS = 40,
     end_node = null,
     intro_node = null,
     stats_history = null,
-    stats_history_download_node = null,
+    stats_history_save_node = null,
     stats_score_history_chart_node = null,
     stats_score_history_min_node = null,
     stats_score_history_mid_node = null,
@@ -1330,10 +1330,10 @@ function export_stats_history(evt)
         );
     }
 
-    stats_history_download_node.href = URL.createObjectURL(
+    stats_history_save_node.href = URL.createObjectURL(
         new Blob([lines.join("\r\n")], {"type": "text/tab-separated-values"})
     );
-    stats_history_download_node.download = "chimp-mem-game.tsv";
+    stats_history_save_node.save = "chimp-mem-game.tsv";
 
     return true;
 }
@@ -1378,7 +1378,7 @@ function main()
     game_node = game;
     end_node = $("end");
     intro_node = $("intro");
-    stats_history_download_node = $("stats-history-download");
+    stats_history_save_node = $("stats-history-save");
     stats_score_history_chart_node = $("stats-history-score-chart");
     stats_score_history_min_node = $("stats-history-score-min");
     stats_score_history_mid_node = $("stats-history-score-mid");
@@ -1419,7 +1419,7 @@ function main()
     copy_text_node.addEventListener("click", select);
     $("copy-button").addEventListener("click", copy);
 
-    stats_history_download_node.addEventListener("click", export_stats_history);
+    stats_history_save_node.addEventListener("click", export_stats_history);
 
     show_intro_screen();
 }
