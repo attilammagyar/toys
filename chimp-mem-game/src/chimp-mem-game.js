@@ -1202,7 +1202,7 @@ function restore_stats_history(data)
         }
 
         try {
-            rounds = validate_int(d[3], 5, 20);
+            rounds = validate_int(d[3], 5, 30);
             auto_hide = validate_number(d[4], 0.0, 8000.0);
             min = validate_number(d[10], 0.0, null);
             max = validate_number(d[11], min, null);
@@ -1358,12 +1358,12 @@ function main()
         difficulty_nodes[key] = $(key);
     }
 
-    for (i = 0; i < 3; ++i) {
+    for (i = 0; i < 5; ++i) {
         key = "rounds-" + String(i);
         rounds_nodes[key] = $(key);
     }
 
-    for (i = 0; i < 10; ++i) {
+    for (i = 0; i < 15; ++i) {
         key = "auto-hide-" + String(i);
         auto_hide_nodes[key] = $(key);
     }

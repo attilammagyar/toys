@@ -84,10 +84,11 @@ div.settings {
 
 div.options {
   display: inline-block;
-  height: 2.8vmax;
   margin: 0 0 0.2vmax 0;
   padding: 0;
   text-align: center;
+  width: 160vmin;
+  max-width: 96vw;
 }
 
 div.options div {
@@ -99,10 +100,10 @@ div.options div {
 div.options label {
   cursor: pointer;
   display: block;
-  height: 2.8vmax;
-  line-height: 2.8vmax;
-  font-size: 2.2vmax;
-  margin: 0.05vmax;
+  height: 2.3vmax;
+  line-height: 2.3vmax;
+  font-size: 2.1vmax;
+  margin: 0.03vmax;
   border: solid 0.3vmax #bbc;
   border-radius: 12vmax;
   background-color: #000;
@@ -114,7 +115,7 @@ div.rounds label {
 }
 
 div.difficulty label {
-  width: 15vmax;
+  width: 12vmax;
 }
 
 div.auto-hide label {
@@ -208,7 +209,7 @@ button {
 .screen h2,
 .screen p {
   text-align: center;
-  margin: 3vmin auto 2vmin auto;
+  margin: 2vmin auto 1vmin auto;
   width: 80vw;
 }
 
@@ -221,8 +222,8 @@ button {
 }
 
 .screen p {
-  font-size: 2.2vmax;
-  line-height: 3.6vmax;
+  font-size: 2.0vmax;
+  line-height: 3.0vmax;
 }
 
 .screen p.small {
