@@ -653,7 +653,7 @@
             handle_error;
 
         handle_error = function () {
-            show_error("Error reading file: " + quote_html(String(reader.error || "unknown error")));
+            show_error("Error reading file: " + String(reader.error || "unknown error"));
         };
 
         reader.onerror = handle_error;
@@ -665,7 +665,7 @@
             try {
                 callback(String(file.name), reader.result);
             } catch (error) {
-                show_error(quote_html(error));
+                show_error(String(error));
 
                 return;
             }
@@ -978,7 +978,7 @@
 
     function show_error(error_msg)
     {
-        error_dom_node.innerHTML += "<p>" + error_msg + "</p>";
+        error_dom_node.innerHTML += "<p>" + quote_html(error_msg) + "</p>";
     }
 
     function quote_html(text)
