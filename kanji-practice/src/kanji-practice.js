@@ -795,7 +795,7 @@
     {
         var i, l, t, ct;
 
-        if (this.ongoing_touch === null) {
+        if (ongoing_touch === null) {
             return stop_event(evt);
         }
 
