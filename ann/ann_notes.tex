@@ -2696,33 +2696,34 @@
 
     \section{Prerequisites and notation}
 
-      Here's a quick recap of the calculus that is necessary for neural
-      networks. For more precise definitions and the proofs of the theorems that
-      are stated here without one, refer to any calculus textbook.
+      Here's a quick recap of the calculus and linear algebra that is necessary
+      for neural networks. For more precise definitions and the proofs of the
+      theorems that are stated here without one, refer to any calculus and
+      linear algebra textbook.
 
-      \subsection{The set of natural numbers ($\mathbb{N}, \mathbb{N}^+$)}
+      \subsection{The set of natural numbers: $\mathbb{N}, \mathbb{N}^+$}
         $\mathbb{N} = \{ 0, 1, 2, \ldots \}$ and
         $\mathbb{N}^+ = \{ 1, 2, \ldots \}$
 
-      \subsection{The set of integer numbers ($\mathbb{Z}$)}
+      \subsection{The set of integer numbers: $\mathbb{Z}$}
         $\mathbb{Z} = \{ \ldots, -2, -1, 0, 1, 2, \ldots \}$
 
-      \subsection{The set of real numbers ($\mathbb{R}$)}
+      \subsection{The set of real numbers: $\mathbb{R}$}
 
         Denoted by $\mathbb{R}$. For a precise definition, refer to any
         calculus textbook. The gist of it is that $\mathbb{R}$ is the number
         line, and it doesn't have any gaps and discontinuities.
 
-      \subsection{Element in a set ($x \in \mathbb{R}$)}
+      \subsection{Element in a set: $x \in \mathbb{R}$}
 
         $x \in \mathbb{R}$ means $x$ is a real number.
 
-      \subsection{Subset ($A \subset B$)}
+      \subsection{Subset: $A \subset B$}
 
         If $A$ and $B$ are sets, then $A$ is a subset of $B$ if and only if
         for all $x \in A$ it holds that $x \in B$. Notation: $A \subset B$.
 
-      \subsection{Intersection ($A \cap B$)}
+      \subsection{Intersection: $A \cap B$}
 
         If $A$ and $B$ are sets, then the intersection of $A$ and $B$ is a set
         which contains all elements of $A$ that are also an element of $B$.
@@ -2730,7 +2731,7 @@
 
         $$A \cap B = \{ x : x \in A \text{ and } x \in B \}$$
 
-      \subsection{Interval ($[a, b], (a, b), [a, b), (a, b]$)}
+      \subsection{Interval: $[a, b], (a, b), [a, b), (a, b]$}
 
         A subset of the $\mathbb{R}$ that contains all real numbers lying
         between its two endpoints. For $a, b \in \mathbb{R}, a \leq b$:
@@ -2776,7 +2777,35 @@
                 \end{align*}
         \end{itemize}
 
-      \subsection{Vector ($\mathbf{x} \in \mathbb{R}^n$)}
+      \subsection{Cartesian product of sets: $A \times B$, $A^n$}
+
+        If $A$ and $B$ are sets, then $A \times B$ is a set which contains all
+        possible pairings of an element from $A$ and another one from $B$ (in
+        that order):
+
+        $$A \times B = \{(a, b) : a \in A \text{ and } b \in B\}$$
+
+        This can be extended to any number of sets, to produce $n$-tuples of any
+        length. For a given
+        $n \in \mathbb{N},\ 1 < n$, let $A_1, A_2, \dots, A_n$ be sets. Then:
+
+        \begin{align*}
+          A_1 \times A_2 \times \dots \times A_n
+            = \{
+                (a_1, a_2, \dots, a_n)
+                : a_1 \in A_1
+                  \text{ and } a_2 \in A_2
+                  \text{ and } \dots
+                  \text{ and } a_n \in A_n
+              \}
+        \end{align*}
+
+        Specifically, if $A = A_1 = A_2 = \dots = A_n$ in the above example,
+        then $A^n$ is a shorthand notation for
+        $A_1 \times A_2 \times \dots \times A_n$, ie. the set of all $n$-tuples
+        that can be constructed from the elements of $A$.
+
+      \subsection{Vector: $\mathbf{x} \in \mathbb{R}^n$}
 
         For $n \in \mathbb{N}^+$, $\mathbf{a} \in \mathbb{R}^n$ is an
         $n$-dimensional vector that contains the $a_i \in \mathbb{R}$ numbers
@@ -2792,34 +2821,72 @@
               \end{bmatrix}
         \end{align*}
 
-        Note: $\mathbf{0} \in \mathbb{R}^n$ denotes the vector in which all
-        components are zero (called a "null vector" or a "zero vector"):
+        Notes:
 
-        \begin{align*}
-          \mathbf{0} = \left[ 0 \right]_{i=1}^n
-            = \begin{bmatrix}
-                0 \\
-                0 \\
-                \vdots \\
-                0
-              \end{bmatrix}
-        \end{align*}
+        \begin{itemize}
+          \item A vector can be thought of as a point in an $n$-dimensional
+                space.
 
-      \subsection{Function ($f : \mathbb{R} \rightarrow \mathbb{R}$)}
+          \item An $n$-tuple of real numbers and an $n$-dimensional real vector
+                are basically the same thing; $n$-tuples focus more on set
+                theory, while vectors put more emphasis on the geometrical,
+                linear algebra interpretation.
 
-        $f : \mathbb{R} \rightarrow \mathbb{R}$ --- $f$ is a function that
-        maps some or all real numbers to real numbers.
+          \item $\mathbf{0} \in \mathbb{R}^n$ denotes the vector in which all
+                components are zero (called a "null vector" or a "zero vector"):
 
-        $\mathcal{D}_f$ denotes the domain of the $f$ function, ie. the set
-        which contains all numbers for which $f$ is defined and nothing else.
+                \begin{align*}
+                  \mathbf{0} = \left[ 0 \right]_{i=1}^n
+                    = \begin{bmatrix}
+                        0 \\
+                        0 \\
+                        \vdots \\
+                        0
+                      \end{bmatrix}
+                \end{align*}
+        \end{itemize}
 
-        $\mathcal{R}_f$ denotes the image of the function, ie. the set which
-        contains all numbers that are mapped to some $x \in \mathcal{D}_f$ and
-        nothing else. Formally:
+      \subsection{Function: $f : \mathbb{R} \rightarrow \mathbb{R}$}
 
-        $$\mathcal{R}_f = \left\{ f(x) : x \in \mathcal{D}_f\right\}$$
+        Let $f \subset \mathbb{R} \times \mathbb{R}$. This $f$ is called a
+        function if and only if for all $x \in \mathbb{R}$, if there exists
+        $y, z \in \mathbb{R}$ such that $(x, y) \in f$ and $(x, z) \in f$, then
+        $y = z$. In other words, a function associates either no value to a
+        given real number, or exactly one, but never two or more.
 
-      \subsection{Identity function (id)}
+        Notation: $f : \mathbb{R} \rightarrow \mathbb{R}$ --- $f$ is a function
+        that maps some or all real numbers to real numbers.
+
+        \subsubsection{Value of a function at a point: $f(x)$}
+
+          If for a given $x \in \mathbb{R}$, a $y \in \mathbb{R}$ exists such
+          that $(x, y) \in f$, then $y$ is called the value of $f$ at $x$.
+
+          Notation: $f(x) = y$.
+
+        \subsubsection{Domain of a function: $\mathcal{D}_f$}
+
+          $\mathcal{D}_f$ denotes the domain of the $f$ function, ie. the set
+          which contains all numbers for which $f$ is defined and nothing else:
+
+          \begin{align*}
+            \mathcal{D}_f
+              = \{
+                  x
+                  : x \in \mathbb{R} \text{ and there exists } y \in \mathbb{R}
+                    \text{ so that } (x, y) \in f
+                \}
+          \end{align*}
+
+        \subsubsection{Image of a function: $\mathcal{R}_f$}
+
+          $\mathcal{R}_f$ denotes the image of the function, ie. the set which
+          contains all numbers that are mapped to some $x \in \mathcal{D}_f$ and
+          nothing else. Formally:
+
+          $$\mathcal{R}_f = \left\{ f(x) : x \in \mathcal{D}_f\right\}$$
+
+      \subsection{Identity function: id}
 
         $\text{id} : \mathbb{R} \rightarrow \mathbb{R}$ --- $\text{id}$ is a
         function that maps real numbers to themselves:
@@ -2827,17 +2894,53 @@
         $$\text{id}(x) = x$$
 
       \subsection{%
-        Multivariable, real-valued function
-        ($f : \mathbb{R}^n \rightarrow \mathbb{R}$)
+        Multivariable, real-valued function:
+        $f : \mathbb{R}^n \rightarrow \mathbb{R}$
       }
 
-        For $n \in \mathbb{N}^+$ let $f : \mathbb{R}^n \rightarrow \mathbb{R}$
-        be a function which maps $n$ real numbers to a single real number.
+        For $n \in \mathbb{N}^+$, let $f \subset \mathbb{R}^{n+1}$. This $f$
+        is called a function if and only if for all
+        $x_1, x_2, \dots, x_n \in \mathbb{R}$, if there exists
+        $y, z \in \mathbb{R}$ such that $(x_1, x_2, \dots, x_n, y) \in f$ and
+        $(x_1, x_2, \dots, x_n, z) \in f$, then
+        $y = z$.
 
-        For a given $\mathbf{x} \in \mathbb{R}^n$ vector, we will use the
-        following two notations interchangeably:
+        Notation: $f : \mathbb{R}^n \rightarrow \mathbb{R}$ --- $f$ is a
+        function that maps $n$-tuples of real numbers to a single real number.
 
-        $$f(\mathbf{x}) = f(x_1, x_2, \ldots, x_n)$$
+        \subsubsection{%
+          Value of a multivariable, real-valued function at a point:
+          $f(\mathbf{x})$, $f(x_1, x_2, \ldots, x_n)$
+        }
+
+          If for a given $\mathbf{x} \in \mathbb{R}^n$, a $y \in \mathbb{R}$
+          exists such that $(x_1, x_2, \dots, x_n, y) \in f$, then $y$ is called
+          the value of $f$ at $\mathbf{x}$.
+
+          Notation: $f(\mathbf{x}) = f(x_1, x_2, \ldots, x_n) = y$.
+
+        \subsubsection{%
+          Domain of a multivariable, real-valued function: $\mathcal{D}_f$
+        }
+
+          \begin{align*}
+            \mathcal{D}_f
+              = \{
+                  \mathbf{x}
+                  : \mathbf{x} \in \mathbb{R}^n
+                    \text{ and there exists } y \in \mathbb{R}
+                    \text{ so that } (x_1, x_2, \dots, x_n, y) \in f
+                \}
+          \end{align*}
+
+        \subsubsection{%
+          Image of a multivariable, real-valued function: $\mathcal{R}_f$
+        }
+
+          \begin{align*}
+            \mathcal{R}_f
+              = \left\{ f(\mathbf{x}) : \mathbf{x} \in \mathcal{D}_f\right\}
+          \end{align*}
 
       \subsection{Commutativity}
 
@@ -2845,7 +2948,7 @@
 
         $$x + y = y + x$$
 
-      \subsection{Summation ($\sum_{i=1}^n a_i$)}
+      \subsection{Summation: $\sum_{i=1}^n a_i$}
 
         For $n \in \mathbb{N}^+$ and $\mathbf{a} \in \mathbb{R}^n$:
 
@@ -2855,14 +2958,14 @@
 
         $$\sum_{i=1}^1 a_i = a_1$$
 
-      \subsection{Distributivity ($c \cdot \sum_{i=1}^n a_i$)}
+      \subsection{Distributivity: $c \cdot \sum_{i=1}^n a_i$}
 
         For $n \in \mathbb{N}^+$ and $\mathbf{a} \in \mathbb{R}^n$ and
         $c \in \mathbb{R}$:
 
         $$c \cdot \sum_{i=1}^n a_i = \sum_{i=1}^n c \cdot a_i$$
 
-      \subsection{Product of many numbers ($\prod_{i=1}^n a_i$)}
+      \subsection{Product of many numbers: $\prod_{i=1}^n a_i$}
 
         For $n \in \mathbb{N}^+$ and $\mathbf{a} \in \mathbb{R}^n$:
 
@@ -2873,8 +2976,8 @@
         $$\prod_{i=1}^1 a_i = a_1$$
 
       \subsection{%
-        Sum and scaling of vectors
-        ($\alpha \cdot \mathbf{a} + \beta \cdot \mathbf{b}$)
+        Sum and scaling of vectors:
+        $\alpha \cdot \mathbf{a} + \beta \cdot \mathbf{b}$
       }
 
         For $n \in \mathbb{N}^+$ and $\mathbf{a}, \mathbf{b} \in \mathbb{R}^n$,
@@ -2891,14 +2994,14 @@
               \end{bmatrix}
         \end{align*}
 
-      \subsection{Dot product of two vectors ($\mathbf{a} \cdot \mathbf{b}$)}
+      \subsection{Dot product of two vectors: $\mathbf{a} \cdot \mathbf{b}$}
 
         For $n \in \mathbb{N}^+$ and $\mathbf{a}, \mathbf{b} \in \mathbb{R}^n$:
 
         $$\mathbf{a} \cdot \mathbf{b} = \sum_{i=1}^n a_i \cdot b_i$$
 
       \subsection{%
-        Hadamard product of two vectors ($\mathbf{a} \odot \mathbf{b}$)
+        Hadamard product of two vectors: $\mathbf{a} \odot \mathbf{b}$
       }
 
         For $n \in \mathbb{N}^+$ and $\mathbf{a}, \mathbf{b} \in \mathbb{R}^n$:
@@ -2914,7 +3017,7 @@
               \end{bmatrix}
         \end{align*}
 
-      \subsection{Matrix ($\mathbf{W} \in \mathbb{R}^{n \times m}$)}
+      \subsection{Matrix: $\mathbf{W} \in \mathbb{R}^{n \times m}$}
 
         For $n, m \in \mathbb{N}^+$ and
         $i, j \in \mathbb{N}^+, i \leq n, j \leq m$,
@@ -2968,7 +3071,7 @@
                 \end{align*}
         \end{itemize}
 
-      \subsection{Transpose of a matrix ($\mathbf{W}^\mathrm{T}$)}
+      \subsection{Transpose of a matrix: $\mathbf{W}^\mathrm{T}$}
 
         Let $\mathbf{W} \in \mathbb{R}^{n \times m}$ be a matrix for
         $n, m \in \mathbb{N}^+$. The transpose of $\mathbf{W}$ is the
@@ -2986,7 +3089,7 @@
         \end{align*}
 
       \subsection{%
-        Product of a matrix and a vector ($\mathbf{W} \cdot \mathbf{a}$)
+        Product of a matrix and a vector: $\mathbf{W} \cdot \mathbf{a}$
       }
 
         For $n, m \in \mathbb{N}^+$ and
@@ -3009,9 +3112,14 @@
               \end{bmatrix}
         \end{align*}
 
+        Note: multiplying a matrix and a vector can have geometrical
+        interpretations, e.g. rotations, reflections, and other linear
+        transformations of a point in a space are often represented as a
+        matrix-vector multiplication.
+
       \subsection{%
-        Sum and scaling of matrices
-        ($\alpha \cdot \mathbf{A} + \beta \cdot \mathbf{B}$)
+        Sum and scaling of matrices:
+        $\alpha \cdot \mathbf{A} + \beta \cdot \mathbf{B}$
       }
 
         Let $\mathbf{A}, \mathbf{B} \in \mathbb{R}^{n \times m}$ be two matrices
@@ -3037,7 +3145,7 @@
               \end{bmatrix}
         \end{align*}
 
-      \subsection{Matrix multiplication ($\mathbf{AB}$)}
+      \subsection{Matrix multiplication: $\mathbf{AB}$}
 
         For $n, m, p \in \mathbb{N}^+$, let
         $\mathbf{A} \in \mathbb{R}^{n \times m}$ and
@@ -3083,7 +3191,7 @@
         \end{align*}
 
       \subsection{%
-        Hadamard product of two matrices ($\mathbf{A} \odot \mathbf{B}$)
+        Hadamard product of two matrices: $\mathbf{A} \odot \mathbf{B}$
       }
 
         For $n, m \in \mathbb{N}^+$, let
@@ -3112,12 +3220,12 @@
               \end{bmatrix}
         \end{align*}
 
-      \subsection{Square of a number ($x^2$)}
+      \subsection{Square of a number: $x^2$}
 
         For $x \in \mathbb{R}$, $x^2 = x \cdot x$ is called "$x$ squared", ie.
         the area of a square that has a side length of $x$.
 
-      \subsection{Square of a function ($f^2(x)$)}
+      \subsection{Square of a function: $f^2(x)$}
 
         Let $f \in \mathbb{R} \rightarrow \mathbb{R}$ be a function. Then
         $f^2 \in \mathbb{R} \rightarrow \mathbb{R}$ is also function, and for
@@ -3125,14 +3233,16 @@
 
         $$f^2(x) = \left( f(x) \right)^2$$
 
-      \subsection{Square root of a number ($\sqrt{x}$)}
+      \subsection{Square root of a number: $\sqrt{x}$, $x^\frac{1}{2}$}
 
         For $x \in \mathbb{R}$, $\sqrt{x}$ is called the "square root of $x$",
-        ie.  the numbers which give $x$ when they are multiplied by
+        ie. the numbers which give $x$ when they are multiplied by
         themselves. In this document, we only care about the cases where
         $x \geq 0$, and we only consider the non-negative square root.
 
-      \subsection{Absolute value ($|x|$)}
+        Note: $\sqrt{x}$ can also be written as $x^\frac{1}{2}$.
+
+      \subsection{Absolute value: $|x|$}
 
         For $x \in \mathbb{R}$:
 
@@ -3143,7 +3253,7 @@
           \end{cases}
         \end{equation*}
 
-      \subsection{Norm of a vector ($\| \mathbf{x} \|$)}
+      \subsection{Norm of a vector: $\| \mathbf{x} \|$}
 
         For $n \in \mathbb{N}^+$, if
         $\delta \in \mathbb{R}^n \rightarrow \mathbb{R}$ is a
@@ -3172,13 +3282,13 @@
         given $\delta$ norm, $\delta(\mathbf{x} - \mathbf{y})$ can be called
         the "distance" of $\mathbf{x}$ and $\mathbf{y}$.
 
-        \subsubsection{$L_1$ norm ($\| \mathbf{x} \|_1$)}
+        \subsubsection{$L_1$ norm: $\| \mathbf{x} \|_1$}
 
           For $n \in \mathbb{N}^+$ and $\mathbf{x} \in \mathbb{R}^n$:
 
           $$\| \mathbf{x} \|_1 = \sum_{i=1}^n \left\lvert x_i \right\rvert$$
 
-        \subsubsection{$L_2$ norm, Euclidean norm ($\| \mathbf{x} \|_2$)}
+        \subsubsection{$L_2$ norm, Euclidean norm: $\| \mathbf{x} \|_2$}
 
           For $n \in \mathbb{N}^+$ and $\mathbf{x} \in \mathbb{R}^n$:
 
@@ -3232,7 +3342,7 @@
 
           Note: a global maximum is also a local maximum.
 
-      \subsection{$k$-th power ($x^k$)}
+      \subsection{Integer power of a number: $x^k$}
 
         For $x \in \mathbb{R}$ and $k \in \mathbb{N}^+$ the $k$-th power of $x$:
 
@@ -3244,7 +3354,7 @@
 
         By convention, $x^0 = 1$.
 
-      \subsection{Factorial ($n!$)}
+      \subsection{Factorial: $n!$}
 
         For $n \in \mathbb{N}^+$, the factorial of $n$ is the product of
         the natural numbers between $1$ and $n$:
@@ -3254,7 +3364,7 @@
         By convention, $0! = 1$.
 
       \subsection{%
-        Limit of a single variable real valued function ($\lim_{x \to c} f(x)$)
+        Limit of a single variable real valued function: $\lim_{x \to c} f(x)$
       }
 
         Let $f : \mathbb{R} \rightarrow \mathbb{R}$ be a function, and
@@ -3271,7 +3381,7 @@
 
         $$\lim_{x \to c} f(x) = L$$
 
-      \subsection{Limit of a real number sequence ($\lim_{n \to \infty} a_i$)}
+      \subsection{Limit of a real number sequence: $\lim_{n \to \infty} a_i$}
 
         The $a : \mathbb{N}^+ \rightarrow \mathbb{R}$ function defines a
         sequence of real numbers. Instead of $a(1), a(2), a(3), \ldots$, a
@@ -3288,7 +3398,7 @@
 
         $$\lim_{n \to \infty} a_i = L$$
 
-      \subsection{Sum of infinite series ($\sum_{i=1}^\infty a_i$)}
+      \subsection{Sum of infinite series: $\sum_{i=1}^\infty a_i$}
 
         Let $a : \mathbb{N}^+ \rightarrow \mathbb{R}$ be a sequence for which
         $\mathcal{D}_a = \mathbb{N}^+$. The following summation is called an
@@ -3320,7 +3430,7 @@
         partial sum for a sufficiently large $n \in \mathbb{N}^+$ index which
         brings the error below the desired threshold.
 
-      \subsection{Euler's constant ($e$)}
+      \subsection{Euler's constant: $e$}
 
         $$
           e = \sum_{i=0}^\infty \frac{1}{n!}
@@ -3332,7 +3442,7 @@
             \approx 2.71828
         $$
 
-      \subsection{Exponential function ($e^x$)}
+      \subsection{Exponential function: $e^x$}
 
         For $x \in \mathbb{R}$:
 
@@ -3345,14 +3455,14 @@
           \left( e^x \right)^y & = e^{x \cdot y}
         \end{align*}
 
-      \subsection{Natural logarithm ($\ln(x)$)}
+      \subsection{Natural logarithm: $\ln(x)$}
 
         For $0 < x \in \mathbb{R}$, $\ln(x)$ is the natural logarithm of $x$,
         which is the inverse of the exponential function:
 
         $$e^{\ln(x)} = x$$
 
-      \subsection{Real power $\alpha^x$}
+      \subsection{Real power of a number: $\alpha^x$}
 
         For $x \in \mathbb{R}$ and $0 < \alpha \in \mathbb{R}$:
 
@@ -3371,8 +3481,9 @@
       \subsection{Differentiation}
 
         \subsubsection{%
-          Differentiation of single variable, real-valued functions
-          ($f'(a)$, $\frac{\partial}{\partial x}f(a)$)
+          Differentiation of single variable, real-valued functions:
+          $f'(a)$, $\frac{d}{dx}f(a)$, $\frac{df}{dx}(a)$,
+          $f'$, $\frac{d}{dx}f$, $\frac{df}{dx}$
         }
 
           Let $f : \mathbb{R} \rightarrow \mathbb{R}$ be a function and
@@ -3459,7 +3570,7 @@
               If for all $x \in \mathcal{D}_f$ it holds that $f(x) = \alpha$,
               then $f'(x) = 0$.
 
-            \subparagraph{Derivatives of powers ($\left( x^z \right)'$)}
+            \subparagraph{Derivatives of powers: $\left( x^z \right)'$}
 
               For all $x \in \mathbb{R}$:
 
@@ -3484,7 +3595,7 @@
               $$\ln(x)' = \frac{1}{x}$$
 
             \subparagraph{%
-              Linearity ($(\alpha \cdot f(x) \pm \beta \cdot g(x))'$)
+              Linearity: $(\alpha \cdot f(x) \pm \beta \cdot g(x))'$
             }
 
               For all $x \in \mathcal{D}_f \cap \mathcal{D}_g$:
@@ -3494,13 +3605,13 @@
                   = \alpha \cdot f'(x) \pm \beta \cdot g'(x)
               $$
 
-            \subparagraph{Product rule ($(f(x) \cdot g(x))'$)}
+            \subparagraph{Product rule: $(f(x) \cdot g(x))'$}
 
               For all $x \in \mathcal{D}_f \cap \mathcal{D}_g$:
 
               $$(f(x) \cdot g(x))' = f'(x) \cdot g(x) + f(x) \cdot g'(x)$$
 
-            \subparagraph{Quotient rule ($\left( \frac{f(x)}{g(x)} \right)'$)}
+            \subparagraph{Quotient rule: $\left( \frac{f(x)}{g(x)} \right)'$}
 
               For all $x \in \mathcal{D}_f \cap \mathcal{D}_g$ where
               $g(x) \neq 0$:
@@ -3510,7 +3621,7 @@
                   = \frac{f'(x) \cdot g(x) - f(x) \cdot g'(x)}{g(x)^2}
               $$
 
-            \subparagraph{Chain rule ($(f(g(x)))'$)}
+            \subparagraph{Chain rule: $(f(g(x)))'$}
 
               For all $x \in \mathcal{D}_g$ where $g(x) \in \mathcal{D}_f$:
 
@@ -3605,8 +3716,11 @@
             \end{align*}
 
         \subsubsection{%
-          Partial derivatives of multivariable, real-valued functions
-          ($\frac{\partial}{\partial x_i} f(\mathbf{a})$)
+          Partial derivatives of multivariable, real-valued functions:
+          $\frac{\partial}{\partial x_i} f(\mathbf{a})$,
+          $\frac{\partial f}{\partial x_i} (\mathbf{a})$,
+          $\frac{\partial}{\partial x_i} f$,
+          $\frac{\partial f}{\partial x_i}$
         }
 
           For $n \in \mathbb{N}^+$, let $f : \mathbb{R}^n \rightarrow \mathbb{R}$
@@ -3649,7 +3763,7 @@
           parameter of $f$, then
           $\frac{\partial}{\partial x_i} f(\mathbf{a}) = g'(a_i)$.
 
-          \paragraph{Gradient vector ($\nabla f(\mathbf{a})$)}
+          \paragraph{Gradient vector: $\nabla f(\mathbf{a})$}
 
             For a given $\mathbf{a} \in \mathbb{R}^n$ vector, if all the
             partial derivatives $\frac{\partial}{\partial x_i}$ (for
