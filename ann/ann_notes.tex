@@ -2846,34 +2846,37 @@
                 \end{align*}
         \end{itemize}
 
-      \subsection{Function: $f : \mathbb{R} \rightarrow \mathbb{R}$}
+      \subsection{Function: $f : X \rightarrow Y$}
 
-        Let $f \subset \mathbb{R} \times \mathbb{R}$. This $f$ is called a
-        function if and only if for all $x \in \mathbb{R}$, if there exists
-        $y, z \in \mathbb{R}$ such that $(x, y) \in f$ and $(x, z) \in f$, then
-        $y = z$. In other words, a function associates either no value to a
-        given real number, or exactly one, but never two or more.
+        Let $X, Y$ be sets, and $f \subset X \times Y$. This $f$ is called a
+        function if and only if for all $x \in X$, if there exists
+        $y, z \in Y$ such that $(x, y) \in f$ and $(x, z) \in f$, then
+        $y = z$. In other words, a function associates either no element from Y
+        to an element of X, or exactly one, but never two or more.
 
-        Notation: $f : \mathbb{R} \rightarrow \mathbb{R}$ --- $f$ is a function
-        that maps some or all real numbers to real numbers.
+        Notation: $f : X \rightarrow Y$ --- $f$ is a function that maps some or
+        all elements of $X$ to $Y$.
+
+        Note: a function which maps elements to natural numbers is called a
+        sequence, e.g. $f : \mathbb{N}^+ \rightarrow \mathbb{R}$.
 
         \subsubsection{Value of a function at a point: $f(x)$}
 
-          If for a given $x \in \mathbb{R}$, a $y \in \mathbb{R}$ exists such
-          that $(x, y) \in f$, then $y$ is called the value of $f$ at $x$.
+          If for a given $x \in X$, a $y \in Y$ exists such that $(x, y) \in f$,
+          then $y$ is called the value of $f$ at $x$.
 
           Notation: $f(x) = y$.
 
         \subsubsection{Domain of a function: $\mathcal{D}_f$}
 
           $\mathcal{D}_f$ denotes the domain of the $f$ function, ie. the set
-          which contains all numbers for which $f$ is defined and nothing else:
+          which contains all elements for which $f$ is defined and nothing else:
 
           \begin{align*}
             \mathcal{D}_f
               = \{
                   x
-                  : x \in \mathbb{R} \text{ and there exists } y \in \mathbb{R}
+                  : x \in X \text{ and there exists } y \in Y
                     \text{ so that } (x, y) \in f
                 \}
           \end{align*}
@@ -2881,10 +2884,30 @@
         \subsubsection{Image of a function: $\mathcal{R}_f$}
 
           $\mathcal{R}_f$ denotes the image of the function, ie. the set which
-          contains all numbers that are mapped to some $x \in \mathcal{D}_f$ and
-          nothing else. Formally:
+          contains all elements that are mapped to some $x \in \mathcal{D}_f$
+          and nothing else. Formally:
 
           $$\mathcal{R}_f = \left\{ f(x) : x \in \mathcal{D}_f\right\}$$
+
+        \subsubsection{%
+          Multivariable, real-valued function:
+          $f : \mathbb{R}^n \rightarrow \mathbb{R}$
+        }
+
+          For $n \in \mathbb{N}^+$, let $f : \mathbb{R}^n \rightarrow \mathbb{R}$
+          be a function. Such a function maps $n$-tuples of real numbers to a
+          single real number.
+
+          \subsubsection{%
+            Value of a multivariable, real-valued function at a point:
+            $f(\mathbf{x})$, $f(x_1, x_2, \ldots, x_n)$
+          }
+
+            If for a given $\mathbf{x} \in \mathbb{R}^n$, a $y \in \mathbb{R}$
+            exists such that $(x_1, x_2, \dots, x_n, y) \in f$, then $y$ is
+            called the value of $f$ at $\mathbf{x}$.
+
+            Notation: $f(\mathbf{x}) = f(x_1, x_2, \ldots, x_n) = y$.
 
       \subsection{Identity function: id}
 
@@ -2892,55 +2915,6 @@
         function that maps real numbers to themselves:
 
         $$\text{id}(x) = x$$
-
-      \subsection{%
-        Multivariable, real-valued function:
-        $f : \mathbb{R}^n \rightarrow \mathbb{R}$
-      }
-
-        For $n \in \mathbb{N}^+$, let $f \subset \mathbb{R}^{n+1}$. This $f$
-        is called a function if and only if for all
-        $x_1, x_2, \dots, x_n \in \mathbb{R}$, if there exists
-        $y, z \in \mathbb{R}$ such that $(x_1, x_2, \dots, x_n, y) \in f$ and
-        $(x_1, x_2, \dots, x_n, z) \in f$, then
-        $y = z$.
-
-        Notation: $f : \mathbb{R}^n \rightarrow \mathbb{R}$ --- $f$ is a
-        function that maps $n$-tuples of real numbers to a single real number.
-
-        \subsubsection{%
-          Value of a multivariable, real-valued function at a point:
-          $f(\mathbf{x})$, $f(x_1, x_2, \ldots, x_n)$
-        }
-
-          If for a given $\mathbf{x} \in \mathbb{R}^n$, a $y \in \mathbb{R}$
-          exists such that $(x_1, x_2, \dots, x_n, y) \in f$, then $y$ is called
-          the value of $f$ at $\mathbf{x}$.
-
-          Notation: $f(\mathbf{x}) = f(x_1, x_2, \ldots, x_n) = y$.
-
-        \subsubsection{%
-          Domain of a multivariable, real-valued function: $\mathcal{D}_f$
-        }
-
-          \begin{align*}
-            \mathcal{D}_f
-              = \{
-                  \mathbf{x}
-                  : \mathbf{x} \in \mathbb{R}^n
-                    \text{ and there exists } y \in \mathbb{R}
-                    \text{ so that } (x_1, x_2, \dots, x_n, y) \in f
-                \}
-          \end{align*}
-
-        \subsubsection{%
-          Image of a multivariable, real-valued function: $\mathcal{R}_f$
-        }
-
-          \begin{align*}
-            \mathcal{R}_f
-              = \left\{ f(\mathbf{x}) : \mathbf{x} \in \mathcal{D}_f\right\}
-          \end{align*}
 
       \subsection{Commutativity}
 
@@ -3384,8 +3358,8 @@
       \subsection{Limit of a real number sequence: $\lim_{n \to \infty} a_i$}
 
         The $a : \mathbb{N}^+ \rightarrow \mathbb{R}$ function defines a
-        sequence of real numbers. Instead of $a(1), a(2), a(3), \ldots$, a
-        sequence is usually written as $(a_1, a_2, a_3, \ldots)$.
+        sequence of real numbers. Instead of $a(1),\ a(2),\ a(3),\ \ldots$, a
+        sequence is usually written as $(a_1,\ a_2,\ a_3,\ \ldots)$.
 
         If $\mathcal{D}_a = \mathbb{N}^+$, and an $L \in \mathbb{R}$ exists
         such that for any $0 < \varepsilon \in \mathbb{R}$, there exists
@@ -3726,7 +3700,7 @@
           For $n \in \mathbb{N}^+$, let $f : \mathbb{R}^n \rightarrow \mathbb{R}$
           be a function which maps vectors from $R^n$ to real numbers.
 
-          For $n > i \in \mathbb{N}^+$, the partial derivative of $f$ in the
+          For $n \ge i \in \mathbb{N}^+$, the partial derivative of $f$ in the
           direction $x_i$ at $\mathbf{a}$ is the following limit:
 
           \begin{equation} \label{eqpartdev}
@@ -3758,7 +3732,7 @@
           calculated the exact same way, with the exact same rules. In other
           words, if we define the $g : \mathbb{R} \rightarrow \mathbb{R}$
           single variable function for a given $\mathbf{a} \in \mathbb{R}^n$ and
-          $n > i \in \mathbb{N}^+$ as
+          $n \ge i \in \mathbb{N}^+$ as
           $g(x) = f(a_1, a_2, \ldots, x, \ldots, a_n)$ with $x$ being the $i$-th
           parameter of $f$, then
           $\frac{\partial}{\partial x_i} f(\mathbf{a}) = g'(a_i)$.
