@@ -887,25 +887,29 @@
 
   \section{Learning, gradient descent, backpropagation}
 
-    All the weights and biases are initialized with random values. The
-    activation of the output layer is then calculated for a number of example
-    inputs for which the desired output is already known (supervised learning),
-    and the weights and biases are adjusted so that the average difference
-    between the calculated and the desired outputs is minimized.
+    Before the training of a neural network begins, all its weights and biases
+    are initialized with random values. The activation of the output layer is
+    then calculated for a number of example inputs for which the desired output
+    is already known, and the weights and biases are adjusted so that the
+    average difference between the calculated and the desired outputs is
+    minimized. (This is called "supervised learning".)
 
     The idea is to define an error function in terms of the weights and biases
     in the network, treating the input activations like constants. If all the
     activation functions are differentiable, then this error function is also
     differentiable, so its gradient for a given set of weigths and biases will
-    give the direction and the rate of the fastest increase. Since the goal is
+    tell the direction and the rate of the fastest increase. Since the goal is
     to minimize the error, we will multiply the gradient by $-1$ to get the
     direction of the fastest decrease, and use that to adjust the weights and
     biases for each example input. As more and more adjustments are made for
-    more and more examples, the error function should converge towards a
+    more and more examples, the error function will hopefully converge towards a
     (local) minimum and thus, its gradient should converge towards $0$. (Hence
-    the name "gradient descent".) Making the step size at each iteration
-    proportional to the length of the gradient vector can help avoiding
-    overshooting.
+    the name "gradient descent".)
+
+    In some specific cases (e.g. convex functions), guaranteed convergence can
+    be proven and its speed can be calculated, but in practice, the error
+    function rarely has such nice properties, so experimentation tends to be
+    more useful than attempting to produce formal theoretical proofs.
 
     (From now on, the differentiability of $f_j^{(k)}$ is assumed for all
     $j, k \in \mathbb{N}^+, k \leq L, j \leq n_k$.)
@@ -1559,9 +1563,9 @@
         w_{i_{L-k},i_{L-k}+1}^{(k)}
       $ products can be cached and reused for subsequent layers if we evaluate
       the activations across the network forward (from the input layer towards
-      the output layer), and then calculate the gradient bacwards (from the
+      the output layer), and then calculate the gradient backwards (from the
       output layer towards the input layer). This backwards propagation of the
-      error is where the name of this learning algorithm comes from.
+      error is the origin of the name of this learning algorithm.
 
       In theory, we should evaluate all the examples and use the average of
       their gradients to adjust the network, then keep repeating this until we
@@ -1575,10 +1579,13 @@
 
       Also, the step size is usually adjusted with a parameter
       $0 < \alpha \in \mathbb{R}$ called the "learning rate" or "braveness",
-      which may vary over time. Initially the learning rate can be high so that
-      the network makes bigger steps towards the optimum, and later it can be
-      reduced gradually so that when the network is close to the optimum, the
-      chance of overshooting can be minimized.
+      which may vary over time. Initially the learning rate can be high (usually
+      $0 < \alpha < 0.3$) so that the network makes bigger steps towards the
+      optimum, and later it can be reduced gradually so that when the network
+      is close to the optimum, the chance of overshooting can be minimized.
+
+      Another way to avoid overshooting may be to make the step size
+      proportional to the length of the gradient vector.
 
       Algorithm \ref{alglearn} to \ref{algadjustweightsvec} show the basic
       backpropagation training algorithm procedures with both expanded and
@@ -1838,7 +1845,10 @@
       \end{algorithm}
 
       The stopping criteria can be that a fixed number of epochs have run, or
-      that the error has became consistently acceptably low for most examples.
+      that the error has became consistently acceptably low for most examples,
+      or that the gradient (and thus, the step size) has become so close to
+      zero that the algorithm has basically reached a flat region from where it
+      will no longer move away any significantly.
 
 \newpage
 
