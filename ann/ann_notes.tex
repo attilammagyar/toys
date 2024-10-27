@@ -108,7 +108,9 @@
       input activations, the neurons will produce the desired output
       activations.
 
-      \subsubsection{Common activation functions and their derivatives}
+      \subsubsection{%
+        Common activation functions and their derivatives
+      } \label{actfuncs}
 
         Depending on the problem to solve, there are various activation
         functions to chose from. With $\beta, \gamma \in \mathbb{R}$ (either of
@@ -838,7 +840,7 @@
             $b_1 = \frac{n_0}{2}$.
 
           \subparagraph{Linear separator}
-            With the simplified notation (\ref {simplifiednotation}), the
+            With the simplified notation (\ref{simplifiednotation}), the
             activation of the perceptron can be written as:
 
             \begin{equation}
@@ -1861,8 +1863,9 @@
       To measure how well the network performs for unseen inputs, and to see if
       any adjustments are needed for the training process or the network's
       architecture, the examples with the known outputs are usually split into
-      two subsets: the training data and the test data (also known as
-      validation data).
+      two subsets: the training data and the validation data (also known as
+      test data). Usually, the training data contains more elements than the
+      validation data, e.g. with a $2:1$ or a $3:1$ ratio.
 
       The learning algorithm is run exclusively for the training examples, and
       then the error is measured against the validation examples, without
@@ -2674,15 +2677,135 @@
 
     \subsection{Preprocessing}
 
-      \subsubsection{Statisticcal methods}
+      Depending on several factors (e.g. the problem at hand, the choice of
+      activation functions, the format and the interpretation of the input and
+      output data, numerical considerations, etc.), various kinds of
+      preprocessing can significantly improve the network's performance.
+
+      \subsubsection{Statistical methods}
+
+        For $x \in \mathbb{R}$, when $x$ is sufficiently far from $0$, most of
+        the activation functions (\ref{actfuncs}) behave linearly in the sense
+        that for $0 < c \in \mathbb{R}$, $f(c \cdot x) = c \cdot f(x)$. This
+        implies that if the entire input of the network is scaled by a factor of
+        $c$, then its output will also be scaled by the same amount. If the
+        expected output remains fixed, then this scaling effect will be
+        compensated by the training process by introducing a scaling factor of
+        $\frac{1}{c}$ into the weights and biases in the network. It will also
+        be reflected in the gradient, thus, it will affect the optimal choice
+        of the learning rate as well. If the network has to do too much of this
+        compensation, then it will be more suspectible to issues like the
+        "vanishing gradient problem" where the gradient becomes so small for
+        most inputs that basically no learning occurs. This, together with
+        floating point arithmetics considerations in practical implementations,
+        suggests that in most cases, it can be beneficial to bring the network's
+        input closer to the $[0, 1]$ or the $[-1, 1]$ intervals.
 
         \paragraph{Normalization}
 
-          TODO
+          Let $u, l \in \mathbb{R}$ (typically, $l = 1$ and $u \in \{-1, 0\}$),
+          and let:
+
+          \begin{align*}
+            x_{\min} & = \min\left\{
+              x_i : (\mathbf{x}, \mathbf{y}) \in trainers,
+                    \ i \in \{1, 2, \dots, n_0\}
+            \right\} \\
+            x_{\max} & = \max\left\{
+              x_i : (\mathbf{x}, \mathbf{y}) \in trainers,
+                    \ i \in \{1, 2, \dots, n_0\}
+            \right\}
+          \end{align*}
+
+          Note that only the $trainers$ set is used from algorithm
+          \ref{alglearnval} for determining these values, since we don't want
+          any information to be leaked into the training process from the
+          validation set.
+
+          Before the network is evaluated for a given $\mathbf{x}$ input, it is
+          first transformed with the following formula
+          (for $j \in \{1, 2, \dots, n_0\}$):
+
+          \begin{align*}
+            \hat{x}_j
+              = \frac{x_j - x_{\min}}{x_{\max} - x_{\min}} \cdot (u - l) + l
+              \text{ for } j \in \{ 1, 2, \dots, n_0 \}
+          \end{align*}
+
+          Note: if the input is composed from heterogeneous features from
+          different ranges, then it might be a good idea to normalize them
+          separately or by feature groups.
+          For $j \in \{1, 2, \dots, n_0\}$ and $u_j, l_j \in \mathbb{R}$, let
+
+          \begin{align*}
+            x_{j \min} & = \min\left\{
+              x_j : (\mathbf{x}, \mathbf{y}) \in trainers
+            \right\} \\
+            x_{j \max} & = \max\left\{
+              x_j : (\mathbf{x}, \mathbf{y}) \in trainers
+            \right\} \\
+          \end{align*}
+
+          Then
+
+          \begin{align*}
+            \hat{x}_j
+              = \frac{x_j - x_{j \min}}{x_{j \max} - x_{j \min}}
+                \cdot (u_j - l_j) + l_j
+          \end{align*}
 
         \paragraph{Standardization}
 
-          TODO
+          For the analysis of statistical data, the exact value of its samples,
+          its mean, and its deviation from the mean are often less important
+          than the shape of its distribution. Standardization is a technique
+          which brings statistical data into a single well defined location on
+          the number line so that its distribution can be analyzed in well
+          defined circumstances.
+
+          Standardization requires the mean and the standard deviation of the
+          theoretical distribution to be known, but this is rarely the case in
+          practice, so their estimated values are used instead. Let
+          $N \in \mathbb{N}^+$ denote the number of examples in the $training$
+          set:
+
+          \begin{align*}
+            \mu
+              & = \frac{1}{N \cdot n_0}
+                  \cdot \sum_{\mathbf{x} \in training} \sum_{i=0}^{n_0} x_i \\
+            \sigma
+              & = \sqrt{
+                    \frac{1}{N \cdot n_0 - 1}
+                    \cdot \sum_{\mathbf{x} \in training}
+                      \sum_{i=0}^{n_0} \left( x_i - \mu \right)^2
+                  }
+          \end{align*}
+
+          Then, before the network is evaluated for a given $\mathbf{x}$ input,
+          it is first transformed with the following formula
+          (for $j \in \{1, 2, \dots, n_0\}$):
+
+          \begin{align*}
+            \hat{x}_j = \frac{x_j - \mu}{\sigma}
+          \end{align*}
+
+          Again, if the input is composed of heterogeneous features with
+          different ranges and distributions, then standardization is also
+          better performed separately for the different features (or feature
+          groups). For $j \in \{1, 2, \dots, n_0\}$:
+
+          \begin{align*}
+            \mu_j
+              & = \frac{1}{N}
+                  \cdot \sum_{\mathbf{x} \in training} x_j \\
+            \sigma_j
+              & = \sqrt{
+                    \frac{1}{N - 1}
+                    \cdot \sum_{\mathbf{x} \in training}
+                      \left( x_j - \mu \right)^2
+                  } \\
+            \hat{x}_j & = \frac{x_j - \mu_j}{\sigma_j}
+          \end{align*}
 
         \paragraph{Batch normalization}
 
