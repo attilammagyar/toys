@@ -908,10 +908,11 @@
     (local) minimum and thus, its gradient should converge towards $0$. (Hence
     the name "gradient descent".)
 
-    In some specific cases (e.g. convex functions), guaranteed convergence can
-    be proven and its speed can be calculated, but in practice, the error
-    function rarely has such nice properties, so experimentation tends to be
-    more useful than attempting to produce formal theoretical proofs.
+    In some specific cases (e.g. Lipschitz-continuous convex functions),
+    guaranteed convergence can be proven and its speed can be calculated, but
+    in practice, the error function rarely has such nice properties, so
+    experimentation tends to be more useful than attempting to produce formal
+    theoretical proofs.
 
     (From now on, the differentiability of $f_j^{(k)}$ is assumed for all
     $j, k \in \mathbb{N}^+, k \leq L, j \leq n_k$.)
@@ -1584,7 +1585,7 @@
       which may vary over time. Initially the learning rate can be high (usually
       $0 < \alpha < 0.3$) so that the network makes bigger steps towards the
       optimum, and later it can be reduced gradually so that when the network
-      is close to the optimum, the chance of overshooting can be minimized.
+      is close to an optimum, the chance of overshooting can be minimized.
 
       Another way to avoid overshooting may be to make the step size
       proportional to the length of the gradient vector.
@@ -2782,7 +2783,7 @@
           \end{align*}
 
           Then, before the network is evaluated for a given $\mathbf{x}$ input,
-          it is first transformed with the following formula
+          $\mathbf{x}$ is first transformed with the following formula
           (for $j \in \{1, 2, \dots, n_0\}$):
 
           \begin{align*}
