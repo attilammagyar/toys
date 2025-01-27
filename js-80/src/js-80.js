@@ -872,6 +872,7 @@
                     || (last_event[3] >= when)
                 ) {
                     // FIXME: probably this._setValueAtTime(v, when) would suffice
+                    this._save_evt("s", v, when);
                     this._linearRampToValueAtTime(v, when);
 
                     return;
@@ -883,6 +884,7 @@
                     v = v + ((when - s) / d) * (last_event[1] - v);
                 }
 
+                this._save_evt("s", v, when);
                 this._linearRampToValueAtTime(v, when);
             }
         };
@@ -2865,7 +2867,7 @@
         Effect.call(this, synth, key, output);
 
         dry_gain.gain.value = 0.7;
-        wet_gain.gain.valeu = 0.3;
+        wet_gain.gain.value = 0.3;
         out_left.gain.value = 1.0;
         out_right.gain.value = 1.0;
 
@@ -3110,7 +3112,7 @@
         Effect.call(this, synth, key, output);
 
         dry_gain.gain.value = 0.9;
-        wet_gain.gain.valeu = 0.5;
+        wet_gain.gain.value = 0.5;
         delay_time_cns.offset.value = 0.5;
         width_cns.offset.value = 1.0;
         feedback_cns.offset.value = 0.7;
