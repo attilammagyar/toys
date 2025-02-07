@@ -1364,7 +1364,7 @@ function export_stats_history(evt)
     stats_history_save_node.href = URL.createObjectURL(
         new Blob([lines.join("\r\n")], {"type": "text/tab-separated-values"})
     );
-    stats_history_save_node.save = "chimp-mem-game.tsv";
+    stats_history_save_node.download = "chimp-mem-game.tsv";
 
     return true;
 }
