@@ -14,7 +14,9 @@ required on a typical Debian or Ubuntu system:
     apt install \
         tex-common \
         texlive-base \
+        texlive-fonts-extra \
         texlive-latex-base \
+        texlive-latex-extra \
         texlive-latex-recommended \
         texlive-pictures \
         texlive-science
