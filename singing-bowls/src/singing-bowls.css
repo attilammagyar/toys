@@ -1,0 +1,204 @@
+html, body {
+  background-color: #000;
+  color: #999;
+  font-family: Verdana, sans-serif;
+}
+
+h1 {
+  font-size: 5vh;
+}
+
+a,
+p {
+  font-size: 3vh;
+}
+
+a {
+  color: #90a0ff;
+  font-weight: bold;
+}
+
+.hidden {
+  display: none;
+}
+
+#intro {
+  text-align: center;
+  min-height: 80vh;
+}
+
+#intro h1,
+#intro p {
+  margin: 10vh 0;
+}
+
+#intro p small {
+  font-size: 2.3vh;
+}
+
+#tools button,
+#start {
+  padding: 1vh 5vh;
+  font-size: 4vh;
+  background-color: #018;
+  color: #eff;
+  font-weight: bold;
+  border: outset 0.5vmin #029;
+  border-radius: 2vmin;
+}
+
+#tools.settings button#settings {
+  border: inset 0.5vmin #029;
+}
+
+#bowls-container div.bowl {
+  background: #000000;
+  display: inline-block;
+  width: 25vmin;
+  height: 25vmin;
+  text-align: center;
+  margin: 0.5vmin;
+  overflow: hidden;
+  transition: height 0.3s;
+}
+
+#bowls-container.settings div.bowl {
+  transition: height 0.3s;
+  height: auto;
+  overflow: auto;
+}
+
+div.bowl button {
+  background: #000000;
+  border: solid 0.5vmin #202030;
+  border-radius: 3vmin;
+  display: inline-block;
+  width: 25vmin;
+  height: 25vmin;
+  text-align: center;
+  transition: background 11s;
+  margin: 0;
+  padding: 2vmin;
+}
+
+div.bowl button.active {
+  background: #e0e0eb;
+  transition: background 0.1s;
+}
+
+div.bowl select {
+  border: inset 0.3vmin #556;
+  border-radius: 0.7vmin;
+  margin: 0.2vmin;
+  color: #bbb;
+  background: #000;
+  text-align: center;
+  line-height: 3.5vh;
+  height: 3.5vh;
+  font-size: 2.1vh;
+}
+
+div.bowl select.pitch {
+  width: 9vmin;
+}
+
+div.bowl select.tone {
+  width: 13vmin;
+}
+
+#bowls-container {
+  text-align: center;
+  width: 95vw;
+  max-width: 90vmin;
+  margin: 2vmin auto;
+}
+
+#tools {
+  padding: 0;
+  margin: 0;
+  height: 8vh;
+  text-align: center;
+  overflow: hidden;
+}
+
+#tools.settings {
+  height: auto;
+}
+
+#tools div {
+  height: 8vh;
+  line-height: 8vh;
+  margin-bottom: 1vmin;
+}
+
+#tools button {
+  padding: 1vmin;
+  width: 8vmin;
+  height: 8vmin;
+  line-height: 3.6vmin;
+  padding: 0;
+  vertical-align: top;
+}
+
+#tools button svg {
+  width: 3.6vmin;
+  height: 3.6vmin;
+}
+
+#tools label {
+  display: inline-block;
+  width: 30vmin;
+  text-align: right;
+  font-size: 2.3vh;
+  height: 8vh;
+  line-height: 8vh;
+  vertical-align: baseline;
+  overflow: hidden;
+}
+
+#tools input {
+  display: inline-block;
+  width: 40vmin;
+  height: 8vh;
+}
+
+#tools select {
+  border: inset 0.3vmin #556;
+  border-radius: 0.7vmin;
+  font-size: 2.3vh;
+  color: #bbb;
+  background: #000;
+  text-align: center;
+  height: 6vh;
+  line-height: 6vh;
+  width: 20vmin;
+  vertical-align: top;
+  margin: 1vh 0;
+}
+
+#tools button#load-preset {
+  width: 20vmin;
+  height: 6vh;
+  font-size: 3vh;
+  line-height: 6vh;
+  margin: 1vh 0;
+}
+
+#footer {
+  height: 3vh;
+  text-align: center;
+  margin-top: 5vmin;
+}
+
+#footer p a,
+#footer p {
+  font-size: 2vh;
+  line-height: 3vh;
+  margin: 0;
+  padding: 0;
+}
+
+#error {
+  text-align: center;
+  color: #f60;
+}

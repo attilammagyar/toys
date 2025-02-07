@@ -5,7 +5,8 @@ TARGETS = \
 	./chimp-mem-game/index.html \
 	./flashcards/index.html \
 	./js-80/index.html \
-	./kanji-practice/index.html
+	./kanji-practice/index.html \
+	./singing-bowls/index.html
 
 BUILD_SINGLE_HTML = python3 single_html.py $< $@ $(words $^)
 
@@ -49,4 +50,10 @@ clean:
 		./kanji-practice/src/kanji-practice.css \
 		./kanji-practice/src/kanji-practice.js \
 		./kanji-practice/src/kanjivg.js
+	$(BUILD_SINGLE_HTML)
+
+./singing-bowls/index.html: \
+		./singing-bowls/src/singing-bowls.html \
+		./singing-bowls/src/singing-bowls.css \
+		./singing-bowls/src/singing-bowls.js
 	$(BUILD_SINGLE_HTML)
