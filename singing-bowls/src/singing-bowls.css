@@ -27,13 +27,17 @@ a {
   min-height: 80vh;
 }
 
-#intro h1,
-#intro p {
+#intro h1 {
   margin: 10vh 0;
 }
 
 #intro p small {
   font-size: 2.3vh;
+}
+
+#intro p {
+  width: 90vmin;
+  margin: 10vh auto;
 }
 
 #tools button,
