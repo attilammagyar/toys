@@ -100,6 +100,12 @@ function main()
     bowls_container_dom_node = $("bowls-container");
     tools_dom_node = $("tools");
 
+    volume_input = $("volume");
+    noise_volume_input = $("noise-volume");
+    noise_modulation_input = $("noise-modulation");
+    echo_wet_input = $("echo");
+    reverb_wet_input = $("reverb");
+
     init_envelope_shape_curve();
     init_saturation_curve();
     init_notes();
@@ -411,12 +417,6 @@ function handle_start_click(evt)
         show_error("Error initializing the sound: " + String(error));
         throw error;
     }
-
-    volume_input = $("volume");
-    noise_volume_input = $("noise-volume");
-    noise_modulation_input = $("noise-modulation");
-    echo_wet_input = $("echo");
-    reverb_wet_input = $("reverb");
 
     update_settings_ui();
 
@@ -1354,41 +1354,32 @@ function copy_settings(settings)
 
 function apply_settings(new_settings)
 {
-    var begin, end;
+    var old_settings = settings,
+        begin, end;
 
     settings = copy_valid_settings(new_settings);
 
     begin = audio_ctx.currentTime + LATENCY;
     end = begin + 0.05;
 
-    main_volume.gain.cancelAndHoldAtTime(begin);
-    noise_volume.gain.cancelAndHoldAtTime(begin);
-    noise_mod_amp.gain.cancelAndHoldAtTime(begin);
-    echo.wet.cancelAndHoldAtTime(begin);
-    reverb.wet.cancelAndHoldAtTime(begin);
-
-    main_volume.gain.linearRampToValueAtTime(
-        percent_to_lin_volume(settings["volume"]),
-        end
-    );
-    noise_volume.gain.linearRampToValueAtTime(
-        percent_to_lin_volume(settings["noise_volume"]),
-        end
-    );
-    noise_mod_amp.gain.linearRampToValueAtTime(
-        percent_to_lin_volume(settings["noise_modulation"]),
-        end
-    );
-    echo.wet.linearRampToValueAtTime(
-        percent_to_lin_volume(settings["echo"]),
-        end
-    );
-    reverb.wet.linearRampToValueAtTime(
-        percent_to_lin_volume(settings["reverb"]),
-        end
-    );
+    apply_volume(old_settings, "volume", main_volume.gain, begin, end);
+    apply_volume(old_settings, "noise_volume", noise_volume.gain, begin, end);
+    apply_volume(old_settings, "noise_modulation", noise_mod_amp.gain, begin, end);
+    apply_volume(old_settings, "echo", echo.wet, begin, end);
+    apply_volume(old_settings, "reverb", reverb.wet, begin, end);
 
     apply_bowl_settings();
+}
+
+
+function apply_volume(old_settings, key, audio_param, begin, end)
+{
+    var old_value = percent_to_lin_volume(old_settings[key]),
+        new_value = percent_to_lin_volume(settings[key]);
+
+    audio_param.cancelAndHoldAtTime(begin);
+    audio_param.setValueAtTime(old_value, begin);
+    audio_param.linearRampToValueAtTime(new_value, end);
 }
 
 
