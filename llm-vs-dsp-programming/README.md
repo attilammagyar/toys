@@ -15,6 +15,10 @@ Table of Contents
     * [DeepSeek R1](#focus-r1)
     * [Google Gemini 2.5 Pro](#focus-gemini2_5pro)
  * [Handcrafted ADAA, without AI](#manual-adaa)
+ * [ADAA with AI](#llm-adaa)
+    * [OpenAI ChatGPT 4o](#adaa-chatgpt4o)
+    * [DeepSeek R1](#adaa-r1)
+ * [Handcrafted ADAA, with ideas stolen from AI](#manual-adaa-improved)
  * [Speed Comparison](#speed)
  * [Conclusion](#conclusion)
  * [Appendix](#c1)
@@ -30,10 +34,16 @@ Table of Contents
        * [Prompt 1 and Response](#c2)
        * [Prompt 2 and Response](#c2p2)
     * [Focus on the Distortion](#focus-full)
-       * [OpenAI ChatGPT 4o's Response](#focus-full-OpenAI ChatGPT4o)
+       * [Prompt](#focus-full)
+       * [OpenAI ChatGPT 4o's Response](#focus-full-chatgpt4o)
        * [DeepSeek R1's Response](#focus-full-r1)
        * [Google Gemini 4o's Response](#focus-full-gemini2_5pro)
+    * [ADAA with AI](#adaa-full)
+       * [Prompt](#adaa-full)
+       * [OpenAI ChatGPT 4o's Response](#adaa-full-chatgpt4o)
+       * [DeepSeek R1's Response](#adaa-full-r1)
     * [Manually Implemented ADAA](#manual-adaa-impl)
+       * [Improved Antiderivative](#manual-adaa-impl-improved)
 
 <a id="tldr" href="#toc"> </a>
 
@@ -48,12 +58,14 @@ TL;DR
    rounds of iterative improvements can still be insufficient to
    produce a good solution even for a simple problem.
 
- * An LLM will not pick the best solution for a problem, it will pick
-   the one which appears in its training corpus with the highest
-   frequency. Thus, too much reliance on LLMs combined with a lack of
-   domain expertise in a field and a lack of regularly following its
-   recent developments may result in slower spread of newly invented
-   techniques.
+ * An LLM will not necessarily pick the best solution for a problem,
+   it will pick the one which appears in its training corpus with the
+   highest frequency (which might be the result of that particular
+   solution having been considered the best until an even better came
+   along later). Thus, too much reliance on LLMs combined with a lack
+   of domain knowledge in a field and a lack of regularly following its
+   recent developments may result in slower adaptation of newly
+   invented techniques.
 
 <a id="problem" href="#toc">Top</a>
 
@@ -75,7 +87,10 @@ today's popular language models can come up with. (As of April, 2025.)
 The test sound will be a sine wave which starts at 110 Hz, stays there
 for 3 seconds, then climbs up to 3630 Hz during 12 seconds. Its
 spectrogram in [Audacity](https://www.audacityteam.org/) looks like
-the following:
+the following (the horizontal axis is time, the vertical is the
+frequency spectrum, and the colors show the intensity of a frequency
+component in the sound at a given time; the dark background represents
+silence, light blue is mostly inaudible, red is audible, white is loud):
 
 <img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound.png" alt="Spectrogram of the raw test sound." />
 
@@ -102,7 +117,10 @@ and finally, it used a cubic polynomial as a
 
 Of course the hard clipping added a lot of
 [aliasing](https://en.wikipedia.org/wiki/Aliasing) noise which was then
-made much worse by the waveshaper.
+made much worse by the waveshaper. The aliasing components on the
+spectrogram are the ones which move in the opposite direction, against
+the fundamental and the overtones that were added by the distortion;
+their pitch is falling instead of going upwards.
 
 <img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p1.png" alt="Spectrogram of the result of the first script, showing horrible aliasing." />
 
@@ -222,6 +240,10 @@ The result: [sound-chatgpt4o-c2p1.flac](https://attilammagyar.github.io/toys/llm
 Focus on the Distortion
 -----------------------
 
+Will it be easier for the AI to come up with a good algorithm if the
+question is restricted to the signal processing part, without any
+distractions from file formats and whatnot?
+
 This time I tried to be as specific as I could with my requirements
 without explicitly mentioning the name of the best solution that I know
 for the problem. The prompt looked like this:
@@ -243,7 +265,7 @@ for the problem. The prompt looked like this:
 > audio channels.
 > 
 > Use the fastest state of the art antialiasing method. Keep it
->  CPU-friendly enough for real-time audio.
+> CPU-friendly enough for real-time audio.
 
 I sent the exact same prompt to 3 popular large language models:
 [OpenAI ChatGPT 4o](https://openai.com/index/hello-gpt-4o),
@@ -252,8 +274,8 @@ I sent the exact same prompt to 3 popular large language models:
 
 ChatGPT 4o and Gemini went with 4x oversampling, R1 picked 2x
 oversampling. Gemini's thought process indicated that the
-"state of the art" requirement might be confusing, so I retried it with
-the following ending:
+"state of the art" requirement might be confusing, so I also tried
+the following ending in newly opened, clean conversations:
 
 > Use the computationally cheapest antialiasing method you can think of.
 > Keep it CPU-friendly enough for real-time audio. Do not overthink.
@@ -310,23 +332,93 @@ to go with. (See [my implementation in the appendix](#manual-adaa-impl).)
 
 The result: [sound-manual-adaa.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-manual-adaa.flac).
 
+<a id="llm-adaa" href="#toc">Top</a>
+
+ADAA with AI
+------------
+
+Can the AI-s beat my implementation?
+
+> You are an expert in Python and audio processing. Implement the
+> following function which applies gain boosting and tanh non-linearity
+> to an audio signal while keeping aliasing to a minimum:
+> 
+>     def distort(samples, gain_db=14.0, sample_rate=44100.0, channels=2):
+>         distorted = np.zeros_like(samples)
+>         # Your code here
+>         return distorted
+> 
+> The `samples` parameter is a NumPy array of shape `(N, channels)`
+> where `N` is the number of audio samples, the samples are float32
+> numbers (usually between -1.0 and 1.0), the `gain_db` parameter is
+> the gain to be applied in dB, the `sample_rate` specifies the
+> sampling rate, and the `channels` parameter specifies the number of
+> audio channels.
+> 
+> Use 1st order ADAA to control aliasing. Avoid looping over NumPy
+> arrays manually. Do not overthink.
+
+<a id="adaa-chatgpt4o" href="#toc">Top</a>
+
+### OpenAI ChatGPT 4o
+
+A little bit slower implementation than mine, and it triggers a
+division-by-zero warning (though later the resulting invalid values are
+handled properly), but I was surprised to see that it had much lower
+floating-point noise.
+
+<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-adaa.png" alt="ADAA by OpenAI ChatGPT 4o" />
+
+The result: [sound-chatgpt4o-adaa.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-adaa.flac).
+
+<a id="adaa-r1" href="#toc">Top</a>
+
+### DeepSeek R1
+
+This was similar to the above, but it managed to avoid the warnings at
+the cost of being slower. Its output was also similarly clean.
+
+<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-r1-adaa.png" alt="ADAA by DeepSeek R1" />
+
+The result: [sound-r1-adaa.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-r1-adaa.flac).
+
+<a id="manual-adaa-improved" href="#toc">Top</a>
+
+Handcrafted ADAA, with ideas stolen from AI
+-------------------------------------------
+
+The function that I used for the antiderivative of `tanh(x)` came from
+an older DSP project of mine, and to be honest, I forgot how I obtained
+its formula and why it was constructed the way it was. Nevertheless,
+the LLM-s found a much simpler function, so I copied it from them.
+
+<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-manual-adaa-improved.png" alt="Manual ADAA with a simpler antiderivative copied from the LLM-s." />
+
+The result: [sound-manual-adaa-improved.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-manual-adaa-improved.flac).
+
 <a id="speed" href="#toc">Top</a>
 
 Speed Comparison
 ----------------
 
 I moved the 16-bit conversion related stuff and the final clipping out
-from the distortion function in the model's implementations, so that
-it deals with only the waveshaping, and not the concerns of the chosen
-file format (see: [SRP](https://en.wikipedia.org/wiki/Single-responsibility_principle)),
-then called the function in a loop 100 times.
+from the distortion function in the first few ChatGPT implementations,
+so that its various versions deal with only the waveshaping, and not
+the concerns of the chosen file format
+(see: [SRP](https://en.wikipedia.org/wiki/Single-responsibility_principle)).
 
-Here are the implementations, from the fastest to the slowest:
+Then I called the distortion function for the raw samples repeatedly
+from a loop 100 times in every implementation.
 
+The results, from the fastest to the slowest:
+
+ * 2.643s - handcrafted ADAA with simplified antiderivative (human + AI),
  * 2.977s - handcrafted ADAA (human),
- * 3.427s - OpenAI ChatGPT 4o attempt 1 pre-filter (AI),
+ * 3.427s - OpenAI ChatGPT 4o attempt 1 pre-filter, prompt 7 (AI),
  * 3.789s - OpenAI ChatGPT 4o attempt 2 (AI),
- * 7.315s - OpenAI ChatGPT 4o attempt 1 oversampling (AI),
+ * 6.228s - OpenAI ChatGPT 4o ADAA (AI),
+ * 7.315s - OpenAI ChatGPT 4o attempt 1 oversampling, prompt 4 (AI),
+ * 10.191s - DeepSeek R1 ADAA (AI),
  * 18.446s - DeepSeek R1 focused question (AI),
  * 35.455s - OpenAI ChatGPT 4o focused question (AI),
  * 35.461s - Google Gemini 2.5 Pro focused question (AI).
@@ -346,25 +438,23 @@ Conclusion
 
  * If you have the domain knowledge, you can ask the models explicitly
    to implement the ADAA solution, and they will do it fine for the most
-   part (but fixing the numerical stability issues will still require
-   either tedious nudging or additional manual work, which again,
-   requires domain expertise). Once done, the models will point out
-   the efficiency of this solution, while previously they failed to even
-   consider using it.
+   part, and once done, the models will even point out the efficiency
+   of this solution, while previously they failed to even consider
+   using it.
 
    The reason for this is probably that by the time ADAA waveshaping
    was invented (it was first published in 2016), DSP books, lecture
-   notes, forum discussions, and DSP libraries and their documentation
-   were already filled with the oversampling based approach. This is
-   probably also reflected in the LLM training corpus: there might be
-   orders of magnite more mentions of waveshaper antialiasing with
-   oversampling than with ADAA, so it is proportionally more likely that
-   language models will pick the former approach even when the lattere
-   would be a much better solution.
+   notes, forum discussions, and DSP software libraries (and their
+   documentation) were already filled with the oversampling based
+   approach. This is probably also reflected in the LLM training
+   corpus: there might be orders of magnite more mentions of waveshaper
+   antialiasing with oversampling than with ADAA, so it is
+   proportionally more likely that language models will pick the former
+   approach even when the latter would be a much better solution.
 
    Thus, too much reliance on LLMs combined with a lack of
-   domain expertise in a field and a lack of regularly following
-   its recent developments may result in slower spread of newly
+   domain knowledge in a field and a lack of regularly following its
+   recent developments may result in slower adaptation of newly
    invented techniques on the long run...
 
 <a id="c1" href="#toc">Top</a>
@@ -1197,6 +1287,8 @@ polynomial approximation!
 
 ### Focus on the Distortion
 
+#### Prompt
+
 You are an expert in Python and audio processing. Implement the
 following function which applies gain boosting and tanh non-linearity
 to an audio signal while keeping aliasing to a minimum:
@@ -1216,7 +1308,7 @@ of audio channels.
 Use the fastest state of the art antialiasing method. Keep it
 CPU-friendly enough for real-time audio.
 
-<a id="focus-full-OpenAI ChatGPT4o" href="#toc">Top</a>
+<a id="focus-full-chatgpt4o" href="#toc">Top</a>
 
 #### OpenAI ChatGPT 4o's Response
 
@@ -1960,6 +2052,153 @@ This implementation provides a good balance between anti-aliasing
 quality and computational efficiency suitable for many real-time
 audio applications.
 
+
+<a id="adaa-full" href="#toc">Top</a>
+
+### ADAA with AI
+
+#### Prompt
+
+You are an expert in Python and audio processing. Implement the
+following function which applies gain boosting and tanh non-linearity
+to an audio signal while keeping aliasing to a minimum:
+
+    def distort(samples, gain_db=14.0, sample_rate=44100.0, channels=2):
+        distorted = np.zeros_like(samples)
+        # Your code here
+        return distorted
+
+The `samples` parameter is a NumPy array of shape `(N, channels)`
+where `N` is the number of audio samples, the samples are float32
+numbers (usually between -1.0 and 1.0), the `gain_db` parameter is
+the gain to be applied in dB, the `sample_rate` specifies the
+sampling rate, and the `channels` parameter specifies the number
+of audio channels.
+
+Use 1st order ADAA to control aliasing. Avoid looping over NumPy
+arrays manually. Do not overthink.
+
+<a id="focus-adaa-chatgpt4o" href="#toc">Top</a>
+
+#### OpenAI ChatGPT 4o's Response
+
+Here's a clean and efficient implementation of the `distort` function
+using **1st-order Antiderivative Anti-Aliasing (ADAA)** for `tanh`
+non-linearity, gain in dB, and vectorized NumPy operations:
+
+    import numpy as np
+    
+    def distort(samples, gain_db=14.0, sample_rate=44100.0, channels=2):
+        # Apply gain (convert dB to linear)
+        gain = 10 ** (gain_db / 20.0)
+        x = gain * samples
+    
+        # Shifted input for ADAA (previous sample)
+        x_prev = np.roll(x, 1, axis=0)
+        x_prev[0, :] = 0.0  # set the first sample to zero for continuity
+    
+        # Compute ADAA using the first-order antiderivative of tanh: ln(cosh(x))
+        delta = x - x_prev
+        small_threshold = 1e-6
+    
+        # Avoid division by zero using Taylor approx when delta is very small
+        use_taylor = np.abs(delta) < small_threshold
+        avg_nl = np.where(
+            use_taylor,
+            np.tanh(0.5 * (x + x_prev)),  # tanh(midpoint) approximation
+            (np.log(np.cosh(x)) - np.log(np.cosh(x_prev))) / delta
+        )
+    
+        # Output is the nonlinear processed signal
+        distorted = avg_nl.astype(np.float32)
+        return distorted
+
+##### 🔍 Key Features:
+
+ * **Gain boost** is applied before non-linearity.
+ * **ADAA** (first order) uses the antiderivative of `tanh`, which is
+   `log(cosh(x))`, to reduce aliasing.
+ * **Taylor approximation** handles near-zero divisions for numerical
+   stability.
+ * Fully **vectorized** — no manual looping over samples or channels.
+
+Let me know if you want oversampling added for further anti-aliasing
+or to support mono input (shape (`N`,)).
+
+<a id="adaa-full-r1" href="#toc">Top</a>
+
+#### DeepSeek R1's Response
+
+Here's an implementation of the `distort` function that applies gain
+boosting and tanh non-linearity with 1st order Anti-Derivative
+Anti-Aliasing (ADAA) to minimize aliasing:
+
+    import numpy as np
+    
+    def distort(samples, gain_db=14.0, sample_rate=44100.0, channels=2):
+        # Convert gain from dB to linear scale
+        gain_linear = 10.0 ** (gain_db / 20.0)
+            
+        # Apply gain to the input samples
+        gained_samples = samples * gain_linear
+        
+        # Compute tanh with 1st order ADAA
+        # Anti-derivative of tanh is log(cosh(x))
+        # We need to handle the ADAA computation for each channel separately
+        
+        distorted = np.zeros_like(gained_samples)
+        
+        for c in range(channels):
+            x = gained_samples[:, c]
+            
+            # Compute current and previous samples
+            x_prev = np.roll(x, 1)
+            x_prev[0] = 0  # Handle first sample
+            
+            # ADAA condition: when x == x_prev, we use direct tanh to avoid division by zero
+            mask = np.abs(x - x_prev) < 1e-6
+            not_mask = ~mask
+            
+            # Compute ADAA tanh where x != x_prev
+            tanh_x = np.tanh(x)
+            tanh_x_prev = np.tanh(x_prev)
+            
+            # Anti-derivative of tanh is log(cosh(x))
+            ad1_x = np.log(np.cosh(x))
+            ad1_x_prev = np.log(np.cosh(x_prev))
+            
+            # ADAA tanh
+            adaa_tanh = np.zeros_like(x)
+            adaa_tanh[not_mask] = (ad1_x[not_mask] - ad1_x_prev[not_mask]) / (x[not_mask] - x_prev[not_mask])
+            adaa_tanh[mask] = tanh_x[mask]  # fallback to direct tanh when x ≈ x_prev
+            
+            distorted[:, c] = adaa_tanh
+        
+        return distorted
+
+Key points about this implementation:
+
+ * **Gain Application**: The input gain in dB is first converted to
+   linear scale and applied to the input samples.
+ * **ADAA Implementation**:
+    * Uses 1st order Anti-Derivative Anti-Aliasing (ADAA) to reduce
+      aliasing when applying the tanh non-linearity
+    * The anti-derivative of tanh is log(cosh(x)), which is used in
+      the ADAA computation
+    * Handles the special case where current and previous samples are
+      nearly identical to avoid division by zero
+ * **Channel Handling**: Processes each channel independently while
+   maintaining the original array structure.
+ * **Vectorization**: Avoids manual loops over samples by using NumPy
+   vector operations.
+ * **Edge Handling**: Properly handles the first sample by initializing
+   its "previous" value to 0.
+
+The tanh function is used as it's a common soft-clipping non-linearity
+in audio distortion effects, and the ADAA technique helps reduce the
+aliasing that would normally occur when applying such non-linearities
+to audio signals.
+
 <a id="manual-adaa-impl" href="#toc">Top</a>
 
 ### Manually Implemented ADAA
@@ -2049,5 +2288,12 @@ audio applications.
     
     if __name__ == "__main__":
         main()
+
+<a id="manual-adaa-impl-improved" href="#toc">Top</a>
+
+#### Improved Antiderivative
+
+    def integral_f(x):
+        return np.log(np.cosh(x))
 
 <a href="#toc">Top</a>
