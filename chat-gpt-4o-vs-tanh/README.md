@@ -6,25 +6,24 @@ Programming With AI: the Blind Leading the Blind (Case Study)
 Table of Contents
 -----------------
 
- * [Table of Contents](#toc)
  * [TL;DR](#tldr)
  * [The Problem](#problem)
  * [Attempt 1: NumPy](#attempt1)
  * [Attempt 2: Freestyle](#attempt2)
- * [Handcrafted ADAA](#adaa)
+ * [Handcrafted ADAA, without AI](#adaa)
  * [Speed Comparison](#speed)
  * [Appendix](#c1)
     * [Conversation 1](#c1)
-       * [Prompt 1](#c1)
-       * [Prompt 2](#c1p2)
-       * [Prompt 3](#c1p3)
-       * [Prompt 4](#c1p4)
-       * [Prompt 5](#c1p5)
-       * [Prompt 6](#c1p6)
-       * [Prompt 7](#c1p7)
+       * [Prompt 1 and response](#c1)
+       * [Prompt 2 and response](#c1p2)
+       * [Prompt 3 and response](#c1p3)
+       * [Prompt 4 and response](#c1p4)
+       * [Prompt 5 and response](#c1p5)
+       * [Prompt 6 and response](#c1p6)
+       * [Prompt 7 and response](#c1p7)
     * [Conversation 2](#c2)
-       * [Prompt 1](#c2)
-       * [Prompt 2](#c2p2)
+       * [Prompt 1 and response](#c2)
+       * [Prompt 2 and response](#c2p2)
     * [Manually Implemented ADAA](#adaa-impl)
 
 <a id="tldr" href="#toc"> </a>
@@ -44,19 +43,26 @@ problem.
 The Problem
 -----------
 
-Let's apply a simple soft-clipping distortion effect to a CD-quality
+Let's apply a basic soft-clipping distortion effect to a CD-quality
 [WAV](https://en.wikipedia.org/wiki/WAV) file with using nothing but the
 [Python](https://www.python.org/) standard library and
 [NumPy](https://numpy.org/)! This is not a very complicated task, but
 it's not trivial to get it right either.
-
-[Click here for the raw audio](https://attilammagyar.github.io/toys/chat-gpt-4o-vs-tanh/sound.flac).
 
 I am not a [DSP](https://en.wikipedia.org/wiki/Digital_signal_processing)
 expert, but I do occasionally learn a thing or two about it as a
 [hobby](https://github.com/attilammagyar/js80p), so I have an idea of a
 solution, but I'm curious to see how it compares to what
 [ChatGPT 4o](https://en.wikipedia.org/wiki/GPT-4o) can come up with.
+
+The test sound will be a sine wave which starts at 110 Hz, stays there
+for 3 seconds, then climbs up to 3630 Hz over 12 seconds. Its
+spectrogram in [Audacity](https://www.audacityteam.org/) looks like
+the following:
+
+<img src="https://attilammagyar.github.io/toys/chat-gpt-4o-vs-tanh/sound.png" alt="Spectrogram of the raw test sound." />
+
+For reference, the original file: [sound.wav](https://attilammagyar.github.io/toys/chat-gpt-4o-vs-tanh/sound.wav).
 
 <a id="attempt1" href="#toc">Top</a>
 
@@ -78,31 +84,28 @@ and finally, it used a cubic polynomial as a
 [waveshaper](https://en.wikipedia.org/wiki/Waveshaper).
 
 Of course the hard clipping added a lot of
-[aliasing](https://en.wikipedia.org/wiki/Aliasing) which was then made
-much worse by the waveshaper.
+[aliasing](https://en.wikipedia.org/wiki/Aliasing) noise which was then
+made much worse by the waveshaper.
 
-[Click here for the audio](https://attilammagyar.github.io/toys/chat-gpt-4o-vs-tanh/sound-dst-01.flac).
+<img src="https://attilammagyar.github.io/toys/chat-gpt-4o-vs-tanh/sound-dst-01.png" alt="Spectrogram of the result of the first script, showing horrible aliasing." />
 
-<img src="https://attilammagyar.github.io/toys/chat-gpt-4o-vs-tanh/sound-dst-01.png" alt="Spectrum of the result of the first script, showing horrible aliasing." />
-
-(Screenshot from [Audacity](https://www.audacityteam.org/).)
+The result: [sound-dst-01.flac](https://attilammagyar.github.io/toys/chat-gpt-4o-vs-tanh/sound-dst-01.flac).
 
 I decided to be more specific:
 
 > Avoid hard clipping, and use tanh() nonlinearity.
 
-The LLM did exactly that, which resulted in
-[this sound](https://attilammagyar.github.io/toys/chat-gpt-4o-vs-tanh/sound-dst-02.flac):
+The LLM did exactly that, however, this still has audible aliasing, especially towards the end.
 
-However, this still has audible aliasing, especially towards the end.
+<img src="https://attilammagyar.github.io/toys/chat-gpt-4o-vs-tanh/sound-dst-02.png" alt="Spectrogram of the result of the naive tanh() waveshaper." />
 
-<img src="https://attilammagyar.github.io/toys/chat-gpt-4o-vs-tanh/sound-dst-02.png" alt="Spectrum of the result of the naive tanh() waveshaper." />
+The result: [sound-dst-02.flac](https://attilammagyar.github.io/toys/chat-gpt-4o-vs-tanh/sound-dst-02.flac).
 
 > Good. Now reduce aliasing. Use the computationally cheapest algorithm
 > that you can think of.
 
-The LLM went in the right direction, but it made a small mistake which
-broke the program.
+The solution made sense, but there was a small mistake in the code. It
+was easy to fix, but let's see if the LLM can do it:
 
 > This throws a traceback:
 > 
@@ -119,38 +122,44 @@ broke the program.
 > 
 > Please fix it
 
-Now the LLM properly applied 2x [oversampling](https://en.wikipedia.org/wiki/Oversampling),
+Now the model properly applied 2x [oversampling](https://en.wikipedia.org/wiki/Oversampling),
 then the distortion, then a [low-pass filter](https://en.wikipedia.org/wiki/Low-pass_filter),
 and converted the result back to the original sampling rate. Pretty
 [standard stuff](https://www.w3.org/TR/webaudio-1.1/#dom-waveshapernode-oversample),
-with [good results](https://attilammagyar.github.io/toys/chat-gpt-4o-vs-tanh/sound-dst-04.flac):
+with good results:
 
-<img src="https://attilammagyar.github.io/toys/chat-gpt-4o-vs-tanh/sound-dst-04.png" alt="Spectrum of the result of a 2x oversampled tanh() waveshaper." />
+<img src="https://attilammagyar.github.io/toys/chat-gpt-4o-vs-tanh/sound-dst-04.png" alt="Spectrogram of the result of a 2x oversampled tanh() waveshaper." />
 
-However, this needs twice as much CPU power.
+The result: [sound-dst-04.flac](https://attilammagyar.github.io/toys/chat-gpt-4o-vs-tanh/sound-dst-04.flac).
+
+However, this approach needs twice as much CPU power for the twice as
+many sound samples.
 
 > Can you reduce aliasing without resampling so that the distortion
 > algorithm could become usable for realtime audio?
 
 The LLM tried to apply a low-pass filter before the distortion so that
 high frequencies would disappear, because most of the aliasing tends to
-come from the harmonics of those. However, this time it made a filter
-function which loops through the NumPy array in Python-world, which is
-horribly slow.
+come from the added harmonics of those. However, this time it made a
+filter function which looped through the NumPy array in Python-world,
+which is a big no-no, as it's horribly slow.
 
 It also attempted to apply a second low-pass filter after the
-distortion in order to remove some aliasing after the fact, but this
-of course destroyed some of the useful high frequencies as well.
-
-[Click here for the audio](https://attilammagyar.github.io/toys/chat-gpt-4o-vs-tanh/sound-dst-05.flac).
+distortion in order to remove some aliasing from the top end after the
+fact, but this of course destroyed many of the useful treble
+frequencies as well.
 
 <img src="https://attilammagyar.github.io/toys/chat-gpt-4o-vs-tanh/sound-dst-05.png" alt="Anti-aliasing with low-pass filters." />
+
+The result: [sound-dst-05.flac](https://attilammagyar.github.io/toys/chat-gpt-4o-vs-tanh/sound-dst-05.flac).
+
+I kept going:
 
 > Do it without the post-filter, and avoid manually looping over the
 > array in simple_lowpass().
 
 Now the LLM claimed that it got rid of most of the manual looping (it
-did not), and it actually added another loop to go through the two
+did not), but it actually added another loop to go through the two
 channels.
 
 I was afraid that this might have been the result of the conversation
@@ -160,19 +169,19 @@ code:
 > Can you throw away `simple_lowpass()` and use `lowpass_filter()` from
 > earlier? That one did the filtering without looping in Python.
 
-Though the two filters weren't exactly compatible, this solution could
-have worked, but unfortunately, most the aliasing was still present.
+Though the two filters weren't exactly the same, this solution could
+have worked. But unfortunately, most the aliasing came back:
 
-[Click here for the audio](https://attilammagyar.github.io/toys/chat-gpt-4o-vs-tanh/sound-dst-07.flac).
+<img src="https://attilammagyar.github.io/toys/chat-gpt-4o-vs-tanh/sound-dst-07.png" alt="Anti-aliasing with a low-pass filter before the waveshaper." />
 
-<img src="https://attilammagyar.github.io/toys/chat-gpt-4o-vs-tanh/sound-dst-07.png" alt="Anti-aliasing with a  low-pass filter before the waveshaper." />
+The result: [sound-dst-07.flac](https://attilammagyar.github.io/toys/chat-gpt-4o-vs-tanh/sound-dst-07.flac).
 
 <a id="attempt2" href="#toc">Top</a>
 
 Attempt 2: Freestyle
 --------------------
 
-I decided to start again with a more specific prompt and fewer
+I decided to start again with a more specific prompt and weaker
 limitations, in order to make the model's job easier:
 
 > You are an expert in Python and audio processing. Write a Python script
@@ -184,26 +193,28 @@ limitations, in order to make the model's job easier:
 > friendly.
 
 This basically recreated the filter based solution, but with using 
-[SciPy](https://scipy.org/)'s filtering instead of manual looping.
+[SciPy](https://scipy.org/)'s filtering functions instead of the manual
+loop.
 
-[Click here for the audio](https://attilammagyar.github.io/toys/chat-gpt-4o-vs-tanh/sound-dst-freestyle.flac).
+<img src="https://attilammagyar.github.io/toys/chat-gpt-4o-vs-tanh/sound-dst-freestyle.png" alt="Anti-aliasing with a  low-pass filter before the waveshaper, attempt 2." />
 
-<img src="https://attilammagyar.github.io/toys/chat-gpt-4o-vs-tanh/sound-dst-freestyle.png" alt="Anti-aliasing with a  low-pass filter before the waveshaper." />
+The result: [sound-dst-freestyle.flac](https://attilammagyar.github.io/toys/chat-gpt-4o-vs-tanh/sound-dst-freestyle.flac).
 
 <a id="adaa" href="#toc">Top</a>
 
-Handcrafted ADAA
-----------------
+Handcrafted ADAA, without AI
+----------------------------
 
 ADAA stands for "[antiderivative antialiasing](https://www.dafx.de/paper-archive/2016/dafxpapers/20-DAFx-16_paper_41-PN.pdf)", 
 and I think its 1st order variant is a really good compromise between
-efficient computability and effectiveness. If the antiderivative of the
+efficient computability and effectiveness in terms of reducing aliasing
+to an almost inaudible level. If the antiderivative of the
 waveshaper non-linearity is known, then probably this is the algorithm
 to go with. (See [my implementation in the appendix](#adaa-impl).)
 
-[Here's what my handcrafted implementation could achieve](https://attilammagyar.github.io/toys/chat-gpt-4o-vs-tanh/sound-dst-adaa.flac):
-
 <img src="https://attilammagyar.github.io/toys/chat-gpt-4o-vs-tanh/sound-dst-adaa.png" alt="1st order antiderivative antialiasing is a really good compromise between effectiveness and CPU-consumption." />
+
+The result: [sound-dst-adaa.flac](https://attilammagyar.github.io/toys/chat-gpt-4o-vs-tanh/sound-dst-adaa.flac).
 
 <a id="speed" href="#toc">Top</a>
 
@@ -238,7 +249,7 @@ which reads a 16 bit stereo sound at 44.1 kHz sampling rate from
 then saves the result as "sound-dst.wav", also 16 bit stereo at
 44.1 kHz. You may only use built-in Python modules and NumPy.
 
-#### Response 1
+##### Response
 
 Here's a complete Python script that reads a stereo WAV file
 (`sound.wav`), applies heavy distortion (specifically by clipping and
@@ -305,7 +316,7 @@ and NumPy:
     if __name__ == "__main__":
         main()
 
-##### What this does:
+###### What this does:
 
  * **Reads** a 16-bit stereo WAV file at 44.1 kHz.
  * **Normalizes** and **amplifies** the signal to simulate analog
@@ -325,7 +336,7 @@ distortion).
 
 Avoid hard clipping, and use tanh() nonlinearity.
 
-#### Response 2
+##### Response
 
 Perfect! If you want to **avoid hard clipping** and instead use a smooth
 **tanh nonlinearity** (which is commonly used in analog-like distortion
@@ -384,7 +395,7 @@ without harsh clipping.
     if __name__ == "__main__":
         main()
 
-##### Key Changes:
+###### Key Changes:
 
  * Uses `np.tanh()` for **soft saturation** instead of **np.clip()**.
  * Keeps the distortion musical and smooth—great for guitar, synths, or
@@ -400,7 +411,7 @@ Want to try asymmetric distortion or dynamic gain shaping next?
 Good. Now reduce aliasing. Use the computationally cheapest algorithm
 that you can think of.
 
-#### Response 3
+##### Response
 
 Great! Aliasing is a common issue when applying **nonlinear distortion**
 (like `tanh`) because it creates new harmonics that fold back into the
@@ -408,7 +419,7 @@ audible range if they're above the Nyquist frequency (half the sample
 rate). To reduce aliasing cheaply, here’s a simple and efficient
 strategy:
 
-##### ✅ Cheap Anti-Aliasing Strategy:
+###### ✅ Cheap Anti-Aliasing Strategy:
 
  * **Upsample** (e.g. 2×) to push the Nyquist limit higher.
  * Apply the nonlinearity at the higher rate.
@@ -490,7 +501,7 @@ anti-aliasing filtering using a **simple FIR low-pass filter**:
     if __name__ == "__main__":
         main()
 
-##### ✅ What This Does:
+###### ✅ What This Does:
 
  * **2x Upsampling** by linear interpolation (cheap!).
  * Applies `tanh()` distortion at higher sample rate (88.2 kHz).
@@ -518,7 +529,7 @@ This throws a traceback:
 
 Please fix it
 
-#### Response 4
+##### Response
 
 Great catch — and thanks for the traceback!
 
@@ -528,7 +539,7 @@ When we compute `(norm[:-1] + norm[1:]) / 2.0`, it results in one fewer
 row than `norm`, so it can’t be assigned to `upsampled[1::2]` which
 expects the same number of rows as `norm`.
 
-##### ✅ Fix:
+###### ✅ Fix:
 
 We need to:
 
@@ -571,7 +582,7 @@ Here’s the **fixed and working** version of the `distort()` function:
         output = np.clip(downsampled * 32767, -32768, 32767)
         return output.astype(np.int16)
 
-##### Summary of Fixes:
+###### Summary of Fixes:
 
  * Handled edge case by copying the last sample for the final
    interpolated slot.
@@ -589,7 +600,7 @@ toggle or change the filter kernel.
 Can you reduce aliasing without resampling so that the distortion
 algorithm could become usable for realtime audio?
 
-#### Response 5
+##### Response
 
 Yes — great question! If your goal is **real-time performance** and
 **low aliasing without resampling**, then the best path is to
@@ -599,7 +610,7 @@ into the audible band.
 
 This is a **very common trick** in real-time audio systems.
 
-##### ✅ How to Reduce Aliasing Without Resampling:
+###### ✅ How to Reduce Aliasing Without Resampling:
 
  * **Pre-filter the signal** with a low-pass filter (cutoff below
    Nyquist).
@@ -610,7 +621,7 @@ This is a **very common trick** in real-time audio systems.
 This avoids expensive resampling and works well enough for
 **many real-time applications** like guitar pedals, synths, and VSTs.
 
-##### 🧠 Why It Works:
+###### 🧠 Why It Works:
 
 Nonlinear functions like `tanh()` introduce harmonics — especially
 **odd harmonics**. If your input is already near Nyquist (22.05 kHz
@@ -618,7 +629,7 @@ for 44.1 kHz sample rate), those harmonics fold back into the audible
 range, creating **aliasing**. So by low-pass filtering the input to,
 say, 15 kHz, you reduce aliasing dramatically.
 
-##### ✅ Updated `distort()` with Pre-Filtering:
+###### ✅ Updated `distort()` with Pre-Filtering:
 
 Here’s a version of the distortion function that includes a
 **cheap, real-time-friendly lowpass filter** before the distortion:
@@ -655,7 +666,7 @@ Now apply this in the `distort()` function:
         output = np.clip(postfiltered * 32767, -32768, 32767)
         return output.astype(np.int16)
 
-##### 🎯 Benefits:
+###### 🎯 Benefits:
 
  * **No resampling**
  * Works in **real-time**
@@ -677,20 +688,20 @@ Just let me know how deep you wanna go 🎛️
 Do it without the post-filter, and avoid manually looping over the
 array in simple_lowpass().
 
-#### Response 6
+##### Response
 
 Absolutely — you're spot on. Manual looping in Python is slow and not
 ideal for real-time use. We can rewrite the low-pass filter using
 **NumPy's vectorized operations** for speed, while keeping it simple and
 real-time friendly.
 
-##### ✅ Updated Plan:
+###### ✅ Updated Plan:
 
  * Remove the post-filter (as requested).
  * Implement a **vectorized one-pole low-pass filter** (IIR) for the
    pre-filter using `np.cumsum()`.
 
-##### ⚡ Efficient One-Pole Lowpass Filter (No Looping):
+###### ⚡ Efficient One-Pole Lowpass Filter (No Looping):
 
 Here's a fast, vectorized implementation using the exponential
 smoothing formula:
@@ -712,7 +723,7 @@ pre-calculate the output recursively per channel — or even better,
 let’s use SciPy if allowed — but since you want **only NumPy and
 built-ins**, here’s the fastest we can go with NumPy:
 
-##### ✅ Final Code Snippet (No Loop in Filter Function):
+###### ✅ Final Code Snippet (No Loop in Filter Function):
 
     def simple_lowpass(signal, alpha=0.2):
         """
@@ -733,7 +744,7 @@ loops per sample. We could go further with JIT (e.g., `numba`), but
 since you're sticking with NumPy + built-ins, this is the most
 efficient form that maintains clarity and stereo compatibility.
 
-##### 🧠 Updated distort() without Post-Filter:
+###### 🧠 Updated distort() without Post-Filter:
 
     def distort(samples, gain=5.0):
         # Normalize to [-1, 1]
@@ -750,7 +761,7 @@ efficient form that maintains clarity and stereo compatibility.
         output = np.clip(distorted * 32767, -32768, 32767)
         return output.astype(np.int16)
 
-##### ✅ Summary:
+###### ✅ Summary:
 
  * **No hard loops over samples** in Python — just minimal per-channel.
  * No post-filter.
@@ -767,7 +778,7 @@ even faster results!
 Can you throw away `simple_lowpass()` and use `lowpass_filter()` from
 earlier? That one did the filtering without looping in Python.
 
-#### Response 7
+##### Response
 
 Yes — absolutely! Great call. The `lowpass_filter()` from earlier used
 a **vectorized FIR filter with convolution**, which is fast and
@@ -776,7 +787,7 @@ performance hit of per-sample looping.
 
 Let’s integrate that version instead.
 
-#### ✅ Reuse This FIR Filter:
+###### ✅ Reuse This FIR Filter:
 
     def lowpass_filter(signal, cutoff_ratio=0.5):
         # Simple 5-tap FIR low-pass filter
@@ -787,7 +798,7 @@ It’s small and efficient, and though it's not a sharp filter, it’s good
 enough to **knock down the high end** before distortion and reduce
 aliasing.
 
-#### ✅ Updated `distort()` using `lowpass_filter()` (no resampling, no post-filter):
+###### ✅ Updated `distort()` using `lowpass_filter()` (no resampling, no post-filter):
 
     def distort(samples, gain=5.0):
         # Normalize to [-1, 1]
@@ -806,7 +817,7 @@ aliasing.
         output = np.clip(distorted * 32767, -32768, 32767)
         return output.astype(np.int16)
 
-#### ✅ Summary:
+###### ✅ Summary:
 
  * Uses a **vectorized FIR pre-filter** — no Python loops.
  * Smooth, non-clipping `tanh()` distortion.
@@ -830,7 +841,7 @@ gain), then saves the result as "sound-dst.wav", also 16 bit stereo at
 to keep aliasing to a minimum while keeping the algorithm real-time
 friendly.
 
-#### Response 1
+##### Response
 
 Here's a Python script that meets your requirements:
 
@@ -905,7 +916,7 @@ Here's a Python script that meets your requirements:
     if __name__ == '__main__':
         main()
 
-##### Notes:
+###### Notes:
 
  * **Anti-aliasing** is handled using a simple Butterworth low-pass
    filter at 8 kHz.
@@ -924,7 +935,7 @@ Let me know if you want a version that processes audio chunk-by-chunk
 What real-time friendly techniques are you aware of that can apply tanh
 saturation while keeping aliasing to a minimum?
 
-#### Response 2
+##### Response
 
 Great question! When applying non-linear functions like `tanh` in
 real-time audio processing, aliasing becomes a key concern — especially
@@ -935,7 +946,7 @@ frequency if not properly managed.
 Here are some **real-time friendly anti-aliasing techniques** commonly
 used with `tanh`-style saturation:
 
-##### 1. Pre-Emphasis Filtering (Pre-Lowpass)
+###### 1. Pre-Emphasis Filtering (Pre-Lowpass)
 
  * Apply a low-pass filter **before** the non-linearity to reduce
    high-frequency content that would alias.
@@ -945,7 +956,7 @@ used with `tanh`-style saturation:
 
 > ✅ Used in the previous script with a Butterworth filter at ~8kHz.
 
-##### 2. Post-Emphasis Filtering
+###### 2. Post-Emphasis Filtering
 
  * Apply a low-pass filter **after** the non-linearity to clean up
    high-frequency aliasing byproducts.
@@ -953,7 +964,7 @@ used with `tanh`-style saturation:
  * A bit less effective than pre-filtering in stopping aliasing
    **before** it’s introduced, but still helpful.
 
-##### 3. Oversampling (2x or 4x)
+###### 3. Oversampling (2x or 4x)
 
  * Upsample the signal (zero-stuffing + filtering or with polyphase
    methods), apply `tanh`, then downsample.
@@ -966,7 +977,7 @@ used with `tanh`-style saturation:
 > ⚠️ More CPU intensive, but feasible in real-time with 2x oversampling
 > and optimized filters.
 
-##### 4. Polynomial Approximations of `tanh`
+###### 4. Polynomial Approximations of `tanh`
 
  * Use a band-limited polynomial approximation of `tanh` (e.g.,
    3rd-7th order).
@@ -980,7 +991,7 @@ used with `tanh`-style saturation:
     def tanh_approx(x):
         return x * (27 + x**2) / (27 + 9 * x**2)  # Smooth saturation
 
-##### 5. Band-Limited Waveshaping via BLEP/MBLEP
+###### 5. Band-Limited Waveshaping via BLEP/MBLEP
 
  * Not common for `tanh`, but conceptually possible.
  * Band-Limited Step (BLEP) or Band-Limited Ramp (BLAMP) techniques are
@@ -989,13 +1000,13 @@ used with `tanh`-style saturation:
  * Overkill for `tanh`, but useful for sharp clipping or hard
    nonlinearities.
 
-##### 6. Wave Digital Filters (WDFs)
+###### 6. Wave Digital Filters (WDFs)
 
  * Model analog saturators using circuit simulation techniques.
  * Great anti-aliasing naturally because of the smooth transitions.
  * Complex but highly accurate and real-time viable with some effort.
 
-##### Summary: What to use in real-time?
+###### Summary: What to use in real-time?
 
 <table>
   <thead>
