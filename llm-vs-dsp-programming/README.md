@@ -8,35 +8,52 @@ Table of Contents
 
  * [TL;DR](#tldr)
  * [The Problem](#problem)
- * [Attempt 1: NumPy](#attempt1)
- * [Attempt 2: Freestyle](#attempt2)
- * [Handcrafted ADAA, without AI](#adaa)
+ * [OpenAI ChatGPT 4o Attempt 1: NumPy](#chatgpt4o-1)
+ * [OpenAI ChatGPT 4o Attempt 2: Freestyle](#chatgpt4o-2)
+ * [Focus on the Distortion](#focus)
+    * [OpenAI ChatGPT 4o](#focus-chatgpt4o)
+    * [DeepSeek R1](#focus-r1)
+    * [Google Gemini 2.5 Pro](#focus-gemini2_5pro)
+ * [Handcrafted ADAA, without AI](#manual-adaa)
  * [Speed Comparison](#speed)
+ * [Conclusion](#conclusion)
  * [Appendix](#c1)
-    * [Conversation 1](#c1)
-       * [Prompt 1 and response](#c1)
-       * [Prompt 2 and response](#c1p2)
-       * [Prompt 3 and response](#c1p3)
-       * [Prompt 4 and response](#c1p4)
-       * [Prompt 5 and response](#c1p5)
-       * [Prompt 6 and response](#c1p6)
-       * [Prompt 7 and response](#c1p7)
-    * [Conversation 2](#c2)
-       * [Prompt 1 and response](#c2)
-       * [Prompt 2 and response](#c2p2)
-    * [Manually Implemented ADAA](#adaa-impl)
+    * [OpenAI ChatGPT 4o Conversation 1](#c1)
+       * [Prompt 1 and Response](#c1)
+       * [Prompt 2 and Response](#c1p2)
+       * [Prompt 3 and Response](#c1p3)
+       * [Prompt 4 and Response](#c1p4)
+       * [Prompt 5 and Response](#c1p5)
+       * [Prompt 6 and Response](#c1p6)
+       * [Prompt 7 and Response](#c1p7)
+    * [OpenAI ChatGPT 4o Conversation 2](#c2)
+       * [Prompt 1 and Response](#c2)
+       * [Prompt 2 and Response](#c2p2)
+    * [Focus on the Distortion](#focus-full)
+       * [OpenAI ChatGPT 4o's Response](#focus-full-OpenAI ChatGPT4o)
+       * [DeepSeek R1's Response](#focus-full-r1)
+       * [Google Gemini 4o's Response](#focus-full-gemini2_5pro)
+    * [Manually Implemented ADAA](#manual-adaa-impl)
 
 <a id="tldr" href="#toc"> </a>
 
 TL;DR
 -----
 
-Using a [large language model](https://en.wikipedia.org/wiki/Large_language_model)
-for solving a problem without domain knowledge can easily become a
-blind leading the blind situation. A seemingly confident LLM, a
-seemingly working code, and several rounds of iterative improvements can
-still be insufficient to produce a good solution even for a simple
-problem.
+ * Using a [large language model](https://en.wikipedia.org/wiki/Large_language_model)
+   for solving a problem without domain knowledge can easily become a
+   blind leading the blind situation.
+
+ * A seemingly confident LLM, a seemingly working code, and several
+   rounds of iterative improvements can still be insufficient to
+   produce a good solution even for a simple problem.
+
+ * An LLM will not pick the best solution for a problem, it will pick
+   the one which appears in its training corpus with the highest
+   frequency. Thus, too much reliance on LLMs combined with a lack of
+   domain expertise in a field and a lack of regularly following its
+   recent developments may result in slower spread of newly invented
+   techniques.
 
 <a id="problem" href="#toc">Top</a>
 
@@ -52,11 +69,11 @@ it's not trivial to get it right either.
 I am not a [DSP](https://en.wikipedia.org/wiki/Digital_signal_processing)
 expert, but I do occasionally learn a thing or two about it as a
 [hobby](https://github.com/attilammagyar/js80p), so I have an idea of a
-solution, but I'm curious to see how it compares to what
-[ChatGPT 4o](https://en.wikipedia.org/wiki/GPT-4o) can come up with.
+possible solution, but I'm curious to see how that compares to what
+today's popular language models can come up with. (As of April, 2025.)
 
 The test sound will be a sine wave which starts at 110 Hz, stays there
-for 3 seconds, then climbs up to 3630 Hz over 12 seconds. Its
+for 3 seconds, then climbs up to 3630 Hz during 12 seconds. Its
 spectrogram in [Audacity](https://www.audacityteam.org/) looks like
 the following:
 
@@ -64,10 +81,10 @@ the following:
 
 For reference, the original file: [sound.wav](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound.wav).
 
-<a id="attempt1" href="#toc">Top</a>
+<a id="chatgpt4o-1" href="#toc">Top</a>
 
-Attempt 1: NumPy
-----------------
+OpenAI ChatGPT 4o Attempt 1: NumPy
+----------------------------------
 
 (See the full conversations with the LLM's responses in the [Appendix](#c1).)
 
@@ -91,7 +108,7 @@ made much worse by the waveshaper.
 
 The result: [sound-chatgpt4o-c1p1.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p1.flac).
 
-I decided to be more specific:
+I tried to refine my requirements:
 
 > Avoid hard clipping, and use tanh() nonlinearity.
 
@@ -126,7 +143,7 @@ Now the model properly applied 2x [oversampling](https://en.wikipedia.org/wiki/O
 then the distortion, then a [low-pass filter](https://en.wikipedia.org/wiki/Low-pass_filter),
 and converted the result back to the original sampling rate. Pretty
 [standard stuff](https://www.w3.org/TR/webaudio-1.1/#dom-waveshapernode-oversample),
-with good results:
+with one of the best results. The aliasing is almost inaudible:
 
 <img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p4.png" alt="Spectrogram of the result of a 2x oversampled tanh() waveshaper." />
 
@@ -176,10 +193,10 @@ have worked. But unfortunately, most the aliasing came back:
 
 The result: [sound-chatgpt4o-c1p7.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p7.flac).
 
-<a id="attempt2" href="#toc">Top</a>
+<a id="chatgpt4o-2" href="#toc">Top</a>
 
-Attempt 2: Freestyle
---------------------
+OpenAI ChatGPT 4o Attempt 2: Freestyle
+--------------------------------------
 
 I decided to start again with a more specific prompt and weaker
 limitations, in order to make the model's job easier:
@@ -192,7 +209,7 @@ limitations, in order to make the model's job easier:
 > to keep aliasing to a minimum while keeping the algorithm real-time
 > friendly.
 
-This basically recreated the filter based solution, but with using 
+This basically recreated the filter based solution, but with using
 [SciPy](https://scipy.org/)'s filtering functions instead of the manual
 loop.
 
@@ -200,7 +217,84 @@ loop.
 
 The result: [sound-chatgpt4o-c2p1.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c2p1.flac).
 
-<a id="adaa" href="#toc">Top</a>
+<a id="focus" href="#toc">Top</a>
+
+Focus on the Distortion
+-----------------------
+
+This time I tried to be as specific as I could with my requirements
+without explicitly mentioning the name of the best solution that I know
+for the problem. The prompt looked like this:
+
+> You are an expert in Python and audio processing. Implement the
+> following function which applies gain boosting and tanh non-linearity
+> to an audio signal while keeping aliasing to a minimum:
+> 
+>     def distort(samples, gain_db=14.0, sample_rate=44100.0, channels=2):
+>         distorted = np.zeros_like(samples)
+>         # Your code here
+>         return distorted
+> 
+> The `samples` parameter is a NumPy array of shape `(N, channels)`
+> where `N` is the number of audio samples, the samples are float32
+> numbers (usually between -1.0 and 1.0), the `gain_db` parameter is
+> the gain to be applied in dB, the `sample_rate` specifies the
+> sampling rate, and the `channels` parameter specifies the number of
+> audio channels.
+> 
+> Use the fastest state of the art antialiasing method. Keep it
+>  CPU-friendly enough for real-time audio.
+
+I sent the exact same prompt to 3 popular large language models:
+[OpenAI ChatGPT 4o](https://openai.com/index/hello-gpt-4o),
+[DeepSeek R1](https://www.deepseek.com/), and
+[Google Gemini 2.5 Pro](https://gemini.google.com/).
+
+ChatGPT 4o and Gemini went with 4x oversampling, R1 picked 2x
+oversampling. Gemini's thought process indicated that the
+"state of the art" requirement might be confusing, so I retried it with
+the following ending:
+
+> Use the computationally cheapest antialiasing method you can think of.
+> Keep it CPU-friendly enough for real-time audio. Do not overthink.
+
+This made Gemini and ChatGPT use 2x oversampling, while R1 tried the
+pre-filtering approach with a Python-world low-pass filter loop...
+
+<a id="focus-chatgpt4o" href="#toc">Top</a>
+
+### OpenAI ChatGPT 4o
+
+This time the model went with 4x oversampling which considerably slower,
+and somehow it ended up with more aliasing than with the simpler, 2x
+oversampled NumPy-only approach.
+
+<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-focus.png" alt="More aliasing with slower code by OpenAI ChatGPT 4o" />
+
+The result: [sound-chatgpt4o-focus.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-focus.flac).
+
+<a id="focus-r1" href="#toc">Top</a>
+
+### DeepSeek R1
+
+Same approach as above, but with 2x oversampling.
+
+<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-r1-focus.png" alt="More aliasing with slower code by DeepSeek R1" />
+
+The result: [sound-r1-focus.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-r1-focus.flac).
+
+<a id="focus-gemini2_5pro" href="#toc">Top</a>
+
+### Google Gemini 2.5 Pro
+
+Same deal with 4x oversampling, but waaay overengineered for my taste.
+Aliasing is just as bad as with the above two approaches.
+
+<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-gemini2_5pro-focus.png" alt="More aliasing with slower code by Google Gemini 2.5 Pro" />
+
+The result: [sound-gemini2_5pro-focus.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-gemini2_5pro-focus.flac).
+
+<a id="manual-adaa" href="#toc">Top</a>
 
 Handcrafted ADAA, without AI
 ----------------------------
@@ -210,7 +304,7 @@ and I think its 1st order variant is a really good compromise between
 efficient computability and effectiveness in terms of reducing aliasing
 to an almost inaudible level. If the antiderivative of the
 waveshaper non-linearity is known, then probably this is the algorithm
-to go with. (See [my implementation in the appendix](#adaa-impl).)
+to go with. (See [my implementation in the appendix](#manual-adaa-impl).)
 
 <img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-manual-adaa.png" alt="1st order antiderivative antialiasing is a really good compromise between effectiveness and CPU-consumption." />
 
@@ -229,17 +323,56 @@ then called the function in a loop 100 times.
 
 Here are the implementations, from the fastest to the slowest:
 
- * handcrafted ADAA (human): 3.167s,
- * pre-filter (AI): 3.498s,
- * freestyle (AI): 3.913s,
- * oversampling (AI): 7.415s.
+ * 2.977s - handcrafted ADAA (human),
+ * 3.427s - OpenAI ChatGPT 4o attempt 1 pre-filter (AI),
+ * 3.789s - OpenAI ChatGPT 4o attempt 2 (AI),
+ * 7.315s - OpenAI ChatGPT 4o attempt 1 oversampling (AI),
+ * 18.446s - DeepSeek R1 focused question (AI),
+ * 35.455s - OpenAI ChatGPT 4o focused question (AI),
+ * 35.461s - Google Gemini 2.5 Pro focused question (AI).
+
+<a id="conclusion" href="#toc">Top</a>
+
+Conclusion
+----------
+
+ * For this particular task at this particular moment (April, 2025),
+   domain knowledge still beats LLM-aided coding.
+
+ * However, the models came up with seemingly working solutions, and
+   attached confident explanations and solid reasoning for them, making
+   it very convincing that they were providing the best solutions, while
+   they were not.
+
+ * If you have the domain knowledge, you can ask the models explicitly
+   to implement the ADAA solution, and they will do it fine for the most
+   part (but fixing the numerical stability issues will still require
+   either tedious nudging or additional manual work, which again,
+   requires domain expertise). Once done, the models will point out
+   the efficiency of this solution, while previously they failed to even
+   consider using it.
+
+   The reason for this is probably that by the time ADAA waveshaping
+   was invented (it was first published in 2016), DSP books, lecture
+   notes, forum discussions, and DSP libraries and their documentation
+   were already filled with the oversampling based approach. This is
+   probably also reflected in the LLM training corpus: there might be
+   orders of magnite more mentions of waveshaper antialiasing with
+   oversampling than with ADAA, so it is proportionally more likely that
+   language models will pick the former approach even when the lattere
+   would be a much better solution.
+
+   Thus, too much reliance on LLMs combined with a lack of
+   domain expertise in a field and a lack of regularly following
+   its recent developments may result in slower spread of newly
+   invented techniques on the long run...
 
 <a id="c1" href="#toc">Top</a>
 
 Appendix
 --------
 
-### Conversation 1
+### OpenAI ChatGPT 4o Conversation 1
 
 #### Prompt 1
 
@@ -260,59 +393,59 @@ and NumPy:
     import wave
     import numpy as np
     import struct
-
+    
     def read_wav(filename):
         with wave.open(filename, 'rb') as wf:
             num_channels = wf.getnchannels()
             sample_width = wf.getsampwidth()
             sample_rate = wf.getframerate()
             num_frames = wf.getnframes()
-
+    
             assert sample_width == 2, "Only 16-bit WAV files are supported."
             assert num_channels == 2, "Only stereo WAV files are supported."
             assert sample_rate == 44100, "Only 44.1 kHz sample rate is supported."
-
+    
             raw_data = wf.readframes(num_frames)
             data = np.frombuffer(raw_data, dtype=np.int16)
             stereo_data = data.reshape(-1, 2)
             return stereo_data, sample_rate
-
+    
     def write_wav(filename, data, sample_rate):
         num_channels = 2
         sample_width = 2  # bytes per sample (16-bit)
         num_frames = data.shape[0]
-
+    
         with wave.open(filename, 'wb') as wf:
             wf.setnchannels(num_channels)
             wf.setsampwidth(sample_width)
             wf.setframerate(sample_rate)
             wf.writeframes(data.astype(np.int16).tobytes())
-
+    
     def distort(samples, gain=5.0):
         # Normalize to [-1, 1]
         norm_samples = samples / 32768.0
-
+    
         # Apply gain
         amplified = gain * norm_samples
-
+    
         # Apply hard clipping to simulate distortion
         clipped = np.clip(amplified, -1.0, 1.0)
-
+    
         # Add odd harmonics using a cubic nonlinearity
         distorted = clipped - (1/3.0) * clipped**3
-
+    
         # Rescale to 16-bit PCM
         output = np.int16(distorted * 32767)
         return output
-
+    
     def main():
         input_filename = "sound.wav"
         output_filename = "sound-dst.wav"
-
+    
         samples, sample_rate = read_wav(input_filename)
         distorted_samples = distort(samples.astype(np.float32))
         write_wav(output_filename, distorted_samples, sample_rate)
-
+    
     if __name__ == "__main__":
         main()
 
@@ -346,52 +479,52 @@ without harsh clipping.
 
     import wave
     import numpy as np
-
+    
     def read_wav(filename):
         with wave.open(filename, 'rb') as wf:
             num_channels = wf.getnchannels()
             sample_width = wf.getsampwidth()
             sample_rate = wf.getframerate()
             num_frames = wf.getnframes()
-
+    
             assert sample_width == 2, "Only 16-bit WAV files are supported."
             assert num_channels == 2, "Only stereo WAV files are supported."
             assert sample_rate == 44100, "Only 44.1 kHz sample rate is supported."
-
+    
             raw_data = wf.readframes(num_frames)
             data = np.frombuffer(raw_data, dtype=np.int16)
             stereo_data = data.reshape(-1, 2)
             return stereo_data, sample_rate
-
+    
     def write_wav(filename, data, sample_rate):
         with wave.open(filename, 'wb') as wf:
             wf.setnchannels(2)
             wf.setsampwidth(2)  # 16-bit
             wf.setframerate(sample_rate)
             wf.writeframes(data.astype(np.int16).tobytes())
-
+    
     def distort(samples, gain=5.0):
         # Normalize to [-1, 1]
         norm_samples = samples / 32768.0
-
+    
         # Apply gain before distortion
         driven = gain * norm_samples
-
+    
         # Apply tanh for soft clipping
         distorted = np.tanh(driven)
-
+    
         # Optional: renormalize to original range
         output = distorted * 32767
         return output.astype(np.int16)
-
+    
     def main():
         input_filename = "sound.wav"
         output_filename = "sound-dst.wav"
-
+    
         samples, sample_rate = read_wav(input_filename)
         distorted_samples = distort(samples.astype(np.float32))
         write_wav(output_filename, distorted_samples, sample_rate)
-
+    
     if __name__ == "__main__":
         main()
 
@@ -433,71 +566,71 @@ anti-aliasing filtering using a **simple FIR low-pass filter**:
 
     import wave
     import numpy as np
-
+    
     def read_wav(filename):
         with wave.open(filename, 'rb') as wf:
             num_channels = wf.getnchannels()
             sample_width = wf.getsampwidth()
             sample_rate = wf.getframerate()
             num_frames = wf.getnframes()
-
+    
             assert sample_width == 2
             assert num_channels == 2
             assert sample_rate == 44100
-
+    
             raw_data = wf.readframes(num_frames)
             data = np.frombuffer(raw_data, dtype=np.int16)
             stereo_data = data.reshape(-1, 2)
             return stereo_data, sample_rate
-
+    
     def write_wav(filename, data, sample_rate):
         with wave.open(filename, 'wb') as wf:
             wf.setnchannels(2)
             wf.setsampwidth(2)
             wf.setframerate(sample_rate)
             wf.writeframes(data.astype(np.int16).tobytes())
-
+    
     def lowpass_filter(signal, cutoff_ratio=0.5):
         # Simple 5-tap FIR lowpass filter
         kernel = np.array([0.1, 0.25, 0.3, 0.25, 0.1])
         filtered = np.convolve(signal, kernel, mode='same')
         return filtered
-
+    
     def distort(samples, gain=5.0):
         # Normalize to [-1, 1]
         norm = samples / 32768.0
-
+    
         # Upsample 2x (insert zeros between samples)
         upsampled = np.zeros((norm.shape[0] * 2, 2), dtype=np.float32)
         upsampled[::2] = norm
-
+    
         # Basic interpolation (linear smoothing)
         upsampled[1::2] = (norm[:-1] + norm[1:]) / 2.0
-
+    
         # Apply gain and tanh distortion
         driven = gain * upsampled
         distorted = np.tanh(driven)
-
+    
         # Low-pass filter before downsampling
         filtered_L = lowpass_filter(distorted[:, 0])
         filtered_R = lowpass_filter(distorted[:, 1])
         filtered = np.stack([filtered_L, filtered_R], axis=1)
-
+    
         # Downsample by taking every second sample
         downsampled = filtered[::2]
-
+    
         # Rescale to 16-bit range
         output = np.clip(downsampled * 32767, -32768, 32767)
         return output.astype(np.int16)
-
+    
     def main():
         input_filename = "sound.wav"
         output_filename = "sound-dst.wav"
-
+    
         samples, sample_rate = read_wav(input_filename)
         distorted_samples = distort(samples.astype(np.float32))
         write_wav(output_filename, distorted_samples, sample_rate)
-
+    
     if __name__ == "__main__":
         main()
 
@@ -551,33 +684,33 @@ Here’s the **fixed and working** version of the `distort()` function:
     def distort(samples, gain=5.0):
         # Normalize to [-1, 1]
         norm = samples / 32768.0
-
+    
         # Upsample 2x (insert interpolated values between samples)
         up_len = norm.shape[0] * 2
         upsampled = np.zeros((up_len, 2), dtype=np.float32)
-
+    
         # Copy original samples to even indices
         upsampled[::2] = norm
-
+    
         # Linear interpolation for odd indices (except last)
         interp = (norm[:-1] + norm[1:]) / 2.0
         upsampled[1:-1:2] = interp
-
+    
         # Edge case: copy last sample for the final odd index
         upsampled[-1] = norm[-1]
-
+    
         # Apply gain and tanh distortion
         driven = gain * upsampled
         distorted = np.tanh(driven)
-
+    
         # Low-pass filter
         filtered_L = lowpass_filter(distorted[:, 0])
         filtered_R = lowpass_filter(distorted[:, 1])
         filtered = np.stack([filtered_L, filtered_R], axis=1)
-
+    
         # Downsample
         downsampled = filtered[::2]
-
+    
         # Rescale to 16-bit PCM range
         output = np.clip(downsampled * 32767, -32768, 32767)
         return output.astype(np.int16)
@@ -647,21 +780,21 @@ Now apply this in the `distort()` function:
     def distort(samples, gain=5.0):
         # Normalize to [-1, 1]
         norm = samples / 32768.0
-
+    
         # Pre-filter to limit bandwidth (reduce aliasing)
         prefiltered_L = simple_lowpass(norm[:, 0], alpha=0.2)
         prefiltered_R = simple_lowpass(norm[:, 1], alpha=0.2)
         prefiltered = np.stack([prefiltered_L, prefiltered_R], axis=1)
-
+    
         # Apply gain and tanh distortion
         driven = gain * prefiltered
         distorted = np.tanh(driven)
-
+    
         # Optional: post-filter to tame high end fizz (light smoothing)
         postfiltered_L = simple_lowpass(distorted[:, 0], alpha=0.1)
         postfiltered_R = simple_lowpass(distorted[:, 1], alpha=0.1)
         postfiltered = np.stack([postfiltered_L, postfiltered_R], axis=1)
-
+    
         # Scale back to 16-bit PCM
         output = np.clip(postfiltered * 32767, -32768, 32767)
         return output.astype(np.int16)
@@ -749,14 +882,14 @@ efficient form that maintains clarity and stereo compatibility.
     def distort(samples, gain=5.0):
         # Normalize to [-1, 1]
         norm = samples / 32768.0
-
+    
         # Pre-filter to reduce aliasing
         prefiltered = simple_lowpass(norm, alpha=0.2)
-
+    
         # Apply gain and tanh distortion
         driven = gain * prefiltered
         distorted = np.tanh(driven)
-
+    
         # Rescale to 16-bit PCM
         output = np.clip(distorted * 32767, -32768, 32767)
         return output.astype(np.int16)
@@ -803,16 +936,16 @@ aliasing.
     def distort(samples, gain=5.0):
         # Normalize to [-1, 1]
         norm = samples / 32768.0
-
+    
         # Pre-filter each channel to reduce aliasing
         filtered_L = lowpass_filter(norm[:, 0])
         filtered_R = lowpass_filter(norm[:, 1])
         prefiltered = np.stack([filtered_L, filtered_R], axis=1)
-
+    
         # Apply gain and tanh distortion
         driven = gain * prefiltered
         distorted = np.tanh(driven)
-
+    
         # Scale back to 16-bit PCM
         output = np.clip(distorted * 32767, -32768, 32767)
         return output.astype(np.int16)
@@ -829,7 +962,7 @@ experiment with asymmetric distortion curves.
 
 <a id="c2" href="#toc">Top</a>
 
-### Conversation 2
+### OpenAI ChatGPT 4o Conversation 2
 
 #### Prompt 1
 
@@ -859,7 +992,7 @@ Here's a Python script that meets your requirements:
     import struct
     import math
     from scipy.signal import butter, lfilter
-
+    
     # Constants
     INPUT_FILE = 'sound.wav'
     OUTPUT_FILE = 'sound-dst.wav'
@@ -868,7 +1001,7 @@ Here's a Python script that meets your requirements:
     SAMPLE_WIDTH = 2  # bytes (16-bit)
     SAMPLE_RATE = 44100
     NUM_CHANNELS = 2
-
+    
     def read_wave_file(filename):
         with wave.open(filename, 'rb') as wf:
             assert wf.getsampwidth() == SAMPLE_WIDTH, "Only 16-bit audio supported"
@@ -878,7 +1011,7 @@ Here's a Python script that meets your requirements:
             samples = np.frombuffer(frames, dtype=np.int16)
             samples = samples.reshape(-1, NUM_CHANNELS)
             return samples, wf.getframerate()
-
+    
     def write_wave_file(filename, samples, framerate):
         with wave.open(filename, 'wb') as wf:
             wf.setnchannels(NUM_CHANNELS)
@@ -886,7 +1019,7 @@ Here's a Python script that meets your requirements:
             wf.setframerate(framerate)
             samples = samples.astype(np.int16).flatten()
             wf.writeframes(samples.tobytes())
-
+    
     def apply_pre_filter(samples, cutoff=8000, order=2):
         nyquist = 0.5 * SAMPLE_RATE
         normal_cutoff = cutoff / nyquist
@@ -895,7 +1028,7 @@ Here's a Python script that meets your requirements:
         for ch in range(NUM_CHANNELS):
             filtered[:, ch] = lfilter(b, a, samples[:, ch])
         return filtered
-
+    
     def apply_distortion(samples):
         # Normalize to [-1, 1]
         normalized = samples / 32768.0
@@ -906,13 +1039,13 @@ Here's a Python script that meets your requirements:
         # Scale back to int16 range
         output = np.clip(distorted * 32767.0, -32768, 32767)
         return output.astype(np.int16)
-
+    
     def main():
         samples, framerate = read_wave_file(INPUT_FILE)
         processed = apply_distortion(samples)
         write_wave_file(OUTPUT_FILE, processed, framerate)
         print("Distortion applied and saved to", OUTPUT_FILE)
-
+    
     if __name__ == '__main__':
         main()
 
@@ -1060,93 +1193,860 @@ used with `tanh`-style saturation:
 Let me know if you want code examples for oversampling or a band-limited
 polynomial approximation!
 
-<a id="adaa-impl" href="#toc">Top</a>
+<a id="focus-full" href="#toc">Top</a>
+
+### Focus on the Distortion
+
+You are an expert in Python and audio processing. Implement the
+following function which applies gain boosting and tanh non-linearity
+to an audio signal while keeping aliasing to a minimum:
+
+    def distort(samples, gain_db=14.0, sample_rate=44100.0, channels=2):
+        distorted = np.zeros_like(samples)
+        # Your code here
+        return distorted
+
+The `samples` parameter is a NumPy array of shape `(N, channels)`
+where `N` is the number of audio samples, the samples are float32
+numbers (usually between -1.0 and 1.0), the `gain_db` parameter is
+the gain to be applied in dB, the `sample_rate` specifies the
+sampling rate, and the `channels` parameter specifies the number
+of audio channels.
+
+Use the fastest state of the art antialiasing method. Keep it
+CPU-friendly enough for real-time audio.
+
+<a id="focus-full-OpenAI ChatGPT4o" href="#toc">Top</a>
+
+#### OpenAI ChatGPT 4o's Response
+
+To apply **gain boosting** and a **tanh-based distortion** while
+minimizing **aliasing**, we can use **oversampling** (typically by a
+factor of 2–4), apply the non-linearity, and then **downsample** with
+a suitable lowpass filter. For CPU-efficient real-time performance,
+**polyphase IIR or FIR resampling** is a good choice.
+
+We'll use `scipy.signal.resample_poly` for efficient
+oversampling/downsampling with FIR filtering, and keep things
+vectorized with NumPy for performance.
+
+Here's the implementation:
+
+    import numpy as np
+    from scipy.signal import resample_poly
+    
+    def distort(samples, gain_db=14.0, sample_rate=44100.0, channels=2):
+        # Parameters
+        oversample_factor = 4  # 4x oversampling for good antialiasing with minimal CPU use
+    
+        # Convert dB gain to linear
+        gain = 10 ** (gain_db / 20.0)
+    
+        # Apply oversampling (per channel)
+        oversampled = resample_poly(samples, up=oversample_factor, down=1, axis=0)
+    
+        # Apply gain and non-linearity
+        processed = np.tanh(oversampled * gain)
+    
+        # Downsample back to original rate
+        distorted = resample_poly(processed, up=1, down=oversample_factor, axis=0)
+    
+        # Ensure the output shape matches input (can be slightly off due to filtering)
+        distorted = distorted[:samples.shape[0], :]
+    
+        return distorted.astype(np.float32)
+
+##### Key Notes:
+
+ * `resample_poly` uses an efficient polyphase FIR filter, which gives
+    excellent quality with relatively low CPU cost.
+ * We oversample **before** applying the non-linearity to reduce
+   aliasing introduced by the `tanh`.
+ * We trim the result to match the input size (can slightly vary due
+   to filtering delay).
+ * If needed, the oversample factor can be reduced to `2` for lower CPU
+   usage or increased to `8` for cleaner results.
+
+Let me know if you’d like a version optimized for mono or specific DSP
+libraries (like `numba`, `librosa`, `torch`, etc.).
+
+<a id="focus-full-r1" href="#toc">Top</a>
+
+#### DeepSeek R1's Response
+
+##### Audio Distortion with Anti-Aliasing
+
+Here's an implementation that applies gain boosting with a tanh
+non-linearity while minimizing aliasing artifacts. I'll use a
+polyphase anti-aliasing filter approach, which is efficient and
+suitable for real-time processing.
+
+    import numpy as np
+    from scipy.signal import butter, lfilter, resample_poly
+    
+    def distort(samples, gain_db=14.0, sample_rate=44100.0, channels=2):
+        """
+        Apply gain boosting and tanh non-linearity to an audio signal with anti-aliasing.
+        
+        Args:
+            samples: Input audio array (N x channels) in float32 (-1.0 to 1.0)
+            gain_db: Gain to apply in decibels before distortion
+            sample_rate: Sampling rate of the audio
+            channels: Number of audio channels
+        
+        Returns:
+            Distorted audio with anti-aliasing
+        """
+        # Convert gain from dB to linear scale
+        gain_linear = 10 ** (gain_db / 20.0)
+        
+        # Apply gain
+        gained = samples * gain_linear
+        
+        # Anti-aliasing processing
+        # We'll upsample, apply non-linearity, then downsample
+        up_factor = 2  # Upsampling factor (2x is often sufficient for audio)
+        down_factor = 1
+        
+        distorted = np.zeros_like(gained)
+        
+        for channel in range(channels):
+            channel_data = gained[:, channel]
+            
+            # Upsample with anti-aliasing filter
+            upsampled = resample_poly(channel_data, up_factor, down_factor, 
+                                     window=('kaiser', 5.0))
+            
+            # Apply non-linearity (tanh) to the upsampled signal
+            distorted_upsampled = np.tanh(upsampled)
+            
+            # Downsample with anti-aliasing filter
+            downsampled = resample_poly(distorted_upsampled, down_factor, up_factor, 
+                                       window=('kaiser', 5.0))
+            
+            # Ensure we don't have length mismatches due to polyphase rounding
+            if len(downsampled) > len(channel_data):
+                downsampled = downsampled[:len(channel_data)]
+            elif len(downsampled) < len(channel_data):
+                downsampled = np.pad(downsampled, (0, len(channel_data) - len(downsampled)), 
+                                    mode='constant')
+            
+            distorted[:, channel] = downsampled
+        
+        # Clip any remaining values outside [-1, 1] (shouldn't happen due to tanh)
+        return np.clip(distorted, -1.0, 1.0)
+
+##### Explanation:
+
+1. **Gain Application**: We first convert the gain from dB to linear
+   scale and apply it to the input signal.
+2. **Anti-Aliasing Approach**:
+    * Uses polyphase resampling (upsampling before non-linearity, downsampling after)
+    * 2x oversampling is often sufficient for audio applications
+    * Kaiser window provides good stopband attenuation with reasonable CPU usage
+3. **Non-Linearity**:
+    * tanh() is applied to the upsampled signal to reduce high-frequency artifacts
+    * tanh naturally limits the signal to [-1, 1] range
+4. **Efficiency Considerations**:
+    * Uses scipy's `resample_poly` which is optimized for performance
+    * Processes channels independently (good for parallelization if needed)
+    * Minimal memory allocation beyond the required buffers
+5. **Safety Measures**:
+    * Handles potential length mismatches from resampling
+    * Final clipping ensures output stays in valid range
+
+This implementation provides a good balance between audio quality
+and CPU efficiency, making it suitable for real-time applications
+while keeping aliasing artifacts to a minimum.
+
+For even better anti-aliasing at the cost of more CPU, you could
+increase the oversampling factor to 4x, but 2x is often sufficient
+for most audio applications.
+
+<a id="focus-full-gemini2_5pro" href="#toc">Top</a>
+
+#### Google Gemini 2.5 Pro's Response
+
+##### Thinking Process
+
+Here's a thinking process that leads to the provided Python code for
+the `distort` function:
+
+1. **Understand the Goal:** The user wants a Python function `distort`
+   that takes an audio signal (`samples`), applies a gain boost
+   (`gain_db`), and then applies a `tanh` non-linearity (distortion).
+   The key requirements are:
+    * Minimize aliasing.
+    * Use the "fastest state-of-the-art" antialiasing method.
+    * Be CPU-friendly enough for real-time audio.
+    * Input is a NumPy array (`(N, channels)`), `float32`.
+    * Parameters include `gain_db`, `sample_rate`, and `channels`.
+2. **Core Distortion Steps:**
+    * **Gain:** Convert the gain from dB to a linear factor. The
+      formula is `linear_gain = 10**(gain_db / 20)`.
+    * **Apply Gain:** Multiply the input `samples` by the `linear_gain`.
+    * **Non-linearity:** Apply the `tanh` function to the gained signal.
+      `distorted = np.tanh(gained_signal)`.
+3. **The Aliasing Problem**:
+    * **Why does it happen?** Applying a non-linear function (like
+      `tanh`) to a signal generates new frequency components
+      (harmonics). If the original signal has high-frequency
+      components, these new harmonics can exceed the Nyquist frequency
+      (half the sampling rate). Frequencies above the Nyquist frequency
+      "fold back" into the audible range, creating unwanted artifacts
+      called aliasing.
+    * **How to prevent it?** The standard technique is oversampling.
+       * Increase the sampling rate of the signal before applying the
+         non-linearity.
+       * Apply the non-linearity at the higher sample rate. This pushes
+         the newly generated high-frequency harmonics further up,
+         beyond the original Nyquist frequency.
+       * Apply a low-pass filter at the original Nyquist frequency to
+         remove the unwanted high-frequency harmonics generated by the
+         non-linearity.
+       * Downsample the signal back to the original sampling rate.
+4. **Choosing the Oversampling Method:**
+    * The user asks for the "fastest state-of-the-art" and
+      "CPU-friendly" method.
+    * **Common Methods:**
+       * Linear Interpolation: Simple and fast, but poor quality
+         (doesn't effectively suppress aliasing). Not suitable.
+       * Zero-Order Hold: Also simple, but introduces significant
+         high-frequency artifacts. Not suitable.
+       * Windowed Sinc Interpolation: High quality, but computationally
+         expensive (long FIR filters). Might not be "CPU-friendly
+         enough for real-time".
+       * Polynomial Interpolation (e.g., Lagrange): Can be faster than
+         sinc, quality varies.
+       * Polyphase FIR/IIR Filters: Often used in dedicated audio
+         plugins. Can offer a good trade-off between quality and
+         efficiency. Designing good polyphase filters is non-trivial.
+       * Using libraries like `scipy.signal.resample` or `resampy`:
+         These often use efficient methods (like polyphase FIR or
+         FFT-based methods). `scipy.signal.resample` uses FFT, which is
+         generally high quality but can have boundary artifacts and
+         might be overkill/less efficient for moderate oversampling
+         factors in real-time contexts if latency is critical (though
+         often fine). `resampy` often uses high-quality sinc
+         interpolation.
+       * Minimum Phase Filters: Often preferred for up/downsampling in
+         audio as they minimize pre-ringing artifacts and can have
+         lower latency than linear-phase FIR filters.
+    * **Real-time Consideration:** For real-time, latency and
+      computational cost are crucial. Very high oversampling factors
+      (e.g., 16x, 32x) combined with complex filters can become too
+      demanding. A moderate factor (e.g., 2x, 4x, maybe 8x) is often a
+      good compromise.
+    * **"State-of-the-Art" & "Fastest":** This is subjective and
+      depends on the exact trade-off. Polyphase FIR/IIR filters
+      designed specifically for audio oversampling are often considered
+      state-of-the-art for real-time performance. However, implementing
+      these from scratch is complex. Using a well-optimized library
+      function is a practical approach. `scipy.signal.resample_poly` is
+      specifically designed for rational factor resampling and often
+      uses polyphase FIR filters internally, making it a strong
+      candidate. It's generally faster than FFT-based resampling
+      (`scipy.signal.resample`) for moderate factors and avoids FFT
+      block-based latency issues.
+    * **Decision:** Let's go with `scipy.signal.resample_poly` as it's
+      designed for this purpose, available in a standard library
+      (`scipy`), and typically uses efficient polyphase filtering. It
+      handles rational resampling factors well (upsample by `L`,
+      downsample by `M`).
+5. **Implementing Oversampling with `resample_poly`:**
+    * **Choose Oversampling Factor:** A factor of 2x or 4x is a
+      reasonable starting point for real-time. Let's choose 4x
+      (`oversampling_factor = 4`). Higher factors give better alias
+      rejection but cost more CPU.
+    * **Upsample:** Use
+      `resample_poly(samples, up=oversampling_factor, down=1, axis=0)`.
+      `axis=0` because our samples are `(N, channels)`.
+    * **Apply Gain and Distortion:** Perform these steps on the
+      upsampled signal.
+    * **Downsample:** Use
+      `resample_poly(distorted_oversampled, up=1, down=oversampling_factor, axis=0)`.
+      This implicitly includes the necessary low-pass filtering.
+6. Putting it Together (Initial Draft):
+
+        import numpy as np
+        from scipy.signal import resample_poly # Need to import this
+        
+        def distort(samples, gain_db=14.0, sample_rate=44100.0, channels=2):
+            # 1. Calculate linear gain
+            gain_linear = 10.0**(gain_db / 20.0)
+        
+            # 2. Define oversampling factor
+            oversampling_factor = 4 # Good starting point
+        
+            # 3. Upsample
+            # Ensure input is float64 for resample_poly precision if needed,
+            # but let's stick to float32 for performance if possible.
+            # resample_poly might internally use float64 anyway.
+            # Let's try keeping it float32 first.
+            samples_upsampled = resample_poly(samples, up=oversampling_factor, down=1, axis=0)
+        
+            # 4. Apply gain and distortion to upsampled signal
+            distorted_upsampled = np.tanh(samples_upsampled * gain_linear)
+        
+            # 5. Downsample
+            distorted = resample_poly(distorted_upsampled, up=1, down=oversampling_factor, axis=0)
+        
+            # 6. Ensure output type and shape match input
+            # resample_poly might change dtype, cast back if necessary
+            if distorted.dtype != samples.dtype:
+                 distorted = distorted.astype(samples.dtype)
+        
+            # Ensure shape is correct (resample_poly should maintain channel dimension)
+            # Length might be slightly different due to filter transients, but should be close.
+            # For exact length matching, padding/truncating might be needed, but usually not critical.
+            # Let's assume resample_poly handles length reasonably well for now.
+        
+            return distorted
+
+7. **Refinements and Considerations:**
+    * **Dependencies:** Need `numpy` and `scipy`. Add import statements.
+    * **Data Types:** `resample_poly` often works best with `float64`
+      internally for filter accuracy, but the input/output can be
+      `float32`. Let's test if `float32` input works well enough. If
+      precision issues arise, casting to `float64` before
+      `resample_poly` and back to `float32` afterwards might be needed,
+      but this adds overhead. Sticking with `float32` is more
+      CPU-friendly if it suffices. The provided code assumes `float32`
+      is sufficient.
+    * **Filter Transients/Length:** Resampling (especially
+      downsampling) involves filtering, which has a finite impulse
+      response. This means the output length might not be exactly `N`.
+      `resample_poly` tries to handle this, but slight differences can
+      occur. For many applications, this is acceptable. If exact length
+      matching is critical, more complex handling (e.g., padding before
+      upsampling, careful slicing after downsampling) would be needed,
+      potentially using `scipy.signal.upfirdn` for more control, but
+      this adds complexity. For this request, let's assume the length
+      difference from `resample_poly` is acceptable. The use of
+      `np.zeros_like(samples)` initially implies the user might expect
+      the exact same shape, but applying processing often changes
+      length slightly with filtering. We'll return the result from
+      `resample_poly` directly. Correction: It's better practice to
+      ensure the output has the same length as the input if possible,
+      especially for block-based real-time processing. We can achieve
+      this by truncating or padding the output of the downsampling
+      step. Truncating is simpler.
+    * **Real-time Performance:** `resample_poly` with a factor of 4
+      should be reasonably fast on modern CPUs, but performance depends
+      heavily on the input block size (`N`). For very small blocks, the
+      overhead might be significant. For larger blocks, it's usually
+      efficient. Testing is required for specific real-time constraints.
+    * **Alternative:** `scipy.signal.upfirdn`: This offers more control
+      over the filter used for up/downsampling but requires designing
+      or selecting a suitable low-pass filter explicitly. It can be
+      faster if a very efficient (short) filter is used, but designing
+      such a filter that still provides good anti-aliasing is
+      non-trivial. `resample_poly` uses a pre-designed Kaiser windowed
+      sinc filter which is generally a good default.
+    * **Edge Cases:** What if `gain_db` is very low (or negative)? The
+      `tanh` function will operate in its near-linear region, producing
+      less distortion and fewer harmonics, reducing the need for
+      oversampling. What if `gain_db` is extremely high? The signal
+      becomes almost a square wave, rich in harmonics, making
+      oversampling crucial. The chosen `oversampling_factor=4` is a
+      compromise.
+    * **Code Clarity:** Add comments explaining the steps. Ensure
+      variable names are clear.
+8. Final Code Structure:
+
+        import numpy as np
+        from scipy.signal import resample_poly # Import necessary function
+        
+        def distort(samples, gain_db=14.0, sample_rate=44100.0, channels=2):
+            """
+            Applies gain boosting and tanh distortion with anti-aliasing via oversampling.
+        
+            Args:
+                samples (np.ndarray): Input audio signal, shape (N, channels), float32.
+                gain_db (float): Gain boost in decibels. Defaults to 14.0.
+                sample_rate (float): Sampling rate of the input audio. Defaults to 44100.0.
+                                     (Used conceptually, not directly in this implementation
+                                     as resample_poly handles relative rates).
+                channels (int): Number of audio channels. Defaults to 2.
+        
+            Returns:
+                np.ndarray: Distorted audio signal, same shape and dtype as input.
+            """
+            # --- Input Validation (Optional but good practice) ---
+            if not isinstance(samples, np.ndarray):
+                raise TypeError("Input 'samples' must be a NumPy array.")
+            if samples.ndim != 2:
+                raise ValueError("Input 'samples' must be a 2D array (N, channels).")
+            if samples.shape[1] != channels:
+                raise ValueError(f"Input 'samples' second dimension ({samples.shape[1]}) "
+                                 f"does not match 'channels' parameter ({channels}).")
+            if samples.dtype != np.float32:
+                # Warn or convert, depending on requirements. Let's allow other floats for now.
+                # Or convert: samples = samples.astype(np.float32)
+                print(f"Warning: Input 'samples' dtype is {samples.dtype}, expected float32.")
+        
+        
+            # --- Parameters ---
+            gain_linear = 10.0**(gain_db / 20.0)
+            # Choose oversampling factor. 4x is a common trade-off for quality/performance.
+            # Higher values (e.g., 8x, 16x) give better anti-aliasing but cost more CPU.
+            oversampling_factor = 4
+            original_length = samples.shape[0]
+            original_dtype = samples.dtype
+        
+            # --- Processing ---
+            try:
+                # 1. Upsample the signal (resample_poly is efficient for this)
+                #    axis=0 operates along the time dimension for (N, channels) array
+                #    Using float64 internally in resample_poly might improve filter accuracy,
+                #    but let's process as float32 if input is float32 for efficiency.
+                #    If input is float64, it will use float64.
+                samples_upsampled = resample_poly(samples, up=oversampling_factor, down=1, axis=0)
+
+                # 2. Apply gain and tanh distortion
+                distorted_upsampled = np.tanh(samples_upsampled * gain_linear)
+
+                # 3. Downsample the signal back to the original rate
+                #    This implicitly applies the necessary anti-aliasing (low-pass) filter.
+                distorted_resampled = resample_poly(distorted_upsampled, up=1, down=oversampling_factor, axis=0)
+
+                # 4. Ensure output length matches input length
+                #    Resampling might slightly change the length due to filter transients.
+                #    Truncate or pad if necessary. Truncating is simpler.
+                current_length = distorted_resampled.shape[0]
+                if current_length > original_length:
+                    distorted = distorted_resampled[:original_length, :]
+                elif current_length < original_length:
+                    # Padding might be needed in real-time block processing,
+                    # but for offline, returning a slightly shorter signal might be acceptable.
+                    # Let's pad with zeros to match input shape.
+                    pad_width = original_length - current_length
+                    # Create padding array: ((before_axis0, after_axis0), (before_axis1, after_axis1))
+                    padding = ((0, pad_width), (0, 0))
+                    distorted = np.pad(distorted_resampled, pad_width=padding, mode='constant', constant_values=0)
+                else:
+                    distorted = distorted_resampled
+        
+                # 5. Ensure output dtype matches input dtype
+                if distorted.dtype != original_dtype:
+                   distorted = distorted.astype(original_dtype)
+        
+            except ImportError:
+                 print("Error: SciPy is required for oversampling. Please install it ('pip install scipy').")
+                 # Fallback: No anti-aliasing (will produce aliasing)
+                 print("Warning: Proceeding without anti-aliasing due to missing SciPy.")
+                 distorted_no_aa = np.tanh(samples * gain_linear)
+                 # Ensure dtype consistency even in fallback
+                 distorted = distorted_no_aa.astype(original_dtype)
+            except Exception as e:
+                print(f"An error occurred during processing: {e}")
+                # Return zeros or raise the exception depending on desired robustness
+                distorted = np.zeros_like(samples)
+        
+            # --- Final Check ---
+            # Ensure the final shape is exactly the same as the input
+            if distorted.shape != samples.shape:
+                 # This might happen if padding logic failed or channels changed unexpectedly
+                 print(f"Warning: Output shape {distorted.shape} differs from input shape {samples.shape}. Adjusting...")
+                 # Attempt a simple reshape/truncate if channels match, otherwise return zeros
+                 if distorted.shape[1] == channels:
+                      distorted = distorted[:original_length, :]
+                      if distorted.shape[0] < original_length: # If still too short after truncate attempt
+                           pad_width = original_length - distorted.shape[0]
+                           padding = ((0, pad_width), (0, 0))
+                           distorted = np.pad(distorted, pad_width=padding, mode='constant', constant_values=0)
+                 else:
+                      distorted = np.zeros_like(samples) # Fallback if channels mismatch
+        
+        
+            return distorted.astype(original_dtype) # Ensure final dtype again
+
+9. **Final Review:** The code now includes oversampling using
+`resample_poly`, applies gain and `tanh`, downsamples, handles
+potential length mismatches by padding/truncating, attempts to maintain
+the original data type, includes basic error handling for missing
+`scipy`, and adds comments and docstrings. This addresses the user's
+requirements for distortion, anti-aliasing, and real-time friendliness
+(using an efficient library function). The oversampling factor (4x) is
+a reasonable default but could be adjusted.
+
+##### Final Response
+
+Okay, here's the implementation of the `distort` function using
+oversampling to minimize aliasing, suitable for real-time processing.
+We'll use `scipy.signal.resample_poly` as it's efficient and designed
+for rational resampling factors, often employing polyphase filters
+which are good for performance.
+
+    import numpy as np
+    try:
+        # scipy.signal.resample_poly is efficient for rational resampling
+        # and often uses polyphase filtering, suitable for real-time.
+        from scipy.signal import resample_poly
+        _SCIPY_AVAILABLE = True
+    except ImportError:
+        _SCIPY_AVAILABLE = False
+        print("Warning: SciPy not found. Anti-aliasing (oversampling) will be disabled.")
+        print("         For anti-aliasing, please install SciPy: pip install scipy")
+
+    def distort(samples, gain_db=14.0, sample_rate=44100.0, channels=2):
+        """
+        Applies gain boosting and tanh distortion with anti-aliasing via oversampling.
+
+        This function increases the signal amplitude, applies a tanh saturation curve,
+        and uses oversampling (if SciPy is available) to mitigate aliasing artifacts
+        introduced by the non-linear distortion.
+
+        Args:
+            samples (np.ndarray): Input audio signal. Must be a 2D NumPy array of
+                                  shape (N, channels), where N is the number of samples.
+                                  Expected dtype is float32 (or float64).
+            gain_db (float): The amount of gain boost to apply in decibels (dB)
+                             before the non-linearity. Defaults to 14.0.
+            sample_rate (float): The sample rate of the audio in Hz.
+                                 Currently unused in the core logic but kept for
+                                 potential future use or context. Defaults to 44100.0.
+            channels (int): The number of channels in the audio signal. Must match
+                            the second dimension of the `samples` array. Defaults to 2.
+
+        Returns:
+            np.ndarray: The distorted audio signal, with the same shape and dtype
+                        as the input `samples`. Returns an array of zeros if an
+                        unexpected error occurs during processing.
+
+        Raises:
+            TypeError: If `samples` is not a NumPy array.
+            ValueError: If `samples` is not 2D or its second dimension doesn't match `channels`.
+        """
+
+        # --- Input Validation ---
+        if not isinstance(samples, np.ndarray):
+            raise TypeError("Input 'samples' must be a NumPy array.")
+        if samples.ndim != 2:
+            raise ValueError(f"Input 'samples' must be a 2D array (N, channels), but got shape {samples.shape}.")
+        if samples.shape[1] != channels:
+            raise ValueError(f"Input 'samples' second dimension ({samples.shape[1]}) "
+                             f"does not match 'channels' parameter ({channels}).")
+        if samples.size == 0:
+             return samples # Return empty array if input is empty
+
+        original_dtype = samples.dtype
+        original_length = samples.shape[0]
+
+        # --- Parameters ---
+        gain_linear = 10.0**(gain_db / 20.0)
+
+        # Oversampling factor: 4x is a common choice balancing quality and performance.
+        # Higher values (e.g., 8x) provide better anti-aliasing at higher CPU cost.
+        # Lower values (e.g., 2x) are faster but less effective.
+        oversampling_factor = 4
+
+        # --- Processing ---
+        try:
+            if _SCIPY_AVAILABLE:
+                # 1. Upsample the signal
+                #    We process along axis=0 (the time dimension).
+                #    resample_poly handles the low-pass filtering needed before downsampling implicitly.
+                #    It's generally recommended to use float64 for internal filter precision,
+                #    but let's try to stick with the input type for performance first.
+                #    resample_poly might cast internally anyway.
+                samples_upsampled = resample_poly(samples, up=oversampling_factor, down=1, axis=0)
+
+                # 2. Apply gain and non-linear distortion (tanh)
+                distorted_upsampled = np.tanh(samples_upsampled * gain_linear)
+
+                # 3. Downsample the signal back to the original rate
+                distorted_resampled = resample_poly(distorted_upsampled, up=1, down=oversampling_factor, axis=0)
+
+                # 4. Match original length
+                #    Resampling can slightly change the length due to filter transients.
+                #    Truncate or pad to ensure the output length is exactly N.
+                current_length = distorted_resampled.shape[0]
+                if current_length > original_length:
+                    distorted = distorted_resampled[:original_length, :]
+                elif current_length < original_length:
+                    # Pad with zeros at the end if it's shorter
+                    pad_width = original_length - current_length
+                    # Pad format: ((before_axis0, after_axis0), (before_axis1, after_axis1))
+                    padding = ((0, pad_width), (0, 0))
+                    distorted = np.pad(distorted_resampled, pad_width=padding, mode='constant', constant_values=0)
+                else:
+                    distorted = distorted_resampled
+
+            else:
+                # Fallback: No anti-aliasing if SciPy is not available
+                print("Executing distortion without anti-aliasing (SciPy not available).")
+                distorted_no_aa = np.tanh(samples * gain_linear)
+                distorted = distorted_no_aa # Length and shape remain the same
+
+            # 5. Ensure output dtype matches input dtype
+            if distorted.dtype != original_dtype:
+                distorted = distorted.astype(original_dtype)
+
+            # Final shape check (paranoid check)
+            if distorted.shape != (original_length, channels):
+                 print(f"Warning: Final shape {distorted.shape} differs from expected {(original_length, channels)}. Reshaping/Padding.")
+                 # Attempt to fix shape if possible, fallback to zeros
+                 if distorted.size == original_length * channels:
+                     distorted = distorted.reshape(original_length, channels)
+                 else: # If size mismatch, something went wrong, return zeros
+                      distorted = np.zeros((original_length, channels), dtype=original_dtype)
+
+
+        except Exception as e:
+            print(f"An error occurred during distortion processing: {e}")
+            # Return a zero array matching the input shape in case of unexpected errors
+            distorted = np.zeros_like(samples)
+            if distorted.dtype != original_dtype: # Ensure dtype match even for zeros
+                 distorted = distorted.astype(original_dtype)
+
+
+        return distorted
+
+    # --- Example Usage ---
+    if __name__ == '__main__':
+        # Create a sample signal: a sine wave + a higher frequency sine wave
+        sr = 44100
+        duration = 1.0  # seconds
+        n_samples = int(sr * duration)
+        channels = 2
+        t = np.linspace(0., duration, n_samples, endpoint=False)
+
+        # Frequency close to Nyquist/4 and Nyquist/2 to show aliasing potential
+        freq1 = 5000.0
+        freq2 = 15000.0
+
+        # Create stereo signal
+        signal = np.zeros((n_samples, channels), dtype=np.float32)
+        signal[:, 0] = 0.4 * np.sin(2 * np.pi * freq1 * t) # Left channel
+        signal[:, 1] = 0.4 * np.sin(2 * np.pi * freq2 * t) # Right channel
+        signal += 0.1 * np.random.randn(n_samples, channels).astype(np.float32) # Add some noise
+
+
+        print(f"Input signal shape: {signal.shape}, dtype: {signal.dtype}")
+
+        # Apply distortion with default gain (14 dB) and anti-aliasing
+        distorted_signal = distort(signal, gain_db=20.0, sample_rate=sr, channels=channels)
+
+        print(f"Output signal shape: {distorted_signal.shape}, dtype: {distorted_signal.dtype}")
+
+        # Optional: Save or plot the results to analyze
+        try:
+            import matplotlib.pyplot as plt
+            import librosa # Using librosa for easy spectrogram plotting
+
+            plt.figure(figsize=(12, 8))
+
+            plt.subplot(2, 2, 1)
+            plt.plot(t, signal[:, 0], label='Original Left')
+            plt.plot(t, distorted_signal[:, 0], label='Distorted Left', alpha=0.7)
+            plt.title('Time Domain (Left Channel)')
+            plt.xlabel('Time [s]')
+            plt.ylabel('Amplitude')
+            plt.legend()
+            plt.grid(True)
+
+            plt.subplot(2, 2, 2)
+            S_orig = librosa.stft(signal[:, 0])
+            S_db_orig = librosa.amplitude_to_db(np.abs(S_orig), ref=np.max)
+            librosa.display.specshow(S_db_orig, sr=sr, x_axis='time', y_axis='log')
+            plt.title('Spectrogram Original (Left)')
+            plt.colorbar(format='%+2.0f dB')
+
+
+            plt.subplot(2, 2, 4)
+            S_dist = librosa.stft(distorted_signal[:, 0])
+            S_db_dist = librosa.amplitude_to_db(np.abs(S_dist), ref=np.max)
+            librosa.display.specshow(S_db_dist, sr=sr, x_axis='time', y_axis='log')
+            plt.title('Spectrogram Distorted (Left)')
+            plt.colorbar(format='%+2.0f dB')
+
+            plt.tight_layout()
+            plt.show()
+
+            # You would typically see new harmonics generated in the distorted spectrogram.
+            # Without anti-aliasing, you might see frequencies folding back down from above Nyquist.
+            # With anti-aliasing (oversampling), these foldback artifacts should be significantly reduced.
+
+            # Example without anti-aliasing (if scipy wasn't available or forced)
+            if _SCIPY_AVAILABLE: # Only makes sense to compare if AA was possible
+                 print("\nCalculating distortion *without* anti-aliasing for comparison...")
+                 gain_lin = 10.0**(20.0 / 20.0)
+                 distorted_no_aa = np.tanh(signal * gain_lin).astype(signal.dtype)
+
+                 plt.figure(figsize=(12, 4))
+                 plt.subplot(1, 2, 1)
+                 S_db_dist_aa = librosa.amplitude_to_db(np.abs(librosa.stft(distorted_signal[:, 0])), ref=np.max)
+                 librosa.display.specshow(S_db_dist_aa, sr=sr, x_axis='time', y_axis='log')
+                 plt.title('Distorted with Anti-Aliasing (Left)')
+                 plt.colorbar(format='%+2.0f dB')
+
+                 plt.subplot(1, 2, 2)
+                 S_db_dist_no_aa = librosa.amplitude_to_db(np.abs(librosa.stft(distorted_no_aa[:, 0])), ref=np.max)
+                 librosa.display.specshow(S_db_dist_no_aa, sr=sr, x_axis='time', y_axis='log')
+                 plt.title('Distorted WITHOUT Anti-Aliasing (Left)')
+                 plt.colorbar(format='%+2.0f dB')
+
+                 plt.tight_layout()
+                 plt.show()
+
+
+        except ImportError:
+            print("\nInstall matplotlib and librosa ('pip install matplotlib librosa') to visualize the results.")
+
+        # Example: Process a short buffer like in real-time
+        buffer_size = 1024
+        buffer = signal[:buffer_size, :]
+        distorted_buffer = distort(buffer, gain_db=14.0, sample_rate=sr, channels=channels)
+        print(f"\nProcessed buffer of size {buffer_size}: Input shape {buffer.shape}, Output shape {distorted_buffer.shape}")
+
+**Explanation:**
+1. **Import Dependencies:** Imports `numpy` and tries to import
+   `resample_poly` from `scipy.signal`. A flag `_SCIPY_AVAILABLE` is
+   set to handle cases where SciPy isn't installed.
+2. **Function Definition:** Defines the `distort` function with the
+   specified parameters and docstrings.
+3. **Input Validation:** Checks if the input `samples` is a 2D NumPy
+   array and if the channel dimension matches the `channels` parameter.
+   Handles empty input.
+4. **Parameter Calculation:** Converts `gain_db` to a linear gain
+   factor (`gain_linear`). Sets the oversampling_factor (4x is chosen
+   as a reasonable default).
+5. **Oversampling (if SciPy available):**
+    * `resample_poly(samples, up=oversampling_factor, down=1, axis=0)`:
+      Upsamples the input signal by the specified factor along the time
+      axis (axis 0).
+    * `np.tanh(samples_upsampled * gain_linear)`: Applies the linear
+      gain and the `tanh` distortion to the high-sample-rate signal.
+      Harmonics are generated, but frequencies that would alias at the
+      original sample rate are now likely below the *new* Nyquist
+      frequency.
+    * `resample_poly(distorted_upsampled, up=1, down=oversampling_factor, axis=0)`:
+      Downsamples the distorted signal back to the original sample rate.
+      `resample_poly` automatically applies an appropriate anti-aliasing
+      (low-pass) filter before downsampling, removing the high-frequency
+      content generated by the distortion that would otherwise cause
+      aliasing.
+6. **Length Matching:** The resampling process (especially the filtering
+   involved) can slightly alter the number of output samples. The code
+   explicitly checks the length of `distorted_resampled` and either
+   truncates or pads it with zeros to ensure the final output
+   `distorted` has the exact same number of samples (`N`) as the input
+   `samples`. This is crucial for block-based processing.
+7. **Fallback (No SciPy):** If `scipy.signal.resample_poly` could not
+   be imported, the code prints a warning and performs the distortion
+   directly on the original samples
+   (`np.tanh(samples * gain_linear)`). This will likely introduce
+   aliasing artifacts, especially with high gain or high-frequency
+   input signals.
+8. **Dtype and Shape Consistency:** Ensures the output array has the
+   same data type (`dtype`) and shape as the input array. Includes
+   error handling for unexpected issues, returning an array of zeros
+   in case of failure.
+9. **Example Usage (`if __name__ == '__main__'`:)**
+    * Creates a test signal containing two sine waves (one moderately
+      high frequency, one very high frequency) to demonstrate the
+      potential for aliasing.
+    * Calls the `distort` function.
+    * If `matplotlib` and `librosa` are installed, it plots the
+      time-domain signal and spectrograms of the original and distorted
+      signals to visualize the effect and the effectiveness of
+      anti-aliasing. It also shows a comparison spectrogram of
+      distortion *without* anti-aliasing.
+    * Includes a small example of processing a short buffer, simulating
+      a real-time scenario.
+
+This implementation provides a good balance between anti-aliasing
+quality and computational efficiency suitable for many real-time
+audio applications.
+
+<a id="manual-adaa-impl" href="#toc">Top</a>
 
 ### Manually Implemented ADAA
 
     import struct
     import wave
-
+    
     import numpy as np
-
-
+    
+    
     SAMPLE_RATE = 44100
     NUM_CHANNELS = 2
     SAMPLE_WIDTH = 2
     SAMPLE_NORM = 32767.0
-
-
+    
+    
     def main():
         input_filename = "sound.wav"
-        output_filename = "sound-dst.wav"
-
+        output_filename = "sound-manual-adaa.wav"
+    
         samples = read_wav(input_filename)
-        distorted_samples = distort(samples, gain_db=14.0)
+        distorted_samples = distort(samples)
         write_wav(output_filename, np.clip(distorted_samples, -1.0, 1.0))
-
-
-    def distort(samples, gain_db=14.0):
+    
+    
+    def distort(samples, gain_db=14.0, sample_rate=SAMPLE_RATE, channels=NUM_CHANNELS):
         gain_linear = db_to_linear(gain_db)
-
+    
         deltas = samples - prev_samples(samples, 0.0)
-
+    
         deltas_too_small = np.abs(deltas) < 1e-7
         deltas[deltas_too_small] = 1.0
-
+    
         integral_f_samples = integral_f(samples, gain_linear)
         prev_integral_f_samples = prev_samples(integral_f_samples, integral_f(0.0, gain_linear))
-
-        distorted_samples = np.zeros(samples.shape)
+    
+        distorted_samples = np.zeros_like(samples)
         distorted_samples = (integral_f_samples - prev_integral_f_samples) / deltas
         distorted_samples[deltas_too_small] = f(samples[deltas_too_small], gain_linear)
-
+    
         return distorted_samples
-
-
+    
+    
     def prev_samples(samples, pad):
         return np.concatenate(
             (np.ones((1, samples.shape[1])) * pad, samples[:-1, :])
         )
-
-
+    
+    
     def db_to_linear(db):
         return 10.0 ** (db / 20.0)
-
-
+    
+    
     def f(x, gain_linear):
         return np.tanh(x * gain_linear)
-
-
+    
+    
     def integral_f(x, gain_linear):
         return x + np.log1p(np.exp(-2.0 * gain_linear * x)) / gain_linear
-
-
+    
+    
     def read_wav(filename):
         with wave.open(filename, "rb") as wf:
             num_channels = wf.getnchannels()
             sample_width = wf.getsampwidth()
             sample_rate = wf.getframerate()
             num_frames = wf.getnframes()
-
+    
             assert sample_width == SAMPLE_WIDTH, "Only 16-bit WAV files are supported."
             assert num_channels == NUM_CHANNELS, "Only stereo WAV files are supported."
             assert sample_rate == SAMPLE_RATE, "Only 44.1 kHz sample rate is supported."
-
+    
             raw_data = wf.readframes(num_frames)
             data = np.frombuffer(raw_data, dtype=np.int16)
             stereo_data = data.reshape(-1, NUM_CHANNELS)
-
+    
             return stereo_data.astype(np.float32) / SAMPLE_NORM
-
-
+    
+    
     def write_wav(filename, buffer):
         with wave.open(filename, "wb") as wf:
             wf.setnchannels(NUM_CHANNELS)
             wf.setsampwidth(SAMPLE_WIDTH)
             wf.setframerate(SAMPLE_RATE)
             wf.writeframes((buffer * SAMPLE_NORM).astype(np.int16).tobytes())
-
-
+    
+    
     if __name__ == "__main__":
         main()
 
