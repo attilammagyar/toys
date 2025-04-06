@@ -60,9 +60,9 @@ for 3 seconds, then climbs up to 3630 Hz over 12 seconds. Its
 spectrogram in [Audacity](https://www.audacityteam.org/) looks like
 the following:
 
-<img src="https://attilammagyar.github.io/toys/chat-gpt-4o-vs-tanh/sound.png" alt="Spectrogram of the raw test sound." />
+<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound.png" alt="Spectrogram of the raw test sound." />
 
-For reference, the original file: [sound.wav](https://attilammagyar.github.io/toys/chat-gpt-4o-vs-tanh/sound.wav).
+For reference, the original file: [sound.wav](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound.wav).
 
 <a id="attempt1" href="#toc">Top</a>
 
@@ -87,9 +87,9 @@ Of course the hard clipping added a lot of
 [aliasing](https://en.wikipedia.org/wiki/Aliasing) noise which was then
 made much worse by the waveshaper.
 
-<img src="https://attilammagyar.github.io/toys/chat-gpt-4o-vs-tanh/sound-dst-01.png" alt="Spectrogram of the result of the first script, showing horrible aliasing." />
+<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p1.png" alt="Spectrogram of the result of the first script, showing horrible aliasing." />
 
-The result: [sound-dst-01.flac](https://attilammagyar.github.io/toys/chat-gpt-4o-vs-tanh/sound-dst-01.flac).
+The result: [sound-chatgpt4o-c1p1.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p1.flac).
 
 I decided to be more specific:
 
@@ -97,9 +97,9 @@ I decided to be more specific:
 
 The LLM did exactly that, however, this still has audible aliasing, especially towards the end.
 
-<img src="https://attilammagyar.github.io/toys/chat-gpt-4o-vs-tanh/sound-dst-02.png" alt="Spectrogram of the result of the naive tanh() waveshaper." />
+<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p2.png" alt="Spectrogram of the result of the naive tanh() waveshaper." />
 
-The result: [sound-dst-02.flac](https://attilammagyar.github.io/toys/chat-gpt-4o-vs-tanh/sound-dst-02.flac).
+The result: [sound-chatgpt4o-c1p2.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p2.flac).
 
 > Good. Now reduce aliasing. Use the computationally cheapest algorithm
 > that you can think of.
@@ -128,9 +128,9 @@ and converted the result back to the original sampling rate. Pretty
 [standard stuff](https://www.w3.org/TR/webaudio-1.1/#dom-waveshapernode-oversample),
 with good results:
 
-<img src="https://attilammagyar.github.io/toys/chat-gpt-4o-vs-tanh/sound-dst-04.png" alt="Spectrogram of the result of a 2x oversampled tanh() waveshaper." />
+<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p4.png" alt="Spectrogram of the result of a 2x oversampled tanh() waveshaper." />
 
-The result: [sound-dst-04.flac](https://attilammagyar.github.io/toys/chat-gpt-4o-vs-tanh/sound-dst-04.flac).
+The result: [sound-chatgpt4o-c1p4.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p4.flac).
 
 However, this approach needs twice as much CPU power for the twice as
 many sound samples.
@@ -149,9 +149,9 @@ distortion in order to remove some aliasing from the top end after the
 fact, but this of course destroyed many of the useful treble
 frequencies as well.
 
-<img src="https://attilammagyar.github.io/toys/chat-gpt-4o-vs-tanh/sound-dst-05.png" alt="Anti-aliasing with low-pass filters." />
+<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p5.png" alt="Anti-aliasing with low-pass filters." />
 
-The result: [sound-dst-05.flac](https://attilammagyar.github.io/toys/chat-gpt-4o-vs-tanh/sound-dst-05.flac).
+The result: [sound-chatgpt4o-c1p5.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p5.flac).
 
 I kept going:
 
@@ -172,9 +172,9 @@ code:
 Though the two filters weren't exactly the same, this solution could
 have worked. But unfortunately, most the aliasing came back:
 
-<img src="https://attilammagyar.github.io/toys/chat-gpt-4o-vs-tanh/sound-dst-07.png" alt="Anti-aliasing with a low-pass filter before the waveshaper." />
+<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p7.png" alt="Anti-aliasing with a low-pass filter before the waveshaper." />
 
-The result: [sound-dst-07.flac](https://attilammagyar.github.io/toys/chat-gpt-4o-vs-tanh/sound-dst-07.flac).
+The result: [sound-chatgpt4o-c1p7.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p7.flac).
 
 <a id="attempt2" href="#toc">Top</a>
 
@@ -196,9 +196,9 @@ This basically recreated the filter based solution, but with using
 [SciPy](https://scipy.org/)'s filtering functions instead of the manual
 loop.
 
-<img src="https://attilammagyar.github.io/toys/chat-gpt-4o-vs-tanh/sound-dst-freestyle.png" alt="Anti-aliasing with a  low-pass filter before the waveshaper, attempt 2." />
+<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c2p1.png" alt="Anti-aliasing with a  low-pass filter before the waveshaper, attempt 2." />
 
-The result: [sound-dst-freestyle.flac](https://attilammagyar.github.io/toys/chat-gpt-4o-vs-tanh/sound-dst-freestyle.flac).
+The result: [sound-chatgpt4o-c2p1.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c2p1.flac).
 
 <a id="adaa" href="#toc">Top</a>
 
@@ -212,9 +212,9 @@ to an almost inaudible level. If the antiderivative of the
 waveshaper non-linearity is known, then probably this is the algorithm
 to go with. (See [my implementation in the appendix](#adaa-impl).)
 
-<img src="https://attilammagyar.github.io/toys/chat-gpt-4o-vs-tanh/sound-dst-adaa.png" alt="1st order antiderivative antialiasing is a really good compromise between effectiveness and CPU-consumption." />
+<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-manual-adaa.png" alt="1st order antiderivative antialiasing is a really good compromise between effectiveness and CPU-consumption." />
 
-The result: [sound-dst-adaa.flac](https://attilammagyar.github.io/toys/chat-gpt-4o-vs-tanh/sound-dst-adaa.flac).
+The result: [sound-manual-adaa.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-manual-adaa.flac).
 
 <a id="speed" href="#toc">Top</a>
 
