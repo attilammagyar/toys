@@ -111,7 +111,7 @@ OpenAI ChatGPT 4o Attempt 1: NumPy
 
 The LLM's first solution was a ready to use Python script which applied
 a roughly 14 [dB](https://en.wikipedia.org/wiki/Decibel) amplification
-by multiplying the signal by 5, then it added hard-clipping at &pm; 1.0,
+by multiplying the signal by 5, then it added hard-clipping at &pm;1.0,
 and finally, it used a cubic polynomial as a
 [waveshaper](https://en.wikipedia.org/wiki/Waveshaper).
 
@@ -140,7 +140,7 @@ The result: [sound-chatgpt4o-c1p2.flac](https://attilammagyar.github.io/toys/llm
 > that you can think of.
 
 The solution made sense, but there was a small mistake in the code. It
-was easy to fix, but let's see if the LLM can do it:
+was easy to fix, but I wanted to see if the LLM could do it:
 
 > This throws a traceback:
 > 
@@ -161,7 +161,7 @@ Now the model properly applied 2x [oversampling](https://en.wikipedia.org/wiki/O
 then the distortion, then a [low-pass filter](https://en.wikipedia.org/wiki/Low-pass_filter),
 and converted the result back to the original sampling rate. Pretty
 [standard stuff](https://www.w3.org/TR/webaudio-1.1/#dom-waveshapernode-oversample),
-with one of the best results. The aliasing is almost inaudible:
+with really good results. The aliasing is almost inaudible:
 
 <img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p4.png" alt="Spectrogram of the result of a 2x oversampled tanh() waveshaper." />
 
@@ -227,8 +227,8 @@ limitations, in order to make the model's job easier:
 > to keep aliasing to a minimum while keeping the algorithm real-time
 > friendly.
 
-This basically recreated the filter based solution, but with using
-[SciPy](https://scipy.org/)'s filtering functions instead of the manual
+This basically recreated the pre-filter solution, but with using
+[SciPy](https://scipy.org/)'s filtering functions instead of a manual
 loop.
 
 <img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c2p1.png" alt="Anti-aliasing with a  low-pass filter before the waveshaper, attempt 2." />
@@ -273,9 +273,24 @@ I sent the exact same prompt to 3 popular large language models:
 [Google Gemini 2.5 Pro](https://gemini.google.com/).
 
 ChatGPT 4o and Gemini went with 4x oversampling, R1 picked 2x
-oversampling. Gemini's thought process indicated that the
-"state of the art" requirement might be confusing, so I also tried
-the following ending in newly opened, clean conversations:
+oversampling.
+
+Strangely enough, all of the implementations ended up adding *more*
+aliasing than the naive approach. It turned out that the resampling
+algorithm can push samples that are close to 1.0 or -1.0 to go beyond
+the limit, and these caused aliasing when they were hard-clipped for
+the WAV file conversion. Just to be sure, DeepSeek R1 even included
+this aliasing-inducing clipping as the last step before returning the
+result. I decided to resolve this problem by adding normalization to
+the generated `distort()` functions
+(`return distorted / np.max(np.abs(distorted))`), even though this
+approach does not generalize well; it works here only because in this
+test, it is known fore sure that the loudest samples should be close to
+&pm;1.0.
+
+Gemini's thought process indicated that the "state of the art"
+requirement might be confusing, so I also tried the following ending in
+newly opened, clean conversations:
 
 > Use the computationally cheapest antialiasing method you can think of.
 > Keep it CPU-friendly enough for real-time audio. Do not overthink.
@@ -283,15 +298,16 @@ the following ending in newly opened, clean conversations:
 This made Gemini and ChatGPT use 2x oversampling, while R1 tried the
 pre-filtering approach with a Python-world low-pass filter loop...
 
+So I went back to the original solutions.
+
 <a id="focus-chatgpt4o" href="#toc">Top</a>
 
 ### OpenAI ChatGPT 4o
 
-This time the model went with 4x oversampling which considerably slower,
-and somehow it ended up with more aliasing than with the simpler, 2x
-oversampled NumPy-only approach.
+This time the model went with 4x oversampling which is considerably
+slower, but it got rid of pretty much all the aliasing.
 
-<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-focus.png" alt="More aliasing with slower code by OpenAI ChatGPT 4o" />
+<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-focus.png" alt="4x oversampling by OpenAI ChatGPT 4o" />
 
 The result: [sound-chatgpt4o-focus.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-focus.flac).
 
@@ -301,7 +317,7 @@ The result: [sound-chatgpt4o-focus.flac](https://attilammagyar.github.io/toys/ll
 
 Same approach as above, but with 2x oversampling.
 
-<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-r1-focus.png" alt="More aliasing with slower code by DeepSeek R1" />
+<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-r1-focus.png" alt="2x oversampling by  by DeepSeek R1" />
 
 The result: [sound-r1-focus.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-r1-focus.flac).
 
@@ -310,9 +326,8 @@ The result: [sound-r1-focus.flac](https://attilammagyar.github.io/toys/llm-vs-ds
 ### Google Gemini 2.5 Pro
 
 Same deal with 4x oversampling, but waaay overengineered for my taste.
-Aliasing is just as bad as with the above two approaches.
 
-<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-gemini2_5pro-focus.png" alt="More aliasing with slower code by Google Gemini 2.5 Pro" />
+<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-gemini2_5pro-focus.png" alt="4x oversampling by Google Gemini 2.5 Pro" />
 
 The result: [sound-gemini2_5pro-focus.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-gemini2_5pro-focus.flac).
 
@@ -403,8 +418,8 @@ Speed Comparison
 
 I moved the 16-bit conversion related stuff and the final clipping out
 from the distortion function in the first few ChatGPT implementations,
-so that its various versions deal with only the waveshaping, and not
-the concerns of the chosen file format
+so that the various versions of the function deal with only the
+waveshaping, and not the concerns of the chosen file format
 (see: [SRP](https://en.wikipedia.org/wiki/Single-responsibility_principle)).
 
 Then I called the distortion function for the raw samples repeatedly
@@ -429,24 +444,28 @@ Conclusion
 ----------
 
  * For this particular task at this particular moment (April, 2025),
-   domain knowledge still beats LLM-aided coding.
+   domain knowledge is still required for LLM-aided coding to be
+   effective.
 
- * However, the models came up with seemingly working solutions, and
-   attached confident explanations and solid reasoning for them, making
-   it very convincing that they were providing the best solutions, while
-   they were not.
+ * However, the models acted deceivingly confident even when their
+   solution required further tweaking to be useful or was completely
+   wrong.
 
  * If you have the domain knowledge, you can ask the models explicitly
-   to implement the ADAA solution, and they will do it fine for the most
-   part, and once done, the models will even point out the efficiency
-   of this solution, while previously they failed to even consider
-   using it.
+   to implement the ADAA solution as a good (probably the best) balance
+   between computational complexity and aliasing reduction. They
+   provided working implementations, but there was a lot of room for
+   improvement.
+
+ * When asked explicitly, the models will point out several reasons to
+   favor the ADAA approach over oversampling, while usually they fail
+   to even consider using it when they are not explicitly told to do so.
 
    The reason for this is probably that by the time ADAA waveshaping
    was invented (it was first published in 2016), DSP books, lecture
    notes, forum discussions, and DSP software libraries (and their
    documentation) were already filled with the oversampling based
-   approach. This is probably also reflected in the LLM training
+   approach, and this is probably also reflected in the LLM training
    corpus: there might be orders of magnite more mentions of waveshaper
    antialiasing with oversampling than with ADAA, so it is
    proportionally more likely that language models will pick the former
@@ -455,7 +474,7 @@ Conclusion
    Thus, too much reliance on LLMs combined with a lack of
    domain knowledge in a field and a lack of regularly following its
    recent developments may result in slower adaptation of newly
-   invented techniques on the long run...
+   invented techniques on the long run.
 
 <a id="c1" href="#toc">Top</a>
 
@@ -2078,7 +2097,7 @@ of audio channels.
 Use 1st order ADAA to control aliasing. Avoid looping over NumPy
 arrays manually. Do not overthink.
 
-<a id="focus-adaa-chatgpt4o" href="#toc">Top</a>
+<a id="adaa-full-chatgpt4o" href="#toc">Top</a>
 
 #### OpenAI ChatGPT 4o's Response
 
