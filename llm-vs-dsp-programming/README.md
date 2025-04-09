@@ -1,475 +1,342 @@
-<a id="toc"></a>
-
-Programming With AI: the Blind Leading the Blind (Case Study)
-=============================================================
+Programming With AI: Forget "We Have Always Done It This Way", Enter "The Corpus Was Biased Towards This Way" (Case Study)
+==========================================================================================================================
 
 I was curious whether popular [large language models](https://en.wikipedia.org/wiki/Large_language_model)
 can implement a simple audio effect in [Python](https://www.python.org/),
-and if yes, then how do they balance computational cost and audio quality.
+and if yes, then how do they balance computational cost and audio quality,
+and how do their solutions compare to my handcrafted, no AI-aided version.
+
+TL;DR:
+
+ * As of April, 2025, domain knowledge is still required for
+   LLM-aided coding to produce good results, and the lack of it can end
+   up with inefficient or downright wrong results.
+
+ * When there is a traditional but costly algorithm to do something,
+   and a more recent one which produces similarly good results for
+   significantly lower costs, then LLM training corpuses might be
+   biased towards the old method. Due to this, the models will keep
+   pushing that algorithm, unless explicitly told to use the new one.
+
+   When the old method is forbidden but the new one is not explicitly
+   requested, then they tend to resort to flawed or downright stupid
+   solution attempts. Even if they consider using the new algorithm,
+   they may reject it with flawed reasoning.
+
+<a id="toc"></a>
 
 Table of Contents
 -----------------
 
- * [TL;DR](#tldr)
  * [The Problem](#problem)
- * [OpenAI ChatGPT 4o Attempt 1: NumPy](#chatgpt4o-1)
- * [OpenAI ChatGPT 4o Attempt 2: Freestyle](#chatgpt4o-2)
- * [Focus on the Distortion](#focus)
-    * [OpenAI ChatGPT 4o](#focus-chatgpt4o)
-    * [DeepSeek R1](#focus-r1)
-    * [Google Gemini 2.5 Pro](#focus-gemini2_5pro)
- * [Handcrafted ADAA, without AI](#manual-adaa)
- * [ADAA with AI](#llm-adaa)
-    * [OpenAI ChatGPT 4o](#adaa-chatgpt4o)
-    * [DeepSeek R1](#adaa-r1)
-    * [Google Gemini 2.5 Pro](#adaa-gemini2_5pro)
- * [Handcrafted ADAA, with ideas stolen from AI](#manual-adaa-improved)
- * [Speed Comparison](#speed)
+ * [Experiments](#experiments)
+    * [Stupid Mistakes](#mistakes)
+    * [Results](#results)
  * [Conclusion](#conclusion)
- * [Appendix](#c1)
-    * [OpenAI ChatGPT 4o Conversation 1](#c1)
-       * [Prompt 1 and Response](#c1)
-       * [Prompt 2 and Response](#c1p2)
-       * [Prompt 3 and Response](#c1p3)
-       * [Prompt 4 and Response](#c1p4)
-       * [Prompt 5 and Response](#c1p5)
-       * [Prompt 6 and Response](#c1p6)
-       * [Prompt 7 and Response](#c1p7)
-    * [OpenAI ChatGPT 4o Conversation 2](#c2)
-       * [Prompt 1 and Response](#c2)
-       * [Prompt 2 and Response](#c2p2)
-    * [Focus on the Distortion](#focus-full)
-       * [Prompt](#focus-full)
-       * [OpenAI ChatGPT 4o's Response](#focus-full-chatgpt4o)
-       * [DeepSeek R1's Response](#focus-full-r1)
-       * [Google Gemini 4o's Response](#focus-full-gemini2_5pro)
-    * [ADAA with AI](#adaa-full)
-       * [Prompt](#adaa-full)
-       * [OpenAI ChatGPT 4o's Response](#adaa-full-chatgpt4o)
-       * [DeepSeek R1's Response](#adaa-full-r1)
-       * [Google Gemini 4o's Response](#adaa-full-gemini2_5pro)
-    * [Manually Implemented ADAA](#manual-adaa-impl)
-       * [Improved Antiderivative](#manual-adaa-impl-improved)
-
-<a id="tldr" href="#toc"> </a>
-
-TL;DR
------
-
- * Using an LLM for solving a problem without domain knowledge can
-   easily become a blind leading the blind situation.
-
- * When paired with enough domain expertise, an LLM can be a useful tool
-   for generating or validating ideas, and can speed up the process of
-   bootstrapping an environment for experimentation and problem solving.
-   See also: [rubber duck debugging](https://en.wikipedia.org/wiki/Rubber_duck_debugging).
-
- * Without domain knowledge on the user's side, a seemingly confident
-   LLM, a seemingly working code, and several rounds of iterative
-   improvements can still be insufficient to produce a good solution
-   even for a simple problem. An LLM will not necessarily pick the
-   solution with the best ROI for a problem, it will pick the one which
-   appears in its training corpus with the highest frequency (which
-   might be the result of that particular solution having been
-   considered the best for a long time before an even better came
-   along). Thus, too much reliance on LLMs combined with a lack
-   of domain knowledge in a field and a lack of being up-to-date with
-   its recent developments may result in slower adaptation of newly
-   invented techniques.
+ * [Appendix](#conv-chatgpt4o-c1p1)
+    * [OpenAI ChatGPT 4o Conversation 1 (NumPy)](#conv-chatgpt4o-c1p1)
+       * [Prompt 1 and Response](#conv-chatgpt4o-c1p1)
+          * [Result](#result-chatgpt4o-c1p1)
+       * [Prompt 2 and Response](#conv-chatgpt4o-c1p2)
+          * [Result](#result-chatgpt4o-c1p2)
+       * [Prompt 3 and Response](#conv-chatgpt4o-c1p3)
+       * [Prompt 4 and Response](#conv-chatgpt4o-c1p4)
+          * [Result](#result-chatgpt4o-c1p4)
+       * [Prompt 5 and Response](#conv-chatgpt4o-c1p5)
+          * [Result](#result-chatgpt4o-c1p5)
+       * [Prompt 6 and Response](#conv-chatgpt4o-c1p6)
+       * [Prompt 7 and Response](#conv-chatgpt4o-c1p7)
+          * [Result](#result-chatgpt4o-c1p7)
+    * [OpenAI ChatGPT 4o Conversation 2](#conv-chatgpt4o-c2p1)
+       * [Prompt 1 and Response](#conv-chatgpt4o-c2p1)
+          * [Result](#result-chatgpt4o-c2p1)
+       * [Prompt 2 and Response](#conv-chatgpt4o-c2p2)
+    * [Unspecificed Technique](#prompt-unspectechnique)
+       * [Prompt](#prompt-unspectechnique)
+       * [OpenAI ChatGPT 4o's Response](#conv-chatgpt4o-unspectechnique)
+          * [Result](#result-chatgpt4o-unspectechnique)
+       * [DeepSeek R1's Response](#conv-r1-unspectechnique)
+          * [Result](#result-r1-unspectechnique)
+       * [Google Gemini 2.5 Pro's Response](#conv-gemini2_5pro-unspectechnique)
+          * [Thinking Process](#conv-gemini2_5pro-unspectechnique)
+          * [Final Response](#conv-gemini2_5pro-unspectechnique-final)
+          * [Result](#result-gemini2_5pro-unspectechnique)
+    * [No upsampling](#prompt-noupspl)
+       * [Prompt](#prompt-noupspl)
+       * [OpenAI ChatGPT 4o's Response](#conv-chatgpt4o-noupspl)
+          * [Result](#result-chatgpt4o-noupspl)
+       * [DeepSeek R1's Response](#conv-r1-noupspl)
+          * [Result](#result-r1-noupspl)
+       * [Google Gemini 2.5 Pro's Response](#conv-gemini2_5pro-noupspl)
+          * [Thinking Process](#conv-gemini2_5pro-noupspl)
+          * [Final Response](#conv-gemini2_5pro-noupspl-final)
+          * [Result](#result-gemini2_5pro-noupspl)
+    * [ADAA](#prompt-adaa)
+       * [Prompt](#prompt-adaa)
+       * [OpenAI ChatGPT 4o's Response](#conv-chatgpt4o-adaa)
+          * [Result](#result-chatgpt4o-adaa)
+       * [DeepSeek R1's Response](#conv-r1-adaa)
+          * [Result](#result-r1-adaa)
+       * [Google Gemini 2.5 Pro's Response](#conv-gemini2_5pro-adaa)
+          * [Thinking Process](#conv-gemini2_5pro-adaa)
+          * [Final Response](#conv-gemini2_5pro-adaa-final)
+          * [Result](#result-gemini2_5pro-adaa)
+       * [Manual Implementation](#manual-adaa)
+          * [Improved With Ideas From AI](#manual-adaa-improved)
 
 <a id="problem" href="#toc">Top</a>
 
 The Problem
 -----------
 
-Let's apply a basic soft-clipping distortion effect to a CD-quality
-[WAV](https://en.wikipedia.org/wiki/WAV) file with using nothing but the
-Python standard library and [NumPy](https://numpy.org/)! This is not a
-very complicated task, but it's not trivial to get it right either.
+[Soft-clipping](https://en.wikipedia.org/wiki/Distortion_%28music%29) is an
+audio effect which can be used in various ways, including:
 
-I am not a [DSP](https://en.wikipedia.org/wiki/Digital_signal_processing)
-expert, but I do occasionally learn a thing or two about it as a
-[hobby](https://github.com/attilammagyar/js80p), so I have an idea of a
-possible solution which produces a sufficiently high quality output
-with very low computational costs. I'm curious to see how that
-compares to what today's popular language models can come up with.
-(As of April, 2025.)
+ * to distort the sound of musical instruments in order to make them
+   more aggressive or "gritty", especially electric guitars in rock
+   music and similar genres,
+ * to saturate the sound of a musical instrument or a vocal performance
+   in order to give it additional emphasis in a mix,
+ * to compress the dynamic range of an audio signal and make it feel
+   louder to the listener, e.g. in commercials.
 
-The test sound will be a sine wave which starts at 110 Hz, stays there
-for 3 seconds, then climbs up to 3630 Hz in 12 seconds. Its
-spectrogram in [Audacity](https://www.audacityteam.org/) looks like
-the following (the horizontal axis is time, the vertical is the
-frequency spectrum, and the colors show the intensity of a frequency
-component in the sound at a given time; the dark background represents
-silence, light blue is basically inaudible, red is audible,
-white is loud):
+A common way of implementing this effect for digital audio is to
+increase the loudness of the signal and then apply a non-linear
+function (usually [hyperbolic tangent](https://en.wikipedia.org/wiki/Hyperbolic_functions))
+to it.
+
+In practice though, non-linear functions tend to add high frequency
+overtones to a digital signal that may exceed the
+[Nyquist frequency](https://en.wikipedia.org/wiki/Nyquist_frequency) of
+the [sampling rate](https://en.wikipedia.org/wiki/Sampling_%28signal_processing%29),
+which will result in the appearance of [aliasing noise](https://en.wikipedia.org/wiki/Aliasing).
+
+There are multiple methods for mitigating the problem of aliasing, including:
+
+ * analytically constructing an approximation of the non-linearity
+   function which will avoid adding overtones above the Nyquist
+   frequency,
+ * resampling the original signal with a higher sampling rate in order
+   to increase the Nyquist frequency, applying the non-linearity, then
+   applying a [low-pass filter](https://en.wikipedia.org/wiki/Low-pass_filter)
+   for the original Nyquist frequency, and finally, resampling the
+   modified signal with the original sampling rate,
+ * [Antiderivative Antialiasing (ADAA)](https://www.dafx.de/paper-archive/2016/dafxpapers/20-DAFx-16_paper_41-PN.pdf)
+   waveshaping.
+
+The goal of this exercise is to create a Python script which applies
+gain boosting and `tanh` non-linearity to a CD-quality
+[WAV](https://en.wikipedia.org/wiki/WAV) file (44.1 kHz sampling rate,
+2 channels, 16 bit samples).
+
+In my personal opinion, 1st order ADAA waveshaping is an exceptionally
+good compromise between the level of aliasing reduction and
+computational complexity when an antiderivative of the non-linearity
+is known.
+
+<a id="experiments" href="#toc">Top</a>
+
+Experiments
+-----------
+
+I created my own implementation of the effect using 1st order ADAA, then
+I created multiple implementations with various prompts using the
+following popular LLMs:
+
+ * [OpenAI ChatGPT 4o](https://openai.com/index/hello-gpt-4o),
+ * [DeepSeek R1](https://www.deepseek.com/),
+ * [Google Gemini 2.5 Pro](https://gemini.google.com/).
+
+The experiments below were run in newly created, clear conversations.
+They simulate various levels of domain knowledge in the field of
+[DSP](https://en.wikipedia.org/wiki/Digital_signal_processing) on the
+side of the user.
+
+ * A conversation with OpenAI ChatGPT 4o looking for the entire program,
+   which was refined iteratively in several steps, restricted to using
+   only the Python standard library and [NumPy](https://numpy.org/).
+ * A shorter conversation with OpenAI ChatGPT 4o based on the results of
+   the previous one, with weaker restrictions, still looking for the
+   whole program.
+ * A specific prompt looking for the implementation of only the effect.
+   "*Use the fastest state of the art antialiasing method. Keep it
+   CPU-friendly enough for real-time audio.*"
+ * The same prompt as above, with an additional restriction forbidding
+   the use of upsampling.
+ * A specific prompt looking for the implementation of only the effect.
+   "*Use 1st order ADAA to control aliasing. Avoid looping over NumPy
+   arrays manually. Do not overthink.*"
+
+While reviewing the implementations for the prompt which was explicitly
+looking for 1st order ADAA, I noticed that the LLMs used a simpler
+antiderivative than mine, so I made a version of my own implementation
+of the effect using this antiderivative. This turned out to be slightly
+faster than the original, and also accumulating less floating point
+errors.
+
+Then I ran all of the implementations of the effect on a test
+sound, and compared the results. I also measured the average running
+time of the implementations after multiple executions.
+
+The test sound was a sine wave which started at 110 Hz, stayed there for
+3 seconds, then climbed up to 3630 Hz in 12 seconds.
+
+The spectrogram of the test sound (the horizontal axis is time, the
+vertical is frequency, and the brightness of the colors shows  intensity
+of a given frequency at a given moment of time; dark colors represent
+silent or inaudible levels, bright colors represent clearly audible or
+loud levels):
 
 <img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound.png" alt="Spectrogram of the raw test sound." />
 
-For reference, the original file: [sound.wav](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound.wav).
-
-<a id="chatgpt4o-1" href="#toc">Top</a>
-
-OpenAI ChatGPT 4o Attempt 1: NumPy
-----------------------------------
-
-(See the full conversations with the LLM's responses in the [Appendix](#c1).)
-
-> You are an expert in Python and audio processing. Write a Python script
-> which reads a 16 bit stereo sound at 44.1 kHz sampling rate from
-> "sound.wav", applies heavy distortion to it (e.g. adds odd harmonics),
-> then saves the result as "sound-dst.wav", also 16 bit stereo at
-> 44.1 kHz. You may only use built-in Python modules and NumPy.
-
-The LLM's first solution was a ready to use Python script which applied
-a roughly 14 [dB](https://en.wikipedia.org/wiki/Decibel) amplification
-by multiplying the signal by 5, then it added hard-clipping at &pm;1.0,
-and finally, it used a cubic polynomial as a
-[waveshaper](https://en.wikipedia.org/wiki/Waveshaper).
-
-Of course the hard clipping added a lot of
-[aliasing](https://en.wikipedia.org/wiki/Aliasing) noise which was then
-made much worse by the waveshaper. (The aliasing components on the
-spectrogram are the ones which move in the opposite direction, against
-the fundamental and the overtones that were added by the distortion;
-their pitch is falling instead of going upwards.)
-
-<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p1.png" alt="Spectrogram of the result of the first script, showing horrible aliasing." />
-
-The result: [sound-chatgpt4o-c1p1.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p1.flac).
-
-I tried to refine my requirements:
-
-> Avoid hard clipping, and use tanh() nonlinearity.
-
-The LLM did exactly that, however, this still has audible aliasing, especially towards the end.
-
-<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p2.png" alt="Spectrogram of the result of the naive tanh() waveshaper." />
-
-The result: [sound-chatgpt4o-c1p2.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p2.flac).
-
-> Good. Now reduce aliasing. Use the computationally cheapest algorithm
-> that you can think of.
-
-The solution made sense, but there was a small mistake in the code. It
-was easy to fix, but I wanted to see if the LLM could do it:
-
-> This throws a traceback:
-> 
-> <code>
-> &nbsp;&nbsp;Traceback (most recent call last):<br/>
-> &nbsp;&nbsp;&nbsp;&nbsp;File "distortion.py", line 69, in &lt;module&gt;<br/>
-> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;main()<br/>
-> &nbsp;&nbsp;&nbsp;&nbsp;File "distortion.py", line 65, in main<br/>
-> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;distorted_samples = distort(samples.astype(np.float32))<br/>
-> &nbsp;&nbsp;&nbsp;&nbsp;File "distortion.py", line 42, in distort<br/>
-> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;upsampled[1::2] = (norm[:-1] + norm[1:]) / 2.0<br/>
-> ValueError: could not broadcast input array from shape (681515,2) into shape (681516,2)
-> </code>
-> 
-> Please fix it
-
-Now the model properly applied 2x [oversampling](https://en.wikipedia.org/wiki/Oversampling),
-then the distortion, then a [low-pass filter](https://en.wikipedia.org/wiki/Low-pass_filter),
-and converted the result back to the original sampling rate. Pretty
-[standard stuff](https://www.w3.org/TR/webaudio-1.1/#dom-waveshapernode-oversample),
-with really good results. The aliasing is almost inaudible:
-
-<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p4.png" alt="Spectrogram of the result of a 2x oversampled tanh() waveshaper." />
-
-The result: [sound-chatgpt4o-c1p4.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p4.flac).
-
-However, this approach needs twice as much CPU power for the twice as
-many sound samples.
-
-> Can you reduce aliasing without resampling so that the distortion
-> algorithm could become usable for realtime audio?
-
-The LLM tried to apply a low-pass filter before the distortion in order
-to reduce treble frequencies, because most of the aliasing tends to
-come from the added harmonics of those. However, the filter was
-implemented with a manual, Python-world loop over a NumPy array, which
-is considered a bad practice for being too slow.
-
-It also attempted to apply a second low-pass filter after the
-distortion in order to remove some aliasing from the top end after the
-fact, but this of course destroys many of the useful treble
-frequencies as well.
-
-As the pitch of the original sine wave starts to rise, the loudness of
-the filtered and distorted result starts to drop.
-
-<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p5.png" alt="Anti-aliasing attempt with low-pass filters before and after the non-linearity." />
-
-The result: [sound-chatgpt4o-c1p5.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p5.flac).
-
-I kept going:
-
-> Do it without the post-filter, and avoid manually looping over the
-> array in simple_lowpass().
-
-Now the LLM claimed that it got rid of most of the manual looping (it
-did not), but actually it added another loop to go through the two
-channels.
-
-I was afraid that this might have been the result of the conversation
-getting too long for the model, so I made one last attempt to fix the
-code:
-
-> Can you throw away `simple_lowpass()` and use `lowpass_filter()` from
-> earlier? That one did the filtering without looping in Python.
-
-Unfortunately, most of the aliasing came back with this approach:
-
-<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p7.png" alt="Mostly ineffective anti-aliasing with a low-pass filter before the waveshaper." />
-
-The result: [sound-chatgpt4o-c1p7.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p7.flac).
-
-<a id="chatgpt4o-2" href="#toc">Top</a>
-
-OpenAI ChatGPT 4o Attempt 2: Freestyle
---------------------------------------
-
-I decided to start again with a more specific prompt and weaker
-limitations, in order to make the model's job easier:
-
-> You are an expert in Python and audio processing. Write a Python script
-> which reads a 16 bit stereo sound at 44.1 kHz sampling rate from
-> "sound.wav", applies heavy distortion to it (e.g. tanh with +14 dB
-> gain), then saves the result as "sound-dst.wav", also 16 bit stereo at
-> 44.1 kHz. Use the built-in wave module for reading the file. Make sure
-> to keep aliasing to a minimum while keeping the algorithm real-time
-> friendly.
-
-This basically recreated the quite ineffective pre-distortion filter
-solution, but with using [SciPy](https://scipy.org/)'s filtering
-functions instead of a manual loop.
-
-<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c2p1.png" alt="Mostly ineffective anti-aliasing with a low-pass filter before the waveshaper, attempt 2." />
-
-The result: [sound-chatgpt4o-c2p1.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c2p1.flac).
-
-<a id="focus" href="#toc">Top</a>
-
-Focus on the Distortion
------------------------
-
-Will it be easier for the AI to come up with a good algorithm if the
-question is restricted to the signal processing part, without any
-distractions from file formats and whatnot?
-
-This time I tried to be as specific as I could with my requirements
-without explicitly mentioning the name of the solution with the best
-aliasing reduction for the lowest computational cost that I know
-for the problem. The prompt looked like this:
-
-> You are an expert in Python and audio processing. Implement the
-> following function which applies gain boosting and tanh non-linearity
-> to an audio signal while keeping aliasing to a minimum:
-> 
->     def distort(samples, gain_db=14.0, sample_rate=44100.0, channels=2):
->         distorted = np.zeros_like(samples)
->         # Your code here
->         return distorted
-> 
-> The `samples` parameter is a NumPy array of shape `(N, channels)`
-> where `N` is the number of audio samples, the samples are float32
-> numbers (usually between -1.0 and 1.0), the `gain_db` parameter is
-> the gain to be applied in dB, the `sample_rate` specifies the
-> sampling rate, and the `channels` parameter specifies the number of
-> audio channels.
-> 
-> Use the fastest state of the art antialiasing method. Keep it
-> CPU-friendly enough for real-time audio.
-
-I sent the exact same prompt to 3 popular large language models:
-[OpenAI ChatGPT 4o](https://openai.com/index/hello-gpt-4o),
-[DeepSeek R1](https://www.deepseek.com/), and
-[Google Gemini 2.5 Pro](https://gemini.google.com/).
-
-ChatGPT 4o and Gemini went with 4x oversampling, R1 picked 2x
-oversampling.
-
-Strangely enough, all of the implementations ended up adding *more*
-aliasing than the naive approach. It turned out that the resampling
-algorithm can push samples that are close to 1.0 or -1.0 to go beyond
-the limit, and these caused aliasing when they were hard-clipped for
-the WAV file conversion. Just to be sure, DeepSeek R1 even included
-this aliasing-inducing clipping as the last step before returning the
-result, making its solution completely ineffective. I decided to
-resolve this problem in each model's code by adding normalization to
-the WAV file conversion and removing R1's hard-clipping
-(`distorted_samples /= np.max(np.abs(distorted_samples))`),
-even though this approach does not generalize well; it works here only
-because in this test, it is known fore sure that the loudest samples
-should still be at or slightly below &pm;1.0.
-
-Gemini's thought process indicated that the "state of the art"
-requirement might be confusing, so I also tried the following ending in
-newly opened, clean conversations:
-
-> Use the computationally cheapest antialiasing method you can think of.
-> Keep it CPU-friendly enough for real-time audio. Do not overthink.
-
-This made Gemini and ChatGPT use 2x oversampling, while R1 tried the
-pre-distortion filtering approach with a Python-world low-pass filter
-loop...
-
-So I went with the original solutions.
-
-<a id="focus-chatgpt4o" href="#toc">Top</a>
-
-### OpenAI ChatGPT 4o
-
-This time the model went with 4x oversampling which is considerably
-more costly, but at least, it got rid of pretty much all of the
-aliasing.
-
-<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-focus.png" alt="4x oversampling by OpenAI ChatGPT 4o" />
-
-The result: [sound-chatgpt4o-focus.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-focus.flac).
-
-<a id="focus-r1" href="#toc">Top</a>
-
-### DeepSeek R1
-
-Same approach as above, but with 2x upsampling.
-
-<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-r1-focus.png" alt="2x oversampling by  by DeepSeek R1" />
-
-The result: [sound-r1-focus.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-r1-focus.flac).
-
-<a id="focus-gemini2_5pro" href="#toc">Top</a>
-
-### Google Gemini 2.5 Pro
-
-Same deal with 4x oversampling, but delivered in a highly defensive
-coding style, filled with extremely detailed comments.
-
-<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-gemini2_5pro-focus.png" alt="4x oversampling by Google Gemini 2.5 Pro" />
-
-The result: [sound-gemini2_5pro-focus.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-gemini2_5pro-focus.flac).
-
-<a id="manual-adaa" href="#toc">Top</a>
-
-Handcrafted ADAA, without AI
-----------------------------
-
-ADAA stands for "[antiderivative antialiasing](https://www.dafx.de/paper-archive/2016/dafxpapers/20-DAFx-16_paper_41-PN.pdf)", 
-and I think its 1st order variant is a really good compromise between
-low computational costs and effectiveness in terms of reducing aliasing
-to an almost inaudible level. If the antiderivative of the
-waveshaper non-linearity is known, then probably this is the algorithm
-to go with. See [my implementation in the appendix](#manual-adaa-impl).
-
-<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-manual-adaa.png" alt="1st order antiderivative antialiasing is a really good compromise between effectiveness and CPU-cost." />
-
-The result: [sound-manual-adaa.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-manual-adaa.flac).
-
-<a id="llm-adaa" href="#toc">Top</a>
-
-ADAA with AI
-------------
-
-Can the AI-s beat my implementation when explicitly asked to use ADAA?
-
-> You are an expert in Python and audio processing. Implement the
-> following function which applies gain boosting and tanh non-linearity
-> to an audio signal while keeping aliasing to a minimum:
-> 
->     def distort(samples, gain_db=14.0, sample_rate=44100.0, channels=2):
->         distorted = np.zeros_like(samples)
->         # Your code here
->         return distorted
-> 
-> The `samples` parameter is a NumPy array of shape `(N, channels)`
-> where `N` is the number of audio samples, the samples are float32
-> numbers (usually between -1.0 and 1.0), the `gain_db` parameter is
-> the gain to be applied in dB, the `sample_rate` specifies the
-> sampling rate, and the `channels` parameter specifies the number of
-> audio channels.
-> 
-> Use 1st order ADAA to control aliasing. Avoid looping over NumPy
-> arrays manually. Do not overthink.
-
-<a id="adaa-chatgpt4o" href="#toc">Top</a>
-
-### OpenAI ChatGPT 4o
-
-A little bit slower implementation than mine, and it triggers a
-division-by-zero warning (though later the resulting invalid values are
-cleaned up properly), but I was surprised to see that the result had
-much lower floating-point noise than mine.
-
-<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-adaa.png" alt="ADAA by OpenAI ChatGPT 4o" />
-
-The result: [sound-chatgpt4o-adaa.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-adaa.flac).
-
-<a id="adaa-r1" href="#toc">Top</a>
-
-### DeepSeek R1
-
-This was similar to the above, but it managed to avoid the warnings at
-the cost of being slower. Its output was also similarly clean.
-
-<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-r1-adaa.png" alt="ADAA by DeepSeek R1" />
-
-The result: [sound-r1-adaa.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-r1-adaa.flac).
-
-<a id="adaa-gemini2_5pro" href="#toc">Top</a>
-
-### Google Gemini 2.5 Pro
-
-Does the job, but again, delivered in a highly defensive (and thus,
-slightly slower) coding style, filled with extremely detailed comments.
-The defensive coding caused measurable computational cost increase.
-
-<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-gemini2_5pro-adaa.png" alt="ADAA by Google Gemini 2.5 Pro" />
-
-The result: [sound-gemini2_5pro-adaa.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-gemini2_5pro-adaa.flac).
-
-<a id="manual-adaa-improved" href="#toc">Top</a>
-
-Handcrafted ADAA, with ideas stolen from AI
--------------------------------------------
-
-The function that I used for the antiderivative of `tanh(x)` came from
-an older DSP project of mine, and to be honest, I forgot how I obtained
-its formula and why it was constructed the way it was. Nevertheless,
-the LLM-s found a much simpler function, so I copied it from them in my
-final solution.
-
-<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-manual-adaa-improved.png" alt="Manual ADAA with a simpler antiderivative copied from the LLM-s." />
-
-The result: [sound-manual-adaa-improved.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-manual-adaa-improved.flac).
-
-<a id="speed" href="#toc">Top</a>
-
-Speed Comparison
-----------------
-
-I moved the 16-bit conversion related stuff and the final clipping out
-from the distortion function in the first few ChatGPT implementations,
-so that the various versions of the distortion function deal with only
-the waveshaping, without the concerns of the file format
-(see: [SRP](https://en.wikipedia.org/wiki/Single-responsibility_principle)).
-
-Then I called the distortion function for the raw samples repeatedly
-from a loop 100 times in every implementation.
-
-The results, from the fastest to the slowest:
-
- * 2.643s - handcrafted ADAA with simplified antiderivative (human + AI),
- * 2.977s - handcrafted ADAA (human),
- * 3.427s - OpenAI ChatGPT 4o attempt 1 pre-filter, prompt 7 (AI),
- * 3.789s - OpenAI ChatGPT 4o attempt 2 (AI),
- * 6.228s - OpenAI ChatGPT 4o ADAA (AI),
- * 7.315s - OpenAI ChatGPT 4o attempt 1 oversampling, prompt 4 (AI),
- * 8.178s - Google Gemini 2.5 Pro ADAA (AI).
- * 10.191s - DeepSeek R1 ADAA (AI),
- * 18.446s - DeepSeek R1 focused question (AI),
- * 35.455s - OpenAI ChatGPT 4o focused question (AI),
- * 35.461s - Google Gemini 2.5 Pro focused question (AI).
+The test sound: [sound.wav](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound.wav).
+
+The full LLM conversations, my own implementations, and the resulting
+sound files and their spectrograms can be found in the [Appendix](#prompt-adaa).
+
+<a id="mistakes" href="#toc">Top</a>
+
+### Stupid Mistakes
+
+ * All of the LLMs went with an upsampling-based approach in the
+   [Unspecified Technique (AI)](#prompt-unspectechnique) experiment,
+   and all of them ran into the problem of
+   [digital hard clipping](https://en.wikipedia.org/wiki/Clipping_(audio)).
+   Even though the `tanh` function should stay within the `[-1.0, +1.0]`
+   interval, the up- and downsampling may push some samples slightly
+   outside this interval, which then causes hard clipping and aliasing.
+   [OpenAI ChatGPT 4o](#conv-chatgpt4o-unspectechnique) and
+   [Google Gemini 2.5 Pro](#conv-gemini2_5pro-unspectechnique) ignored
+   the issue, which can be the right thing to do when assuming that the
+   waveshaping takes place as a part of a complex audio pipeline where
+   the clipping should be addressed at the very last step.
+   [DeepSeek R1](#conv-r1-unspectechnique) however included hard digital
+   clipping as the last step of its implementation, ruining its
+   otherwise correctly implemented 2x upsampling.
+
+ * LLMs in multiple experiments chose to use non-vectorized loops to
+   process the signal in the audio channels dimension, but
+   [OpenAI ChatGPT 4o](#conv-chatgpt4o-c1p5) used a non-vectorized loop
+   in an instance to loop through the individual samples as well, and
+   then when it was told to replace that with a vectorized operation,
+   it [falsely claimed that it did](#conv-chatgpt4o-c1p6).
+
+<a id="results" href="#toc">Top</a>
+
+### Results
+
+Aliasing:
+
+ * **none**: no or extremely low aliasing.
+ * **inaudible**: inaudible or almost inaudible aliasing; may be
+   noticable with good quality speakers or headphones in a quiet
+   listening environment with a relatively loud playback volume.
+ * **loud**: clearly audible, loud aliasing.
+ * **fail**: the anti-aliasing method caused audible damage to the sound.
+
+The 3 fastest methods that were able to reduce aliasing to an inaudible
+level are highlighted in the table below.
+
+The measurements were performed with the
+[tanh_distortion.py](https://github.com/attilammagyar/toys/blob/gh-pages/llm-vs-dsp-programming/tanh_distortion.py)
+script in this repository.
+
+<table>
+  <thead>
+    <tr>
+      <th>Experiment</th>
+      <th>Average computation time</th>
+      <th>Aliasing</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="#result-chatgpt4o-noupspl">OpenAI ChatGPT 4o No Upsampling (AI)</a></td>
+      <td>0.003825 s</td>
+      <td>loud</td>
+    </tr>
+    <tr>
+      <td><a href="#result-chatgpt4o-c1p1">OpenAI ChatGPT 4o Conversation 1 Prompt 1 (AI)</a></td>
+      <td>0.014882 s</td>
+      <td>loud</td>
+    </tr>
+    <tr>
+      <td><strong><a href="#result-manual-adaa-improved">Improved Manual ADAA Implementation (human + ideas from AI)</a></strong></td>
+      <td><strong>0.023919 s</strong></td>
+      <td><strong>inaudible</strong></td>
+    </tr>
+    <tr>
+      <td><a href="#result-chatgpt4o-c1p2">OpenAI ChatGPT 4o Conversation 1 Prompt 2 (AI)</a></td>
+      <td>0.024853 s</td>
+      <td>loud</td>
+    </tr>
+    <tr>
+      <td><strong><a href="#result-manual-adaa">Manual ADAA Implementation (human)</a></strong></td>
+      <td><strong>0.025644 s</strong></td>
+      <td><strong>inaudible</strong></td>
+    </tr>
+    <tr>
+      <td><a href="#result-chatgpt4o-c1p7">OpenAI ChatGPT 4o Conversation 1 Prompt 7 (AI)</a></td>
+      <td>0.034124 s</td>
+      <td>loud</td>
+    </tr>
+    <tr>
+      <td><a href="#result-gemini2_5pro-noupspl">Google Gemini 2.5 Pro No Upsampling (AI)</a></td>
+      <td>0.034225 s</td>
+      <td>loud</td>
+    </tr>
+    <tr>
+      <td><a href="#result-chatgpt4o-c2p1">OpenAI ChatGPT 4o Conversation 2 Prompt 1 (AI)</a></td>
+      <td>0.035490 s</td>
+      <td>loud</td>
+    </tr>
+    <tr>
+      <td><a href="#result-r1-noupspl">DeepSeek R1 No Upsampling (AI)</a></td>
+      <td>0.043230 s</td>
+      <td>loud</td>
+    </tr>
+    <tr>
+      <td><strong><a href="#result-chatgpt4o-adaa">OpenAI ChatGPT 4o ADAA (AI)</a></strong></td>
+      <td><strong>0.056721 s</strong></td>
+      <td><strong>inaudible</strong></td>
+    </tr>
+    <tr>
+      <td><a href="#result-gemini2_5pro-adaa">Google Gemini 2.5 Pro ADAA (AI)</a></td>
+      <td>0.074875 s</td>
+      <td>inaudible</td>
+    </tr>
+    <tr>
+      <td><a href="#result-chatgpt4o-c1p4">OpenAI ChatGPT 4o Conversation 1 Prompt 4 (AI)</a></td>
+      <td>0.082954 s</td>
+      <td>inaudible</td>
+    </tr>
+    <tr>
+      <td><a href="#result-r1-adaa">DeepSeek R1 ADAA (AI)</a></td>
+      <td>0.087071 s</td>
+      <td>inaudible</td>
+    </tr>
+    <tr>
+      <td><a href="#result-r1-unspectechnique">DeepSeek R1 Unspecified Technique (AI)</a></td>
+      <td>0.174824 s</td>
+      <td>loud</td>
+    </tr>
+    <tr>
+      <td><a href="#result-chatgpt4o-unspectechnique">OpenAI ChatGPT 4o Unspecified Technique (AI)</a></td>
+      <td>0.349071 s</td>
+      <td>none</td>
+    </tr>
+    <tr>
+      <td><a href="#result-gemini2_5pro-unspectechnique">Google Gemini 2.5 Pro Unspecified Technique (AI)</a></td>
+      <td>0.351167 s</td>
+      <td>none</td>
+    </tr>
+    <tr>
+      <td><a href="#result-chatgpt4o-c1p5">OpenAI ChatGPT 4o Conversation 1 Prompt 5 (AI)</a></td>
+      <td>7.716972 s</td>
+      <td>fail</td>
+    </tr>
+  </tbody>
+</table>
 
 <a id="conclusion" href="#toc">Top</a>
 
@@ -477,44 +344,53 @@ Conclusion
 ----------
 
  * For this particular task at this particular moment (April, 2025),
-   domain knowledge is still required for LLM-aided coding to be
-   effective.
+   domain knowledge is still required for LLM-aided coding to produce
+   good results.
 
- * However, the models acted deceivingly confident even when their
-   solution required further tweaking to be useful or when it was
-   completely wrong.
+ * However, the models acted confident even when their solution
+   required further tweaking to be useful or when it was completely
+   wrong. Without sufficient domain knowledge, this can lead to a
+   [blind leading the blind](https://en.wikipedia.org/wiki/The_blind_leading_the_blind)
+   situation.
 
- * With the proper domain knowledge, the models can be asked explicitly
-   to implement the ADAA solution as a good (probably the best) balance
-   between computational complexity and aliasing reduction. They
-   provided working implementations, but there was a lot of room for
-   improvement.
+ * When paired with sufficient domain expertise, an LLM can be a useful
+   tool for generating or validating ideas, and can speed up the process
+   of bootstrapping an environment for experimentation and problem
+   solving. See also: [rubber duck debugging](https://en.wikipedia.org/wiki/Rubber_duck_debugging).
+
+ * With sufficient domain knowledge, the models can be asked explicitly
+   to implement a particular solution with the best balance between
+   computational complexity and result quality. They provided working
+   implementations in such scenarios, but there was still a lot of room
+   for improvement.
 
  * When asked explicitly, the models will point out several reasons to
-   favor the ADAA approach over upsampling, while usually they fail
-   to even consider using it when they are not explicitly told to do so.
+   favor the ADAA approach over upsampling, while usually they either
+   fail to even consider using it when they are not explicitly told to
+   do so, or reject it for various vague or flawed reasons.
 
-   The reason for this might be that by the time ADAA waveshaping
-   was invented (it was first published in 2016), DSP books, lecture
-   notes, forum discussions, and DSP software libraries (and their
-   documentation) were already saturated with the oversampling based
-   approach, and this is probably also reflected in the LLM training
-   corpus: there might be orders of magnite more mentions of waveshaper
-   antialiasing with oversampling than with ADAA, so it is
-   proportionally more likely that language models will pick the former
-   approach even when the latter would be a more suitable solution.
+   The reason for this might be a bias in the LLM training corpuses
+   towards oversampling: by the time the ADAA waveshaping technique was
+   invented (first published in 2016), DSP books, lecture notes, forum
+   discussions, and DSP software libraries (along with their
+   documentation) were already filled with the oversampling based
+   approach, and this is probably also reflected in the corpuses: there
+   might be orders of magnite more mentions of waveshaper antialiasing
+   with oversampling than with antiderivatives, so it is proportionally
+   more likely that language models will pick the former approach even
+   when the latter would be a more suitable solution.
 
    Thus, too much reliance on LLMs combined with a lack
    of domain knowledge in a field and a lack of being up-to-date with
    its recent developments may result in slower adaptation of newly
    invented techniques on the long run.
 
-<a id="c1" href="#toc">Top</a>
+<a id="conv-chatgpt4o-c1p1" href="#toc">Top</a>
 
 Appendix
 --------
 
-### OpenAI ChatGPT 4o Conversation 1
+### OpenAI ChatGPT 4o Conversation 1 (NumPy)
 
 #### Prompt 1
 
@@ -605,7 +481,15 @@ Let me know if you want other types of distortion too (like
 bitcrushing, waveshaping with lookup tables, or dynamic
 distortion).
 
-<a id="c1p2" href="#toc">Top</a>
+<a id="result-chatgpt4o-c1p1" href="#toc">Top</a>
+
+##### Result
+
+<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p1.png" alt="Spectrogram: OpenAI ChatGPT 4o Conversation 1 Prompt 1 (AI)" />
+
+The result: [sound-chatgpt4o-c1p1.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p1.flac).
+
+<a id="conv-chatgpt4o-c1p2" href="#toc">Top</a>
 
 #### Prompt 2
 
@@ -679,7 +563,15 @@ without harsh clipping.
 
 Want to try asymmetric distortion or dynamic gain shaping next?
 
-<a id="c1p3" href="#toc">Top</a>
+<a id="result-chatgpt4o-c1p2" href="#toc">Top</a>
+
+##### Result
+
+<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p2.png" alt="Spectrogram: OpenAI ChatGPT 4o Conversation 1 Prompt 2 (AI)" />
+
+The result: [sound-chatgpt4o-c1p2.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p2.flac).
+
+<a id="conv-chatgpt4o-c1p3" href="#toc">Top</a>
 
 #### Prompt 3
 
@@ -787,7 +679,7 @@ anti-aliasing filtering using a **simple FIR low-pass filter**:
 Want a higher quality lowpass next time? Or maybe oversampling factor
 4x? We can do that too without needing any extra libraries.
 
-<a id="c1p4" href="#toc">Top</a>
+<a id="conv-chatgpt4o-c1p4" href="#toc">Top</a>
 
 #### Prompt 4
 
@@ -868,7 +760,15 @@ Now it will run **without error** and still apply smooth distortion with
 **reduced aliasing**. Let me know if you want to add oversampling as a
 toggle or change the filter kernel.
 
-<a id="c1p5" href="#toc">Top</a>
+<a id="result-chatgpt4o-c1p4" href="#toc">Top</a>
+
+##### Result
+
+<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p4.png" alt="Spectrogram: OpenAI ChatGPT 4o Conversation 1 Prompt 4 (AI)" />
+
+The result: [sound-chatgpt4o-c1p4.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p4.flac).
+
+<a id="conv-chatgpt4o-c1p5" href="#toc">Top</a>
 
 #### Prompt 5
 
@@ -956,7 +856,15 @@ Want more? I can also show:
 
 Just let me know how deep you wanna go 🎛️
 
-<a id="c1p6" href="#toc">Top</a>
+<a id="result-chatgpt4o-c1p5" href="#toc">Top</a>
+
+##### Result
+
+<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p5.png" alt="Spectrogram: OpenAI ChatGPT 4o Conversation 1 Prompt 5 (AI)" />
+
+The result: [sound-chatgpt4o-c1p5.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p5.flac).
+
+<a id="conv-chatgpt4o-c1p6" href="#toc">Top</a>
 
 #### Prompt 6
 
@@ -1046,7 +954,7 @@ Let me know if you want to explore polyBLEP-style alias suppression
 next (for waveform generation), or a lookup-table-based distortion for
 even faster results!
 
-<a id="c1p7" href="#toc">Top</a>
+<a id="conv-chatgpt4o-c1p7" href="#toc">Top</a>
 
 #### Prompt 7
 
@@ -1102,7 +1010,15 @@ aliasing.
 Let me know if you want to tune the FIR filter for sharper roll-off or
 experiment with asymmetric distortion curves.
 
-<a id="c2" href="#toc">Top</a>
+<a id="result-chatgpt4o-c1p7" href="#toc">Top</a>
+
+##### Result
+
+<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p7.png" alt="Spectrogram: OpenAI ChatGPT 4o Conversation 1 Prompt 7 (AI)" />
+
+The result: [sound-chatgpt4o-c1p7.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p7.flac).
+
+<a id="conv-chatgpt4o-c2p1" href="#toc">Top</a>
 
 ### OpenAI ChatGPT 4o Conversation 2
 
@@ -1127,7 +1043,7 @@ Here's a Python script that meets your requirements:
    distortion (to make it more real-time friendly).
  * **Writes** the processed audio back as 16-bit stereo at 44.1 kHz.
 
-<a id="c2code"></a>
+<a id="code-chatgpt4o-c2p1"></a>
 
     import wave
     import numpy as np
@@ -1203,7 +1119,15 @@ Here's a Python script that meets your requirements:
 Let me know if you want a version that processes audio chunk-by-chunk
 (for live streaming or memory efficiency).
 
-<a id="c2p2" href="#toc">Top</a>
+<a id="result-chatgpt4o-c2p1" href="#toc">Top</a>
+
+##### Result
+
+<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c2p1.png" alt="Spectrogram: OpenAI ChatGPT 4o Conversation 2 Prompt 1 (AI)" />
+
+The result: [sound-chatgpt4o-c2p1.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c2p1.flac).
+
+<a id="conv-chatgpt4o-c2p2" href="#toc">Top</a>
 
 #### Prompt 2
 
@@ -1335,9 +1259,9 @@ used with `tanh`-style saturation:
 Let me know if you want code examples for oversampling or a band-limited
 polynomial approximation!
 
-<a id="focus-full" href="#toc">Top</a>
+<a id="prompt-unspectechnique" href="#toc">Top</a>
 
-### Focus on the Distortion
+### Unspecified Technique
 
 #### Prompt
 
@@ -1360,7 +1284,7 @@ of audio channels.
 Use the fastest state of the art antialiasing method. Keep it
 CPU-friendly enough for real-time audio.
 
-<a id="focus-full-chatgpt4o" href="#toc">Top</a>
+<a id="conv-chatgpt4o-unspectechnique" href="#toc">Top</a>
 
 #### OpenAI ChatGPT 4o's Response
 
@@ -1400,7 +1324,7 @@ Here's the implementation:
     
         return distorted.astype(np.float32)
 
-##### Key Notes:
+###### Key Notes:
 
  * `resample_poly` uses an efficient polyphase FIR filter, which gives
     excellent quality with relatively low CPU cost.
@@ -1414,11 +1338,19 @@ Here's the implementation:
 Let me know if you’d like a version optimized for mono or specific DSP
 libraries (like `numba`, `librosa`, `torch`, etc.).
 
-<a id="focus-full-r1" href="#toc">Top</a>
+<a id="result-chatgpt4o-unspectechnique" href="#toc">Top</a>
+
+##### Result
+
+<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-unspectechnique.png" alt="Spectrogram: OpenAI ChatGPT 4o Unspecified Technique (AI)" />
+
+The result: [sound-chatgpt4o-unspectechnique.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-unspectechnique.flac).
+
+<a id="conv-r1-unspectechnique" href="#toc">Top</a>
 
 #### DeepSeek R1's Response
 
-##### Audio Distortion with Anti-Aliasing
+###### Audio Distortion with Anti-Aliasing
 
 Here's an implementation that applies gain boosting with a tanh
 non-linearity while minimizing aliasing artifacts. I'll use a
@@ -1480,21 +1412,25 @@ suitable for real-time processing.
         # Clip any remaining values outside [-1, 1] (shouldn't happen due to tanh)
         return np.clip(distorted, -1.0, 1.0)
 
-##### Explanation:
+###### Explanation:
 
 1. **Gain Application**: We first convert the gain from dB to linear
    scale and apply it to the input signal.
+
 2. **Anti-Aliasing Approach**:
     * Uses polyphase resampling (upsampling before non-linearity, downsampling after)
     * 2x oversampling is often sufficient for audio applications
     * Kaiser window provides good stopband attenuation with reasonable CPU usage
+
 3. **Non-Linearity**:
     * tanh() is applied to the upsampled signal to reduce high-frequency artifacts
     * tanh naturally limits the signal to [-1, 1] range
+
 4. **Efficiency Considerations**:
     * Uses scipy's `resample_poly` which is optimized for performance
     * Processes channels independently (good for parallelization if needed)
     * Minimal memory allocation beyond the required buffers
+
 5. **Safety Measures**:
     * Handles potential length mismatches from resampling
     * Final clipping ensures output stays in valid range
@@ -1507,7 +1443,15 @@ For even better anti-aliasing at the cost of more CPU, you could
 increase the oversampling factor to 4x, but 2x is often sufficient
 for most audio applications.
 
-<a id="focus-full-gemini2_5pro" href="#toc">Top</a>
+<a id="result-r1-unspectechnique" href="#toc">Top</a>
+
+##### Result
+
+<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-r1-unspectechnique.png" alt="Spectrogram: DeepSeek R1 Unspecified Technique (AI)" />
+
+The result: [sound-r1-unspectechnique.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-r1-unspectechnique.flac).
+
+<a id="conv-gemini2_5pro-unspectechnique" href="#toc">Top</a>
 
 #### Google Gemini 2.5 Pro's Response
 
@@ -1525,12 +1469,14 @@ the `distort` function:
     * Be CPU-friendly enough for real-time audio.
     * Input is a NumPy array (`(N, channels)`), `float32`.
     * Parameters include `gain_db`, `sample_rate`, and `channels`.
+
 2. **Core Distortion Steps:**
     * **Gain:** Convert the gain from dB to a linear factor. The
       formula is `linear_gain = 10**(gain_db / 20)`.
     * **Apply Gain:** Multiply the input `samples` by the `linear_gain`.
     * **Non-linearity:** Apply the `tanh` function to the gained signal.
       `distorted = np.tanh(gained_signal)`.
+
 3. **The Aliasing Problem**:
     * **Why does it happen?** Applying a non-linear function (like
       `tanh`) to a signal generates new frequency components
@@ -1549,6 +1495,7 @@ the `distort` function:
          remove the unwanted high-frequency harmonics generated by the
          non-linearity.
        * Downsample the signal back to the original sampling rate.
+
 4. **Choosing the Oversampling Method:**
     * The user asks for the "fastest state-of-the-art" and
       "CPU-friendly" method.
@@ -1597,6 +1544,7 @@ the `distort` function:
       (`scipy`), and typically uses efficient polyphase filtering. It
       handles rational resampling factors well (upsample by `L`,
       downsample by `M`).
+
 5. **Implementing Oversampling with `resample_poly`:**
     * **Choose Oversampling Factor:** A factor of 2x or 4x is a
       reasonable starting point for real-time. Let's choose 4x
@@ -1610,6 +1558,7 @@ the `distort` function:
     * **Downsample:** Use
       `resample_poly(distorted_oversampled, up=1, down=oversampling_factor, axis=0)`.
       This implicitly includes the necessary low-pass filtering.
+
 6. Putting it Together (Initial Draft):
 
         import numpy as np
@@ -1696,6 +1645,7 @@ the `distort` function:
       compromise.
     * **Code Clarity:** Add comments explaining the steps. Ensure
       variable names are clear.
+
 8. Final Code Structure:
 
         import numpy as np
@@ -1813,6 +1763,8 @@ the original data type, includes basic error handling for missing
 requirements for distortion, anti-aliasing, and real-time friendliness
 (using an efficient library function). The oversampling factor (4x) is
 a reasonable default but could be adjusted.
+
+<a id="conv-gemini2_5pro-unspectechnique-final" href="#toc">Top</a>
 
 ##### Final Response
 
@@ -2044,18 +1996,23 @@ which are good for performance.
         distorted_buffer = distort(buffer, gain_db=14.0, sample_rate=sr, channels=channels)
         print(f"\nProcessed buffer of size {buffer_size}: Input shape {buffer.shape}, Output shape {distorted_buffer.shape}")
 
-**Explanation:**
+###### Explanation:
+
 1. **Import Dependencies:** Imports `numpy` and tries to import
    `resample_poly` from `scipy.signal`. A flag `_SCIPY_AVAILABLE` is
    set to handle cases where SciPy isn't installed.
+
 2. **Function Definition:** Defines the `distort` function with the
    specified parameters and docstrings.
+
 3. **Input Validation:** Checks if the input `samples` is a 2D NumPy
    array and if the channel dimension matches the `channels` parameter.
    Handles empty input.
+
 4. **Parameter Calculation:** Converts `gain_db` to a linear gain
    factor (`gain_linear`). Sets the oversampling_factor (4x is chosen
    as a reasonable default).
+
 5. **Oversampling (if SciPy available):**
     * `resample_poly(samples, up=oversampling_factor, down=1, axis=0)`:
       Upsamples the input signal by the specified factor along the time
@@ -2071,22 +2028,26 @@ which are good for performance.
       (low-pass) filter before downsampling, removing the high-frequency
       content generated by the distortion that would otherwise cause
       aliasing.
+
 6. **Length Matching:** The resampling process (especially the filtering
    involved) can slightly alter the number of output samples. The code
    explicitly checks the length of `distorted_resampled` and either
    truncates or pads it with zeros to ensure the final output
    `distorted` has the exact same number of samples (`N`) as the input
    `samples`. This is crucial for block-based processing.
+
 7. **Fallback (No SciPy):** If `scipy.signal.resample_poly` could not
    be imported, the code prints a warning and performs the distortion
    directly on the original samples
    (`np.tanh(samples * gain_linear)`). This will likely introduce
    aliasing artifacts, especially with high gain or high-frequency
    input signals.
+
 8. **Dtype and Shape Consistency:** Ensures the output array has the
    same data type (`dtype`) and shape as the input array. Includes
    error handling for unexpected issues, returning an array of zeros
    in case of failure.
+
 9. **Example Usage (`if __name__ == '__main__'`:)**
     * Creates a test signal containing two sine waves (one moderately
       high frequency, one very high frequency) to demonstrate the
@@ -2104,10 +2065,744 @@ This implementation provides a good balance between anti-aliasing
 quality and computational efficiency suitable for many real-time
 audio applications.
 
+<a id="result-gemini2_5pro-unspectechnique" href="#toc">Top</a>
 
-<a id="adaa-full" href="#toc">Top</a>
+##### Result
 
-### ADAA with AI
+<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-gemini2_5pro-unspectechnique.png" alt="Spectrogram: Google Gemini 2.5 Pro Unspecified Technique (AI)" />
+
+The result: [sound-gemini2_5pro-unspectechnique.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-gemini2_5pro-unspectechnique.flac).
+
+<a id="prompt-noupspl" href="#toc">Top</a>
+
+### No Upsampling
+
+#### Prompt
+
+You are an expert in Python and audio processing. Implement the
+following function which applies gain boosting and tanh non-linearity
+to an audio signal while keeping aliasing to a minimum without
+oversampling:
+
+    def distort(samples, gain_db=14.0, sample_rate=44100.0, channels=2):
+        distorted = np.zeros_like(samples)
+        # Your code here
+        return distorted
+
+The `samples` parameter is a NumPy array of shape `(N, channels)`
+where `N` is the number of audio samples, the samples are float32
+numbers (usually between -1.0 and 1.0), the `gain_db` parameter is
+the gain to be applied in dB, the `sample_rate` specifies the
+sampling rate, and the `channels` parameter specifies the number of
+audio channels.
+
+Use the fastest state of the art antialiasing method. Keep it
+CPU-friendly enough for real-time audio. Upsampling is not allowed.
+
+<a id="conv-chatgpt4o-noupspl" href="#toc">Top</a>
+
+#### OpenAI ChatGPT 4o's Response
+
+To apply **gain boosting** and a **tanh non-linearity** to audio while
+minimizing aliasing **without oversampling**, we can use a
+**bandlimited approximation of the tanh function**. This avoids the
+need for oversampling by replacing the naive non-linearity with a
+smoothed, alias-reduced version.
+
+A modern, fast, and CPU-friendly method for antialiased waveshaping is
+the **Antiderivative Antialiasing (ADAA)** technique. However, a
+simplified approach using **bandlimited lookup or polynomial
+approximations** like **saturated sigmoid** functions can be very
+effective and lightweight for real-time usage.
+
+Below is a practical implementation using a **bandlimited approximation
+of tanh**, based on a **fast sigmoid approximation**, which
+significantly reduces aliasing compared to raw `np.tanh`:
+
+    import numpy as np
+    
+    def distort(samples, gain_db=14.0, sample_rate=44100.0, channels=2):
+        # Convert gain from dB to linear
+        gain = 10 ** (gain_db / 20.0)
+        
+        # Apply gain
+        boosted = gain * samples
+    
+        # Bandlimited approximation of tanh using a smooth sigmoid-like curve
+        # This approximation is faster and produces fewer aliasing artifacts than np.tanh
+        def fast_tanh(x):
+            return x / (1.0 + np.abs(x) + 0.0001)  # Small epsilon to avoid division issues
+    
+        # Apply the bandlimited non-linearity
+        distorted = fast_tanh(boosted)
+    
+        return distorted.astype(np.float32)
+
+###### Explanation:
+
+ * **Gain Boosting**: Standard linear gain based on decibels.
+ * **Aliasing-Reduced Nonlinearity**: Instead of `np.tanh`, we use a
+   rational function approximation like `x / (1 + |x|)` — which is
+   smooth, non-linear, saturates at ±1, and introduces significantly
+   fewer high-frequency components than `np.tanh`, especially for
+   real-time constraints.
+ * **Why not oversampling?** Per your instructions — this method avoids
+   upsampling/downsampling but still effectively reduces aliasing.
+
+###### Optional Improvement:
+
+If you want a slightly more accurate `tanh`-like behavior, you could
+try the following smoother approximation:
+
+    def fast_tanh(x):
+        return np.tanh(0.5 * x) * 1.5 - 0.5 * np.tanh(x * 0.1)
+
+This combines two scaled `tanh` calls for a more analog-style response
+while still avoiding harsh aliasing.
+
+Let me know if you want a version using ADAA or filtered feedback
+waveshaping!
+
+<a id="result-chatgpt4o-noupspl" href="#toc">Top</a>
+
+##### Result
+
+<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-noupspl.png" alt="Spectrogram: OpenAI ChatGPT 4o No Upsampling (AI)" />
+
+The result: [sound-chatgpt4o-noupspl.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-noupspl.flac).
+
+<a id="conv-r1-noupspl" href="#toc">Top</a>
+
+#### DeepSeek R1's Response
+
+###### Audio Distortion with Anti-Aliasing
+
+I'll implement a distortion function that applies gain boosting and tanh
+non-linearity while minimizing aliasing artifacts. The key challenge is
+to prevent high-frequency aliasing without resorting to oversampling.
+
+**Solution**
+
+    import numpy as np
+    from scipy import signal
+    
+    def distort(samples, gain_db=14.0, sample_rate=44100.0, channels=2):
+        """
+        Apply gain boosting and tanh distortion to audio samples with anti-aliasing.
+        
+        Parameters:
+            samples (np.ndarray): Input audio samples (N x channels)
+            gain_db (float): Gain to apply in decibels before distortion
+            sample_rate (float): Sampling rate in Hz
+            channels (int): Number of audio channels
+        
+        Returns:
+            np.ndarray: Distorted audio samples
+        """
+        # Convert gain from dB to linear scale
+        gain_linear = 10 ** (gain_db / 20.0)
+        
+        # Apply gain to input signal
+        gained = samples * gain_linear
+        
+        # Design anti-aliasing filter (lowpass before non-linearity)
+        # Cutoff frequency is 0.45 * Nyquist (empirically determined good balance)
+        cutoff = 0.45 * (sample_rate / 2)
+        nyquist = sample_rate / 2
+        normal_cutoff = cutoff / nyquist
+        
+        # Use 4th order Butterworth filter (good balance between steepness and CPU)
+        b, a = signal.butter(4, normal_cutoff, btype='low', analog=False)
+        
+        # Apply filter to each channel
+        filtered = np.zeros_like(gained)
+        for ch in range(channels):
+            # Use filtfilt for zero-phase filtering (avoids phase distortion)
+            filtered[:, ch] = signal.filtfilt(b, a, gained[:, ch])
+        
+        # Apply tanh non-linearity (soft clipping)
+        distorted = np.tanh(filtered)
+        
+        # Normalize to prevent clipping (optional, could be parameterized)
+        max_sample = np.max(np.abs(distorted))
+        if max_sample > 0.9:  # Only normalize if we're close to clipping
+            distorted = distorted * (0.9 / max_sample)
+        
+        return distorted
+
+###### Key Anti-Aliasing Techniques
+
+1. **Pre-filtering**: We apply a lowpass filter before the non-linear
+   distortion to remove frequencies that would alias when harmonics are
+   generated.
+
+2. **Filter Design**:
+    * 4th order Butterworth filter provides a good balance between
+      steepness and computational efficiency
+    * Cutoff at 45% of Nyquist frequency (empirically determined to work
+      well)
+    * Zero-phase filtering (filtfilt) prevents phase distortion
+
+3. **Efficient Implementation**:
+    * Uses vectorized operations where possible
+    * Processes each channel independently
+    * Avoids oversampling which would increase CPU load
+
+4. **Soft Clipping**:
+    * Uses tanh function which naturally limits output to [-1, 1]
+    * Additional normalization prevents rare cases of clipping
+
+This approach provides good aliasing suppression while maintaining
+real-time performance on modern CPUs. The filter order and cutoff
+frequency can be adjusted for different quality/performance tradeoffs.
+
+<a id="result-r1-noupspl" href="#toc">Top</a>
+
+##### Result
+
+<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-r1-noupspl.png" alt="Spectrogram: DeepSeek R1 No Upsampling (AI)" />
+
+The result: [sound-r1-noupspl.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-r1-noupspl.flac).
+
+<a id="conv-gemini2_5pro-noupspl" href="#toc">Top</a>
+
+#### Google Gemini 2.5 Pro's Response
+
+##### Thinking Process
+
+Here's a thinking process that leads to the provided Python code for anti-aliased distortion:
+
+1. **Understand the Goal:** The request is to implement a Python
+   function `distort` that takes an audio signal (`samples`), applies
+   a gain boost (`gain_db`), and then applies a `tanh` distortion.
+   The key constraints are:
+    * Minimize aliasing.
+    * Do not use oversampling.
+    * Be CPU-friendly enough for real-time processing.
+    * Use the "fastest state of the art" anti-aliasing method without
+      oversampling.
+
+2. **Identify the Core Problem: Aliasing in Non-linear Processing:**
+    * Applying gain boosts the signal amplitude.
+    * Applying a non-linear function like tanh introduces new harmonic
+      frequencies.
+    * If these new frequencies exceed the Nyquist frequency
+      (sample_rate / 2), they will "fold back" into the audible
+      spectrum, creating unwanted distortion artifacts called aliasing.
+    * Standard `tanh(gain * signal)` directly applied will definitely
+      cause aliasing, especially with high gain.
+
+3. **Explore Anti-Aliasing Techniques (without Oversampling):**
+    * **Oversampling:** Explicitly forbidden by the prompt. Oversampling
+      works by increasing the sample rate, applying the non-linearity,
+      low-pass filtering to remove frequencies above the original
+      Nyquist, and then downsampling. It's effective but
+      computationally more expensive and disallowed here.
+    * **Filtering before Distortion:** This doesn't work. The
+      non-linearity creates the high frequencies. Filtering before just
+      shapes the input signal.
+    * **Filtering after Distortion:** This removes some aliasing but
+      also removes desired high-frequency content generated by the
+      distortion. It's often not sufficient and can dull the sound.
+    * **Analytical Anti-Aliasing:** This involves finding mathematical
+      ways to compute the bandlimited result of the non-linear function.
+      This means calculating what the output would be if it were
+      perfectly filtered after being generated at an infinitely high
+      sample rate. This is often complex or impossible for arbitrary
+      non-linearities.
+    * **Approximation Methods for Specific Non-linearities:** For
+      certain common non-linearities like `tanh`, researchers have
+      developed efficient approximations that inherently limit the
+      generation of high frequencies or approximate the effect of ideal
+      bandlimiting.
+    * **Wave Digital Filters (WDFs):** A powerful technique for
+      simulating analog circuits digitally, often inherently bandlimited
+      or with controllable aliasing. Can be complex to implement for
+      arbitrary non-linearities.
+    * **Antiderivative Method (or related techniques):** This is a
+      promising approach. The idea is related to BLIT (Bandlimited
+      Impulse Train) synthesis. If you differentiate the input signal,
+      apply a related non-linearity, and then integrate the result, you
+      can achieve anti-aliasing. For `tanh`, this is related to
+      integrating the derivative of `tanh`, which is `sech^2`. This
+      often involves approximations or precomputed lookup tables.
+    * **Lookup Tables with Interpolation:** Precompute the distorted
+      output for various input levels and use interpolation. This can be
+      fast but might not be perfectly anti-aliased unless the table
+      itself is generated using an anti-aliased method.
+    * **State-Variable Filters combined with Non-linearity:** Sometimes
+      used in synth design, where the filter structure itself helps
+      manage the harmonics.
+
+4. **Evaluate "Fastest State-of-the-Art" without Oversampling for `tanh`:**
+    * The antiderivative approach, or related techniques that
+      approximate the bandlimited `tanh` function, are strong
+      candidates. These methods aim to compute the desired output
+      directly without explicitly filtering high frequencies after they
+      are generated.
+    * Parker & Välimäki (and others) have researched efficient
+      polynomial approximations or other functional forms that mimic
+      `tanh` while producing less aliasing.
+    * A common and relatively efficient approach for `tanh` involves
+      approximating the ideal bandlimited operation. One such technique
+      uses a combination of the direct `tanh` and its derivatives or
+      related functions, often calibrated empirically or based on
+      analysis to minimize aliasing for typical audio signals.
+
+5. **Focus on a Practical, CPU-Friendly Method:**
+    * A full analytical solution might be too complex or slow.
+    * A direct `tanh` is too aliased.
+    * A simple filtering after is suboptimal.
+    * The "Antiderivative Antialiasing" (ADA) or similar
+      derivative-based methods offer a good balance. A first-order
+      ADAA approximation for `y = tanh(x)` can be derived. The general
+      idea is to solve a differential equation implicitly.
+    * However, implementing full ADAA correctly can be tricky and might
+      require iterative solvers or careful state management, potentially
+      impacting real-time performance if not optimized.
+    * Alternative Consideration: Perhaps a simpler approximation that
+      reduces aliasing significantly, even if not perfectly, is more
+      practical for real-time use. A common technique involves adding a
+      small amount of filtering within the process or using a slightly
+      modified waveshaping function. Another simple approach is adding
+      a compensation term based on the signal's derivative, aiming to
+      counteract the primary source of aliasing generation.
+
+6. **Selecting the Method for the Code:** Let's consider a practical
+   compromise often seen in audio plugins that avoids full oversampling
+   but reduces aliasing:
+    * Calculate the gain in linear scale.
+    * Apply the gain.
+    * Apply the `tanh` function directly. This will alias.
+    * Crucially, apply a filter after the non-linearity but make it
+      dynamic or adaptive, or simply a gentle low-pass filter tuned to
+      slightly below Nyquist. This isn't ideal anti-aliasing in the
+      theoretical sense (like ADAA or perfect oversampling), but it's a
+      common, practical, CPU-friendly technique to reduce aliasing
+      without explicit oversampling. It trades off perfect alias
+      rejection for simplicity and speed.
+
+7. **Refining the "Filter After" Approach:**
+    * A simple fixed low-pass filter might dull the sound too much.
+    * Maybe a 1-pole filter? It's very cheap CPU-wise.
+    * How to set the cutoff? Setting it fixed just below Nyquist is a
+      start. `f_cutoff = sample_rate * 0.45` could be a reasonable
+      starting point.
+    * Implementation: A 1-pole IIR filter is
+      `y[n] = (1-a)*x[n] + a*y[n-1]`, where
+      `a = exp(-2 * pi * f_cutoff / sample_rate)`.
+
+8. **Considering the "State-of-the-Art" Constraint Again:** The simple
+   1-pole filter after `tanh` isn't really
+   "state-of-the-art anti-aliasing". It's just basic filtering. The
+   prompt asks for something better without oversampling. This points
+   back towards methods like ADAA or approximations thereof.
+
+9. **Revisiting Antiderivative Antialiasing (ADAA):**
+    * The first-order ADAA for `y = f(x)` involves solving
+      `y[n] = f(x[n] - alpha * y'[n-1])` where `y'` is related to the
+      derivative and `alpha` depends on the sample rate. For `tanh`,
+      this gets complicated quickly, potentially needing iteration or
+      implicit solves.
+    * Simpler Approximation: A common technique related to ADAA for
+      `tanh` involves modifying the input to `tanh` based on the
+      previous output or input derivative. A simplified version might
+      look like pre-filtering the input slightly or adding a correction
+      term.
+    * Another Perspective: Some research suggests specific polynomial
+      approximations for `tanh` that generate fewer high harmonics. For
+      example, `x / (1 + |x|)` or `x / sqrt(1 + x^2)` are related
+      functions with softer saturation, potentially producing less
+      aliasing. Polynomial approximations like `x - x^3/3` (for small x)
+      also exist.
+    * Let's try a simple derivative-based compensation: The idea is that
+      sharp changes in the input `x` lead to the most high-frequency
+      generation in `tanh(g*x)`. We can try to mitigate this. Perhaps
+      filtering the change in the signal?
+
+10. **Simplifying for Practicality and the Prompt:** The prompt asks for
+    the fastest state-of-the-art without oversampling. True ADAA might
+    be complex. What if we interpret
+    "state-of-the-art without oversampling" as the best possible
+    approximation achievable cheaply?
+     * Applying `tanh` directly is the baseline (and aliases).
+     * Applying a simple low-pass filter after `tanh` is a basic
+       improvement but not sophisticated anti-aliasing.
+     * What about a compromise? Calculate the derivative of the input
+       signal (approximated by the difference `x[n] - x[n-1]`). Use this
+       derivative to slightly adjust the processing, perhaps by
+       dynamically adjusting a filter cutoff or modifying the `tanh`
+       input.
+     * Let's consider a 1-pole filter again, but maybe make its
+       coefficient a slightly dependent on the signal's characteristics
+       or the gain? This feels ad-hoc.
+
+11. **Final Strategy Selection:** Given the constraints (fast, no
+    oversampling, state-of-the-art approximation), a robust approach is
+    often a well-tuned filter applied after the non-linearity. While not
+    theoretically perfect anti-aliasing like ADAA or oversampling, it's
+    a standard, computationally cheap technique to mitigate aliasing in
+    real-time systems when oversampling is disallowed. A slightly more
+    sophisticated filter than a 1-pole, like a 2-pole Butterworth or
+    Linkwitz-Riley, offers a better rolloff characteristic without
+    excessive CPU cost.
+
+12. **Code Implementation Plan:**
+     * Import NumPy.
+     * Import `scipy.signal` for filter design/application (specifically
+       `lfilter` or maybe `sosfilt` for stability).
+     * Define the `distort` function signature.
+     * Convert `gain_db` to linear gain:
+       `gain_lin = 10**(gain_db / 20.0)`.
+     * Apply gain: `boosted_samples = samples * gain_lin`.
+     * Apply `tanh`: `distorted_naive = np.tanh(boosted_samples)`.
+     * **Anti-Aliasing Step (Post-Filter):**
+        * Design a low-pass filter. A Butterworth filter is a good
+          choice. Order 2 or 4 provides a reasonable tradeoff between
+          steepness and phase shift/ringing. Let's start with order 2.
+        * Choose a cutoff frequency. It should be close to Nyquist, but
+          slightly below to attenuate aliased components.
+          `0.45 * (sample_rate / 2)` seems reasonable. `0.9 * nyquist`.
+        * Use `scipy.signal.butter(N, Wn, btype='low', analog=False, output='ba')`
+          to get filter coefficients (`b`, `a`). `N` is the order, `Wn`
+          is the normalized cutoff frequency (`cutoff / (sample_rate / 2)`).
+        * Apply the filter using `scipy.signal.lfilter(b, a, distorted_naive, axis=0)`.
+          Use `axis=0` because samples are along the first dimension.
+     * Handle potential initial filter state issues (e.g., using
+       `scipy.signal.lfiltic` or ensuring the filter processes enough
+       samples before the 'real' audio starts if used in a streaming
+       context, though `lfilter` handles this reasonably for a block).
+     * Return the filtered result.
+     * Add docstrings and type hints.
+
+13. **Refinement on Filter:** `lfilter` uses the numerator/denominator
+    (`b`/`a`) representation, which can be numerically unstable for
+    higher orders. `sosfilt` (Second-Order Sections) is generally
+    preferred for stability.
+     * Use `scipy.signal.butter(..., output='sos')`.
+     * Apply using `scipy.signal.sosfilt(sos, distorted_naive, axis=0)`.
+
+14. **Final Code Structure:**
+
+        import numpy as np
+        from scipy import signal
+        import warnings # To potentially suppress warnings if needed, though not strictly necessary here
+        
+        def distort(samples: np.ndarray, gain_db: float = 14.0, sample_rate: float = 44100.0, channels: int = 2) -> np.ndarray:
+            """
+            Applies gain boosting and tanh distortion with anti-aliasing filtering.
+        
+            This implementation uses a low-pass filter after the tanh non-linearity
+            to mitigate aliasing generated by the distortion process, without resorting
+            to oversampling. This is a common and CPU-friendly approach for real-time
+            processing when perfect anti-aliasing (like ADAA or oversampling) is
+            not feasible or desired.
+        
+            Args:
+                samples (np.ndarray): Input audio samples (float32, shape (N, channels)).
+                gain_db (float): Gain boost in decibels. Defaults to 14.0.
+                sample_rate (float): Audio sample rate in Hz. Defaults to 44100.0.
+                channels (int): Number of audio channels. Defaults to 2.
+        
+            Returns:
+                np.ndarray: Distorted audio samples (float32, shape (N, channels)).
+            """
+            if samples.shape[1] != channels:
+                 raise ValueError(f"Input samples shape {samples.shape} inconsistent with channels={channels}")
+            if samples.dtype != np.float32:
+                warnings.warn(f"Input samples dtype is {samples.dtype}, converting to float32.")
+                samples = samples.astype(np.float32)
+        
+        
+            # 1. Convert gain from dB to linear
+            gain_lin = 10**(gain_db / 20.0)
+        
+            # 2. Apply gain
+            boosted_samples = samples * gain_lin
+        
+            # 3. Apply tanh non-linearity
+            # This step introduces harmonics, potentially above Nyquist
+            distorted_naive = np.tanh(boosted_samples)
+        
+            # 4. Anti-aliasing filter (Low-pass filtering *after* non-linearity)
+            # Design a low-pass filter to remove frequencies above Nyquist
+            # that were generated by the tanh function.
+            nyquist = sample_rate / 2.0
+            # Cutoff slightly below Nyquist to attenuate aliasing products.
+            # A value like 0.9 * nyquist is a common starting point.
+            # Adjusting this cutoff trades off aliasing reduction vs. high-frequency content.
+            cutoff_hz = nyquist * 0.9
+            normalized_cutoff = cutoff_hz / nyquist
+        
+            # Use a Butterworth filter - good balance of characteristics.
+            # Order 4 provides a steeper rolloff than order 2. Higher orders increase CPU cost.
+            filter_order = 4
+            sos = signal.butter(filter_order, normalized_cutoff, btype='low', analog=False, output='sos')
+        
+            # Apply the filter to each channel independently
+            # Using sosfilt is generally more numerically stable than lfilter for higher orders.
+            distorted_filtered = signal.sosfilt(sos, distorted_naive, axis=0)
+        
+            # Ensure output dtype is float32
+            return distorted_filtered.astype(np.float32)
+
+15. **Review against Requirements:**
+     * Applies gain: Yes.
+     * Applies `tanh`: Yes.
+     * Minimizes aliasing: Yes, using a post-distortion filter.
+     * Without oversampling: Yes.
+     * Fastest state-of-the-art: This is debatable. The filter approach
+       is fast and common, but true state-of-the-art anti-aliasing
+       without oversampling often involves more complex methods like
+       ADAA. However, for a practical, fast, CPU-friendly implementation
+       without oversampling, this filtered approach is a very strong
+       contender and arguably fits the spirit of the request better than
+       a complex, potentially slower ADAA implementation.
+     * CPU-friendly for real-time: Yes, `tanh` is fast, and `sosfilt`
+       with a low order (like 4) is very efficient.
+     * Uses NumPy: Yes.
+     * Handles shape and channels: Yes.
+     * Returns correct type/shape: Yes.
+
+This thought process moved from understanding the core problem
+(aliasing) to exploring solutions, evaluating them against constraints
+(no oversampling, real-time), and finally settling on a practical,
+widely used technique (post-non-linearity filtering) that balances
+performance and aliasing reduction effectively within the given
+constraints.
+
+<a id="conv-gemini2_5pro-noupspl-final" href="#toc">Top</a>
+
+##### Final Response
+
+Okay, here's an implementation of the `distort` function using a
+practical and CPU-friendly anti-aliasing technique without oversampling.
+
+The chosen method applies the gain and `tanh` distortion directly and
+then uses a low-pass filter immediately afterward to attenuate the
+high-frequency harmonics generated by the distortion that would
+otherwise cause aliasing. This is a common approach in real-time audio
+processing when oversampling is not desired or feasible due to CPU
+constraints. While theoretically techniques like Antiderivative
+Antialiasing (ADAA) exist, implementing them robustly and efficiently
+for `tanh` can be complex. Post-filtering is a well-understood and
+effective compromise.
+
+    import numpy as np
+    from scipy import signal
+    import warnings
+    
+    def distort(samples: np.ndarray, gain_db: float = 14.0, sample_rate: float = 44100.0, channels: int = 2) -> np.ndarray:
+        """
+        Applies gain boosting and tanh distortion with anti-aliasing filtering.
+    
+        This implementation uses a low-pass filter after the tanh non-linearity
+        to mitigate aliasing generated by the distortion process, without resorting
+        to oversampling. This is a common and CPU-friendly approach for real-time
+        processing when perfect anti-aliasing (like ADAA or oversampling) is
+        not feasible or desired.
+    
+        Args:
+            samples (np.ndarray): Input audio samples, expected shape (N, channels).
+                                    Should be float32, usually in range [-1.0, 1.0].
+            gain_db (float): Gain boost in decibels. Defaults to 14.0.
+            sample_rate (float): Audio sample rate in Hz. Defaults to 44100.0.
+            channels (int): Number of audio channels. Must match samples.shape[1].
+                            Defaults to 2.
+    
+        Returns:
+            np.ndarray: Distorted audio samples (float32, shape (N, channels)).
+    
+        Raises:
+            ValueError: If samples.shape[1] does not match the channels parameter.
+        """
+        if samples.ndim != 2 or samples.shape[1] != channels:
+            raise ValueError(
+                f"Input samples shape {samples.shape} is inconsistent with channels={channels}. "
+                f"Expected shape (N, {channels})."
+            )
+        # Ensure input is float32 for processing consistency
+        if samples.dtype != np.float32:
+            warnings.warn(f"Input samples dtype is {samples.dtype}, converting to float32.")
+            samples = samples.astype(np.float32)
+    
+        # 1. Convert gain from dB to linear scale
+        gain_lin = 10**(gain_db / 20.0)
+    
+        # 2. Apply gain
+        # Ensure we work with a copy if samples might be modified elsewhere
+        boosted_samples = samples * gain_lin
+    
+        # 3. Apply tanh non-linearity
+        # This step introduces harmonics, potentially above the Nyquist frequency
+        distorted_naive = np.tanh(boosted_samples)
+    
+        # 4. Anti-aliasing filter (Low-pass filtering *after* non-linearity)
+        # Design a low-pass filter to remove frequencies above Nyquist
+        # that were generated by the tanh function.
+        nyquist = sample_rate / 2.0
+    
+        # Set cutoff frequency slightly below Nyquist to attenuate aliasing products.
+        # A value like 0.9 * nyquist is a common starting point. Reducing it further
+        # increases aliasing reduction but might also remove desired high-frequency
+        # content from the distortion. A higher value preserves more highs but
+        # reduces aliasing less.
+        # Ensure cutoff is strictly less than Nyquist for filter design.
+        cutoff_hz = min(nyquist * 0.9, nyquist - 1e-6) # Safety margin
+    
+        # Normalize cutoff frequency (0 to 1.0, where 1.0 is Nyquist)
+        normalized_cutoff = cutoff_hz / nyquist
+    
+        # Use a Butterworth filter - provides a good balance between rolloff steepness
+        # and phase response. An order of 4 is a reasonable compromise between
+        # effectiveness and CPU cost for real-time processing. Higher orders provide
+        # steeper rolloff but cost more CPU and can have stability issues if not
+        # implemented carefully (hence using SOS).
+        filter_order = 4
+        sos = signal.butter(filter_order, normalized_cutoff, btype='low', analog=False, output='sos')
+    
+        # Apply the filter to each channel independently using Second-Order Sections (SOS)
+        # `sosfilt` is generally more numerically stable than `lfilter` (using b, a coeffs)
+        # especially for higher filter orders or lower cutoff frequencies.
+        # axis=0 assumes samples are along the first dimension (N samples, C channels)
+        distorted_filtered = signal.sosfilt(sos, distorted_naive, axis=0)
+    
+        # Ensure output dtype is float32, consistent with input expectation
+        return distorted_filtered.astype(np.float32)
+    
+    # Example Usage:
+    if __name__ == '__main__':
+        # Create a sample stereo sine wave signal
+        sr = 48000.0
+        duration_s = 1.0
+        freq_hz = 440.0  # A4 note
+        num_samples = int(sr * duration_s)
+        num_channels = 2
+    
+        t = np.linspace(0., duration_s, num_samples, endpoint=False)
+        # Create a clean sine wave at -6dBFS amplitude
+        amplitude = 10**(-6 / 20.0)
+        mono_signal = amplitude * np.sin(2 * np.pi * freq_hz * t)
+    
+        # Make it stereo
+        stereo_signal = np.zeros((num_samples, num_channels), dtype=np.float32)
+        stereo_signal[:, 0] = mono_signal
+        stereo_signal[:, 1] = mono_signal # Identical channels for simplicity
+    
+        print(f"Input signal shape: {stereo_signal.shape}")
+        print(f"Input signal dtype: {stereo_signal.dtype}")
+        print(f"Sample rate: {sr} Hz")
+    
+        # Apply distortion
+        gain_to_apply = 20.0 # dB - significant gain to cause distortion
+        distorted_signal = distort(stereo_signal, gain_db=gain_to_apply, sample_rate=sr, channels=num_channels)
+    
+        print(f"Output signal shape: {distorted_signal.shape}")
+        print(f"Output signal dtype: {distorted_signal.dtype}")
+    
+        # Optional: Listen or analyze the output (requires sounddevice, matplotlib etc.)
+        try:
+            import matplotlib.pyplot as plt
+            import sounddevice as sd
+    
+            # Plot original vs distorted waveform (first 500 samples)
+            plt.figure(figsize=(12, 6))
+            plt.subplot(2, 1, 1)
+            plt.plot(t[:500], stereo_signal[:500, 0], label='Original Left Channel')
+            plt.plot(t[:500], distorted_signal[:500, 0], label=f'Distorted Left Channel ({gain_to_apply}dB gain)')
+            plt.title('Waveform Comparison (First 500 Samples)')
+            plt.xlabel('Time (s)')
+            plt.ylabel('Amplitude')
+            plt.legend()
+            plt.grid(True)
+    
+            # Plot frequency spectrum (using FFT)
+            plt.subplot(2, 1, 2)
+            freqs = np.fft.rfftfreq(num_samples, 1/sr)
+            fft_original = np.abs(np.fft.rfft(stereo_signal[:, 0]))
+            fft_distorted = np.abs(np.fft.rfft(distorted_signal[:, 0]))
+    
+            plt.semilogy(freqs, fft_original, label='Original Spectrum')
+            plt.semilogy(freqs, fft_distorted, label='Distorted Spectrum')
+            plt.axvline(freq_hz, color='g', linestyle='--', label=f'{freq_hz} Hz (Fundamental)')
+            plt.axvline(sr / 2, color='r', linestyle=':', label='Nyquist Freq')
+            plt.title('Frequency Spectrum Comparison (Log Scale)')
+            plt.xlabel('Frequency (Hz)')
+            plt.ylabel('Magnitude')
+            plt.legend()
+            plt.grid(True)
+            plt.xlim(0, sr / 2) # Show up to Nyquist
+            plt.ylim(bottom=1e-3) # Adjust bottom limit for visibility
+    
+            plt.tight_layout()
+            plt.show()
+    
+            # Play the distorted sound
+            print("\nPlaying distorted audio...")
+            sd.play(distorted_signal, samplerate=sr)
+            sd.wait()
+            print("Playback finished.")
+    
+        except ImportError:
+            print("\nInstall matplotlib and sounddevice to visualize and play the audio:")
+            print("pip install matplotlib sounddevice")
+        except Exception as e:
+            print(f"\nCould not plot or play audio due to an error: {e}")
+
+###### Explanation:
+
+1. **Input Validation:** Checks if the input `samples` array has the
+   correct number of dimensions (2) and if its second dimension matches
+   the `channels` parameter. It also ensures the data type is `float32`.
+
+2. **Gain Conversion:** Converts the input gain from decibels
+   (`gain_db`) to a linear multiplier (`gain_lin`).
+
+3. **Apply Gain:** Multiplies the input samples by the linear gain.
+
+4. **Apply `tanh`:** Applies the hyperbolic tangent function
+   element-wise using `np.tanh`. This function naturally saturates the
+   signal between -1.0 and 1.0, creating harmonic distortion.
+
+5. **Anti-Aliasing Filter Design:**
+    * Calculates the Nyquist frequency (`sample_rate / 2`).
+    * Sets a cutoff frequency (`cutoff_hz`) slightly below Nyquist
+      (e.g., 90% of Nyquist). This is the critical parameter for
+      balancing aliasing reduction and preserving high-frequency
+      content.
+    * Uses `scipy.signal.butter` to design a Butterworth low-pass
+      filter. Order 4 is chosen as a good balance for real-time use.
+      `output='sos'` provides the filter coefficients in Second-Order
+      Sections format, which is numerically more stable for filtering.
+
+6. **Apply Filter:** Uses `scipy.signal.sosfilt` to apply the designed
+   low-pass filter to the distorted signal (distorted_naive). It
+   processes each channel independently (`axis=0`). This step removes
+   (attenuates) the high-frequency components above the cutoff
+   frequency, including those generated by `tanh` that would have caused
+   aliasing.
+
+7. **Return Value:** Returns the filtered, distorted signal, ensuring
+   it's `float32`.
+
+This approach is CPU-friendly because `np.tanh` is fast, and `sosfilt`
+with a low-order filter (like 4th order) is highly optimized and
+suitable for real-time audio processing blocks. It directly addresses
+aliasing by removing offending frequencies after they are generated by
+the non-linearity, without the need for computationally more expensive
+upsampling/downsampling stages.
+
+<a id="result-gemini2_5pro-noupspl" href="#toc">Top</a>
+
+##### Result
+
+<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-gemini2_5pro-noupspl.png" alt="Spectrogram: Google Gemini 2.5 Pro No Upsampling (AI)" />
+
+The result: [sound-gemini2_5pro-noupspl.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-gemini2_5pro-noupspl.flac).
+
+<a id="prompt-adaa" href="#toc">Top</a>
+
+### ADAA
 
 #### Prompt
 
@@ -2130,7 +2825,7 @@ of audio channels.
 Use 1st order ADAA to control aliasing. Avoid looping over NumPy
 arrays manually. Do not overthink.
 
-<a id="adaa-full-chatgpt4o" href="#toc">Top</a>
+<a id="conv-chatgpt4o-adaa" href="#toc">Top</a>
 
 #### OpenAI ChatGPT 4o's Response
 
@@ -2165,7 +2860,7 @@ non-linearity, gain in dB, and vectorized NumPy operations:
         distorted = avg_nl.astype(np.float32)
         return distorted
 
-##### 🔍 Key Features:
+###### 🔍 Key Features:
 
  * **Gain boost** is applied before non-linearity.
  * **ADAA** (first order) uses the antiderivative of `tanh`, which is
@@ -2177,7 +2872,15 @@ non-linearity, gain in dB, and vectorized NumPy operations:
 Let me know if you want oversampling added for further anti-aliasing
 or to support mono input (shape (`N`,)).
 
-<a id="adaa-full-r1" href="#toc">Top</a>
+<a id="result-chatgpt4o-adaa" href="#toc">Top</a>
+
+##### Result
+
+<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-adaa.png" alt="Spectrogram: OpenAI ChatGPT 4o ADAA (AI)" />
+
+The result: [sound-chatgpt4o-adaa.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-adaa.flac).
+
+<a id="conv-r1-adaa" href="#toc">Top</a>
 
 #### DeepSeek R1's Response
 
@@ -2251,9 +2954,17 @@ in audio distortion effects, and the ADAA technique helps reduce the
 aliasing that would normally occur when applying such non-linearities
 to audio signals.
 
-<a id="adaa-full-gemini2_5pro" href="#toc">Top</a>
+<a id="result-r1-adaa" href="#toc">Top</a>
 
-#### Google Gemini 4o's Response
+##### Result
+
+<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-r1-adaa.png" alt="Spectrogram: DeepSeek R1 ADAA (AI)" />
+
+The result: [sound-r1-adaa.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-r1-adaa.flac).
+
+<a id="conv-gemini2_5pro-adaa" href="#toc">Top</a>
+
+#### Google Gemini 2.5 Pro's Response
 
 ##### Thinking Process
 
@@ -2317,7 +3028,7 @@ Here's a thinking process to arrive at the Python code for the
       `x[n] == x[n-1]`). In this case, the output should be
       `f(x[n]) = np.tanh(x_n)`.
 
-8. Handling the `delta_x == 0` Case (Numerical Stability):
+8. **Handling the `delta_x == 0` Case (Numerical Stability):**
     * Direct division `delta_F / delta_x` will result in `NaN` or `Inf`
       when `delta_x` is zero.
     * We can use `np.where` to select the correct calculation based on
@@ -2374,7 +3085,12 @@ Here's a thinking process to arrive at the Python code for the
             # Alternatively using np.where:
             distorted = np.where(delta_x == 0, np.tanh(x_n), delta_F / delta_x)
 
-      The np.where approach is more concise and handles potential 0/0 which evaluates to NaN internally before where selects the alternative (tanh(x_n)). Let's verify tanh(x) is the limit of (log(cosh(x)) - log(cosh(x-h))) / h as h -> 0. Yes, the derivative of log(cosh(x)) is (1/cosh(x)) * sinh(x) = tanh(x). So, the np.where approach is mathematically sound.
+      The `np.where` approach is more concise and handles potential
+      `0/0` which evaluates to `NaN` internally before `where` selects
+      the alternative (`tanh(x_n)`). Let's verify `tanh(x)` is the
+      limit of `(log(cosh(x)) - log(cosh(x-h))) / h` as `h -> 0`. Yes,
+      the derivative of `log(cosh(x)) is (1/cosh(x)) * sinh(x) = tanh(x)`.
+      So, the `np.where` approach is mathematically sound.
 
 11. **Putting it all together in the function:**
 
@@ -2472,7 +3188,7 @@ Here's a thinking process to arrive at the Python code for the
             # The initialisation distorted = np.zeros_like(samples) is not needed anymore.
             return distorted.astype(samples.dtype) # Ensure output type matches input
 
-12. Final Code Review:
+12. **Final Code Review:**
 
      * Imports `numpy`.
      * Function signature matches.
@@ -2498,6 +3214,8 @@ Here's a thinking process to arrive at the Python code for the
 13. **Docstrings and Comments:** Add comments explaining the steps,
     especially the ADAA part. Add a clear docstring. Add a note about
     potential numerical issues with very high gain.
+
+<a id="conv-gemini2_5pro-adaa-final" href="#toc">Top</a>
 
 ##### Final Response
 
@@ -2652,32 +3370,19 @@ Here's a thinking process to arrive at the Python code for the
         except ImportError:
             print("\nMatplotlib not installed, skipping plot.")
 
-<a id="manual-adaa-impl" href="#toc">Top</a>
+<a id="result-gemini2_5pro-adaa" href="#toc">Top</a>
 
-### Manually Implemented ADAA
+##### Result
 
-    import struct
-    import wave
-    
-    import numpy as np
-    
-    
-    SAMPLE_RATE = 44100
-    NUM_CHANNELS = 2
-    SAMPLE_WIDTH = 2
-    SAMPLE_NORM = 32767.0
-    
-    
-    def main():
-        input_filename = "sound.wav"
-        output_filename = "sound-manual-adaa.wav"
-    
-        samples = read_wav(input_filename)
-        distorted_samples = distort(samples)
-        write_wav(output_filename, np.clip(distorted_samples, -1.0, 1.0))
-    
-    
-    def distort(samples, gain_db=14.0, sample_rate=SAMPLE_RATE, channels=NUM_CHANNELS):
+<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-gemini2_5pro-adaa.png" alt="Spectrogram: Google Gemini 2.5 Pro ADAA (AI)" />
+
+The result: [sound-gemini2_5pro-adaa.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-gemini2_5pro-adaa.flac).
+
+<a id="manual-adaa" href="#toc">Top</a>
+
+### Manual Implementation
+
+    def distort(samples, gain_db=14.0, sample_rate=44100.0, channels=2):
         gain_linear = db_to_linear(gain_db)
     
         deltas = samples - prev_samples(samples, 0.0)
@@ -2688,11 +3393,14 @@ Here's a thinking process to arrive at the Python code for the
         integral_f_samples = integral_f(samples, gain_linear)
         prev_integral_f_samples = prev_samples(integral_f_samples, integral_f(0.0, gain_linear))
     
-        distorted_samples = np.zeros_like(samples)
         distorted_samples = (integral_f_samples - prev_integral_f_samples) / deltas
         distorted_samples[deltas_too_small] = f(samples[deltas_too_small], gain_linear)
     
         return distorted_samples
+    
+    
+    def db_to_linear(db):
+        return 10.0 ** (db / 20.0)
     
     
     def prev_samples(samples, pad):
@@ -2701,52 +3409,66 @@ Here's a thinking process to arrive at the Python code for the
         )
     
     
-    def db_to_linear(db):
-        return 10.0 ** (db / 20.0)
-    
-    
     def f(x, gain_linear):
         return np.tanh(x * gain_linear)
     
     
     def integral_f(x, gain_linear):
         return x + np.log1p(np.exp(-2.0 * gain_linear * x)) / gain_linear
-    
-    
-    def read_wav(filename):
-        with wave.open(filename, "rb") as wf:
-            num_channels = wf.getnchannels()
-            sample_width = wf.getsampwidth()
-            sample_rate = wf.getframerate()
-            num_frames = wf.getnframes()
-    
-            assert sample_width == SAMPLE_WIDTH, "Only 16-bit WAV files are supported."
-            assert num_channels == NUM_CHANNELS, "Only stereo WAV files are supported."
-            assert sample_rate == SAMPLE_RATE, "Only 44.1 kHz sample rate is supported."
-    
-            raw_data = wf.readframes(num_frames)
-            data = np.frombuffer(raw_data, dtype=np.int16)
-            stereo_data = data.reshape(-1, NUM_CHANNELS)
-    
-            return stereo_data.astype(np.float32) / SAMPLE_NORM
-    
-    
-    def write_wav(filename, buffer):
-        with wave.open(filename, "wb") as wf:
-            wf.setnchannels(NUM_CHANNELS)
-            wf.setsampwidth(SAMPLE_WIDTH)
-            wf.setframerate(SAMPLE_RATE)
-            wf.writeframes((buffer * SAMPLE_NORM).astype(np.int16).tobytes())
-    
-    
-    if __name__ == "__main__":
-        main()
 
-<a id="manual-adaa-impl-improved" href="#toc">Top</a>
+<a id="result-manual-adaa" href="#toc">Top</a>
 
-#### Improved Antiderivative
+##### Result
 
+<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-manual-adaa.png" alt="Spectrogram: Manual ADAA Implementation (human)" />
+
+The result: [sound-manual-adaa.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-manual-adaa.flac).
+
+
+<a id="manual-adaa-improved" href="#toc">Top</a>
+
+#### Improved With Ideas From AI
+
+    def distort(samples, gain_db=14.0, sample_rate=44100.0, channels=2):
+        samples = samples * db_to_linear(gain_db)
+    
+        deltas = samples - prev_samples(samples, 0.0)
+    
+        deltas_too_small = np.abs(deltas) < 1e-7
+        deltas[deltas_too_small] = 1.0
+    
+        integral_f_samples = integral_f(samples)
+        prev_integral_f_samples = prev_samples(integral_f_samples, integral_f(0.0))
+    
+        distorted_samples = (integral_f_samples - prev_integral_f_samples) / deltas
+        distorted_samples[deltas_too_small] = f(samples[deltas_too_small])
+    
+        return distorted_samples
+    
+    
+    def db_to_linear(db):
+        return 10.0 ** (db / 20.0)
+    
+    
+    def prev_samples(samples, pad):
+        return np.concatenate(
+            (np.ones((1, samples.shape[1])) * pad, samples[:-1, :])
+        )
+    
+    
+    def f(x):
+        return np.tanh(x)
+    
+    
     def integral_f(x):
         return np.log(np.cosh(x))
+
+<a id="result-manual-adaa-improved" href="#toc">Top</a>
+
+##### Result
+
+<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-manual-adaa-improved.png" alt="Spectrogram: Improved Manual ADAA Implementation (human + ideas from AI)" />
+
+The result: [sound-manual-adaa-improved.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-manual-adaa-improved.flac).
 
 <a href="#toc">Top</a>
