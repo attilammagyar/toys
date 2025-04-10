@@ -254,7 +254,7 @@ sound files and their spectrograms can be found in the
    "*Differentiated Parabolic Waveshaping*", but there's an
    anti-aliasing technique for digital oscillators named
    "[Differentiated Parabolic Wave](https://mac.kaist.ac.kr/pubs/ValimakiNamSmithAbel-taslp2010.pdf)",
-   but that's a different story) and its implementation had
+   though that's a different story) and its implementation had
    numerical stability problems which the model tried and failed to
    manage, rendering the [resulting sound unusable](#result-o3mini-noupspl).
 
