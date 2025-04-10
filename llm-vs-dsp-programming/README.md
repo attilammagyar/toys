@@ -19,9 +19,10 @@ TL;DR:
    pushing that algorithm, unless explicitly told to use the new one.
 
    When the old method is forbidden but the new one is not explicitly
-   requested, then they tend to resort to flawed or downright stupid
-   solution attempts. Even if they consider using the new algorithm,
-   they may reject it with flawed reasoning.
+   requested, then most models tend to resort to flawed or downright
+   stupid solution attempts. Those which even consider using the new
+   algorithm, will either reject it with flawed reasoning, or implement
+   it badly.
 
 <a id="toc"></a>
 
@@ -61,6 +62,10 @@ Table of Contents
           * [Thinking Process](#conv-gemini2_5pro-unspectechnique)
           * [Final Response](#conv-gemini2_5pro-unspectechnique-final)
           * [Result](#result-gemini2_5pro-unspectechnique)
+       * [Anthropic Claude 3.7 Sonnet's Response](#conv-claude3_7sonnet-unspectechnique)
+          * [Result](#result-claude3_7sonnet-unspectechnique)
+       * [OpenAI o3-mini's Response](#conv-o3mini-unspectechnique)
+          * [Result](#result-o3mini-unspectechnique)
     * [No upsampling](#prompt-noupspl)
        * [Prompt](#prompt-noupspl)
        * [OpenAI ChatGPT 4o's Response](#conv-chatgpt4o-noupspl)
@@ -71,6 +76,10 @@ Table of Contents
           * [Thinking Process](#conv-gemini2_5pro-noupspl)
           * [Final Response](#conv-gemini2_5pro-noupspl-final)
           * [Result](#result-gemini2_5pro-noupspl)
+       * [Anthropic Claude 3.7 Sonnet's Response](#conv-claude3_7sonnet-noupspl)
+          * [Result](#result-claude3_7sonnet-noupspl)
+       * [OpenAI o3-mini's Response](#conv-o3mini-noupspl)
+          * [Result](#result-o3mini-noupspl)
     * [ADAA](#prompt-adaa)
        * [Prompt](#prompt-adaa)
        * [OpenAI ChatGPT 4o's Response](#conv-chatgpt4o-adaa)
@@ -81,6 +90,10 @@ Table of Contents
           * [Thinking Process](#conv-gemini2_5pro-adaa)
           * [Final Response](#conv-gemini2_5pro-adaa-final)
           * [Result](#result-gemini2_5pro-adaa)
+       * [Anthropic Claude 3.7 Sonnet's Response](#conv-claude3_7sonnet-adaa)
+          * [Result](#result-claude3_7sonnet-adaa)
+       * [OpenAI o3-mini's Response](#conv-o3mini-adaa)
+          * [Result](#result-o3mini-adaa)
        * [Manual Implementation](#manual-adaa)
           * [Improved With Ideas From AI](#manual-adaa-improved)
 
@@ -146,6 +159,8 @@ following popular LLMs:
  * [OpenAI ChatGPT 4o](https://openai.com/index/hello-gpt-4o),
  * [DeepSeek R1](https://www.deepseek.com/),
  * [Google Gemini 2.5 Pro](https://gemini.google.com/).
+ * [Anthropic Claude 3.7 Sonnet](https://claude.ai/)
+ * [OpenAI o3-mini](https://openai.com/index/openai-o3-mini/)
 
 The experiments below were run in newly created, clear conversations.
 They simulate various levels of domain knowledge in the field of
@@ -221,6 +236,16 @@ sound files and their spectrograms can be found in the [Appendix](#prompt-adaa).
    then when it was told to replace that with a vectorized operation,
    it [falsely claimed that it did](#conv-chatgpt4o-c1p6).
 
+ * When upsampling was forbidden but the method to use was not
+   explicitly named, [OpenAI o3 mini attempted using ADAA](#conv-o3mini-noupspl),
+   but with a made-up, hallucinated name (there's no such thing as
+   "*Differentiated Parabolic Waveshaping*", but there's an
+   anti-aliasing technique for digital oscillators named
+   "[Differentiated Parabolic Wave](https://mac.kaist.ac.kr/pubs/ValimakiNamSmithAbel-taslp2010.pdf)",
+   but that's a different story) and its implementation had
+   numerical stability problems which the model tried and failed to
+   manage, rendering the [resulting sound unusable](#result-o3mini-noupspl).
+
 <a id="results" href="#toc">Top</a>
 
 ### Results
@@ -232,7 +257,9 @@ Aliasing:
    noticable with good quality speakers or headphones in a quiet
    listening environment with a relatively loud playback volume.
  * **loud**: clearly audible, loud aliasing.
- * **fail**: the anti-aliasing method caused audible damage to the sound.
+ * **fail**: numerical problems in the implementation or the
+   anti-aliasing method itself caused audible damage to the sound,
+   making more harm than the original aliasing.
 
 The 3 fastest methods that were able to reduce aliasing to an inaudible
 level are highlighted in the table below.
@@ -252,87 +279,117 @@ script in this repository.
   <tbody>
     <tr>
       <td><a href="#result-chatgpt4o-noupspl">OpenAI ChatGPT 4o No Upsampling (AI)</a></td>
-      <td>0.003825 s</td>
+      <td>0.003852 s</td>
       <td>loud</td>
     </tr>
     <tr>
       <td><a href="#result-chatgpt4o-c1p1">OpenAI ChatGPT 4o Conversation 1 Prompt 1 (AI)</a></td>
-      <td>0.014882 s</td>
+      <td>0.014842 s</td>
       <td>loud</td>
     </tr>
     <tr>
+      <td><a href="#result-o3mini-noupspl">OpenAI o3-mini No Upsampling (AI)</a></td>
+      <td>0.016839 s</td>
+      <td>fail</td>
+    </tr>
+    <tr>
       <td><strong><a href="#result-manual-adaa-improved">Improved Manual ADAA Implementation (human + ideas from AI)</a></strong></td>
-      <td><strong>0.023919 s</strong></td>
+      <td><strong>0.023833 s</strong></td>
       <td><strong>inaudible</strong></td>
     </tr>
     <tr>
       <td><a href="#result-chatgpt4o-c1p2">OpenAI ChatGPT 4o Conversation 1 Prompt 2 (AI)</a></td>
-      <td>0.024853 s</td>
+      <td>0.024933 s</td>
       <td>loud</td>
     </tr>
     <tr>
       <td><strong><a href="#result-manual-adaa">Manual ADAA Implementation (human)</a></strong></td>
-      <td><strong>0.025644 s</strong></td>
+      <td><strong>0.025767 s</strong></td>
       <td><strong>inaudible</strong></td>
     </tr>
     <tr>
       <td><a href="#result-chatgpt4o-c1p7">OpenAI ChatGPT 4o Conversation 1 Prompt 7 (AI)</a></td>
-      <td>0.034124 s</td>
+      <td>0.034241 s</td>
       <td>loud</td>
     </tr>
     <tr>
       <td><a href="#result-gemini2_5pro-noupspl">Google Gemini 2.5 Pro No Upsampling (AI)</a></td>
-      <td>0.034225 s</td>
+      <td>0.034252 s</td>
       <td>loud</td>
     </tr>
     <tr>
       <td><a href="#result-chatgpt4o-c2p1">OpenAI ChatGPT 4o Conversation 2 Prompt 1 (AI)</a></td>
-      <td>0.035490 s</td>
+      <td>0.035516 s</td>
       <td>loud</td>
     </tr>
     <tr>
-      <td><a href="#result-r1-noupspl">DeepSeek R1 No Upsampling (AI)</a></td>
-      <td>0.043230 s</td>
-      <td>loud</td>
-    </tr>
-    <tr>
-      <td><strong><a href="#result-chatgpt4o-adaa">OpenAI ChatGPT 4o ADAA (AI)</a></strong></td>
-      <td><strong>0.056721 s</strong></td>
+      <td><strong><a href="#result-o3mini-adaa">OpenAI o3-mini ADAA (AI)</a></strong></td>
+      <td><strong>0.041224 s</strong></td>
       <td><strong>inaudible</strong></td>
     </tr>
     <tr>
+      <td><a href="#result-r1-noupspl">DeepSeek R1 No Upsampling (AI)</a></td>
+      <td>0.043699 s</td>
+      <td>loud</td>
+    </tr>
+    <tr>
+      <td><a href="#result-claude3_7sonnet-adaa">Anthropic Claude 3.7 Sonnet ADAA (AI)</a></td>
+      <td>0.053296 s</td>
+      <td>inaudible</td>
+    </tr>
+    <tr>
+      <td><a href="#result-chatgpt4o-adaa">OpenAI ChatGPT 4o ADAA (AI)</a></td>
+      <td>0.056775 s</td>
+      <td>inaudible</td>
+    </tr>
+    <tr>
+      <td><a href="#result-claude3_7sonnet-noupspl">Anthropic Claude 3.7 Sonnet No Upsampling (AI)</a></td>
+      <td>0.062058 s</td>
+      <td>loud</td>
+    </tr>
+    <tr>
       <td><a href="#result-gemini2_5pro-adaa">Google Gemini 2.5 Pro ADAA (AI)</a></td>
-      <td>0.074875 s</td>
+      <td>0.075204 s</td>
       <td>inaudible</td>
     </tr>
     <tr>
       <td><a href="#result-chatgpt4o-c1p4">OpenAI ChatGPT 4o Conversation 1 Prompt 4 (AI)</a></td>
-      <td>0.082954 s</td>
+      <td>0.082686 s</td>
       <td>inaudible</td>
     </tr>
     <tr>
       <td><a href="#result-r1-adaa">DeepSeek R1 ADAA (AI)</a></td>
-      <td>0.087071 s</td>
+      <td>0.087224 s</td>
       <td>inaudible</td>
     </tr>
     <tr>
       <td><a href="#result-r1-unspectechnique">DeepSeek R1 Unspecified Technique (AI)</a></td>
-      <td>0.174824 s</td>
+      <td>0.175405 s</td>
       <td>loud</td>
     </tr>
     <tr>
-      <td><a href="#result-chatgpt4o-unspectechnique">OpenAI ChatGPT 4o Unspecified Technique (AI)</a></td>
-      <td>0.349071 s</td>
+      <td><a href="#result-o3mini-unspectechnique">OpenAI o3-mini Unspecified Technique (AI)</a></td>
+      <td>0.177414 s</td>
       <td>none</td>
     </tr>
     <tr>
       <td><a href="#result-gemini2_5pro-unspectechnique">Google Gemini 2.5 Pro Unspecified Technique (AI)</a></td>
-      <td>0.351167 s</td>
+      <td>0.349820 s</td>
+      <td>none</td>
+    </tr>
+    <tr>
+      <td><a href="#result-chatgpt4o-unspectechnique">OpenAI ChatGPT 4o Unspecified Technique (AI)</a></td>
+      <td>0.350058 s</td>
+      <td>none</td>
+    </tr>
+    <tr>
+      <td><a href="#result-claude3_7sonnet-unspectechnique">Anthropic Claude 3.7 Sonnet Unspecified Technique (AI)</a></td>
+      <td>0.352586 s</td>
       <td>none</td>
     </tr>
     <tr>
       <td><a href="#result-chatgpt4o-c1p5">OpenAI ChatGPT 4o Conversation 1 Prompt 5 (AI)</a></td>
-      <td>7.716972 s</td>
+      <td>7.685924 s</td>
       <td>fail</td>
     </tr>
   </tbody>
@@ -347,11 +404,11 @@ Conclusion
    domain knowledge is still required for LLM-aided coding to produce
    good results.
 
- * However, the models acted confident even when their solution
-   required further tweaking to be useful or when it was completely
-   wrong. Without sufficient domain knowledge, this can lead to a
-   [blind leading the blind](https://en.wikipedia.org/wiki/The_blind_leading_the_blind)
-   situation.
+ * However, the models acted confident and convincing even when their
+   solution required further tweaking to be useful or when it was
+   completely wrong. Without sufficient domain knowledge, this can lead
+   to a [blind leading the blind](https://en.wikipedia.org/wiki/The_blind_leading_the_blind)
+   situation, or the [Dunning–Kruger effect](https://en.wikipedia.org/wiki/Dunning%E2%80%93Kruger_effect).
 
  * When paired with sufficient domain expertise, an LLM can be a useful
    tool for generating or validating ideas, and can speed up the process
@@ -367,7 +424,9 @@ Conclusion
  * When asked explicitly, the models will point out several reasons to
    favor the ADAA approach over upsampling, while usually they either
    fail to even consider using it when they are not explicitly told to
-   do so, or reject it for various vague or flawed reasons.
+   do so, or reject it for various vague or flawed reasons. In
+   [one experiment](#conv-o3mini-noupspl), the model attempted to use
+   ADAA, but with a made-up name and a flawed implementation.
 
    The reason for this might be a bias in the LLM training corpuses
    towards oversampling: by the time the ADAA waveshaping technique was
@@ -2073,6 +2132,214 @@ audio applications.
 
 The result: [sound-gemini2_5pro-unspectechnique.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-gemini2_5pro-unspectechnique.flac).
 
+<a id="conv-claude3_7sonnet-unspectechnique" href="#toc">Top</a>
+
+#### Anthropic Claude 3.7 Sonnet's Response
+
+I'll implement a distortion function that applies gain boosting with
+tanh non-linearity while minimizing aliasing through oversampling,
+which is one of the most effective and computationally efficient
+methods for this purpose.
+
+    import numpy as np
+    from scipy import signal
+    
+    def distort(samples, gain_db=14.0, sample_rate=44100.0, channels=2):
+        """
+        Apply gain boosting and tanh non-linearity to an audio signal with antialiasing.
+        
+        Parameters:
+        -----------
+        samples : ndarray
+            Input audio samples of shape (N, channels)
+        gain_db : float
+            Gain to apply in dB before distortion
+        sample_rate : float
+            Sample rate of the audio in Hz
+        channels : int
+            Number of audio channels
+            
+        Returns:
+        --------
+        distorted : ndarray
+            Distorted audio samples with the same shape as input
+        """
+        # Input validation
+        if samples.ndim == 1:
+            samples = samples.reshape(-1, 1)
+        
+        # Prepare output array
+        distorted = np.zeros_like(samples)
+        
+        # Convert dB gain to linear amplitude
+        gain_linear = 10 ** (gain_db / 20.0)
+        
+        # Oversampling factor (4-8x is typically sufficient)
+        oversample = 4
+        
+        # Design anti-aliasing filter (half the Nyquist frequency with some margin)
+        cutoff = 0.45 * sample_rate  # slightly below Nyquist
+        nyquist = sample_rate * oversample / 2.0
+        normalized_cutoff = cutoff / nyquist
+        
+        # FIR lowpass filter design for antialiasing
+        # Using a relatively low order for efficiency while maintaining quality
+        filter_order = 64
+        lpf = signal.firwin(filter_order, normalized_cutoff)
+        
+        # Process each channel separately
+        for ch in range(min(channels, samples.shape[1])):
+            # 1. Upsample
+            upsampled = signal.resample(samples[:, ch], len(samples[:, ch]) * oversample)
+            
+            # 2. Apply gain
+            upsampled *= gain_linear
+            
+            # 3. Apply tanh distortion (soft clipping)
+            distorted_upsampled = np.tanh(upsampled)
+            
+            # 4. Apply anti-aliasing filter
+            filtered = signal.lfilter(lpf, 1.0, distorted_upsampled)
+            
+            # 5. Downsample (account for filter delay)
+            delay = filter_order // 2
+            downsampled = filtered[delay::oversample][:samples.shape[0]]
+            
+            # 6. Store result
+            distorted[:len(downsampled), ch] = downsampled
+        
+        return distorted
+    
+    # Alternative implementation using a more efficient approach with polyphase filtering
+    def distort_polyphase(samples, gain_db=14.0, sample_rate=44100.0, channels=2):
+        """
+        Apply gain boosting and tanh non-linearity with antialiasing using polyphase filtering.
+        This version is more CPU efficient for real-time processing.
+        """
+        # Input validation
+        if samples.ndim == 1:
+            samples = samples.reshape(-1, 1)
+        
+        # Prepare output array
+        distorted = np.zeros_like(samples)
+        
+        # Convert dB gain to linear amplitude
+        gain_linear = 10 ** (gain_db / 20.0)
+        
+        # Oversampling factor
+        oversample = 4
+        
+        # Design anti-aliasing filter
+        cutoff = 0.45 * sample_rate
+        nyquist = sample_rate * oversample / 2.0
+        normalized_cutoff = cutoff / nyquist
+        
+        # Shorter filter for real-time performance
+        filter_order = 32
+        lpf = signal.firwin(filter_order, normalized_cutoff)
+        
+        # Process each channel separately
+        for ch in range(min(channels, samples.shape[1])):
+            # 1. Upsample using polyphase implementation (much faster)
+            upsampled = signal.resample_poly(samples[:, ch], oversample, 1, window=('kaiser', 5.0))
+            
+            # 2. Apply gain and distortion
+            distorted_upsampled = np.tanh(upsampled * gain_linear)
+            
+            # 3. Downsample using polyphase implementation (much faster)
+            downsampled = signal.resample_poly(distorted_upsampled, 1, oversample, window=('kaiser', 5.0))
+            
+            # 4. Ensure correct length and store result
+            result_len = min(samples.shape[0], len(downsampled))
+            distorted[:result_len, ch] = downsampled[:result_len]
+        
+        return distorted
+
+Would you like me to explain how this implementation works and why I chose these specific antialiasing methods?
+
+<a id="result-claude3_7sonnet-unspectechnique" href="#toc">Top</a>
+
+##### Result
+
+<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-claude3_7sonnet-unspectechnique.png" alt="Spectrogram: Anthropic Claude 3.7 Sonnet Unspecified Technique (AI)" />
+
+The result: [sound-claude3_7sonnet-unspectechnique.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-claude3_7sonnet-unspectechnique.flac).
+
+<a id="conv-o3mini-unspectechnique" href="#toc">Top</a>
+
+#### OpenAI o3-mini's Response
+
+Below is one possible implementation. This version first oversamples
+the input signal using polyphase filtering (provided by SciPy’s
+resample_poly function) to reduce aliasing when applying the
+non-linear tanh processing. After applying the gain and non-linear
+function, it downsamples the signal back to the original sample rate.
+An oversample factor of 2 is chosen as a compromise between improved
+aliasing performance and CPU friendliness for near real-time
+processing.
+
+    import numpy as np
+    from scipy.signal import resample_poly
+    
+    def distort(samples, gain_db=14.0, sample_rate=44100.0, channels=2):
+        """
+        Applies distortion to the input signal using gain boosting and a tanh non-linearity,
+        with oversampling to reduce aliasing. The oversampled signal is nonlinearly processed,
+        then filtered and downsampled back to the original sample rate.
+        
+        Args:
+            samples (np.ndarray): Array of shape (N, channels) containing float32 values.
+            gain_db (float): Amount of gain (in dB) to apply.
+            sample_rate (float): Sampling rate of the signal.
+            channels (int): Number of channels.
+        Returns:
+            np.ndarray: The distorted signal with the same shape as the input.
+        """
+        # Convert gain from dB to linear factor
+        gain = 10 ** (gain_db / 20.0)
+        
+        # Choose an oversampling factor
+        oversample_factor = 2  # You can adjust this factor. Higher factors might reduce aliasing further,
+                               # but will increase computational cost.
+        
+        # Oversample the signal (upsample along the time axis, axis=0)
+        oversampled = resample_poly(samples, oversample_factor, 1, axis=0)
+        
+        # Apply gain and non-linear tanh for distortion
+        distorted_oversampled = np.tanh(gain * oversampled)
+        
+        # Downsample back to the original sample rate
+        distorted = resample_poly(distorted_oversampled, 1, oversample_factor, axis=0)
+        
+        return distorted
+
+How the code works:
+
+1. The gain in dB is converted to a linear multiplier.
+
+2. The signal is oversampled (here by a factor of 2) using polyphase
+   filtering. This smoothly interpolates additional points in the
+   signal.
+
+3. The gain is applied and then the tanh non-linearity distorts the
+   signal.
+
+4. Finally, the processed signal is downsampled back to the original
+   number of samples, with the resample_poly function providing an
+   anti-aliasing filter during decimation.
+
+This approach strikes a balance between audio quality (by minimizing
+aliasing) and CPU efficiency, making it potentially suitable for
+real-time applications.
+
+<a id="result-o3mini-unspectechnique" href="#toc">Top</a>
+
+##### Result
+
+<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-o3mini-unspectechnique.png" alt="Spectrogram: OpenAI o3-mini Unspecified Technique (AI)" />
+
+The result: [sound-o3mini-unspectechnique.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-o3mini-unspectechnique.flac).
+
 <a id="prompt-noupspl" href="#toc">Top</a>
 
 ### No Upsampling
@@ -2800,6 +3067,205 @@ upsampling/downsampling stages.
 
 The result: [sound-gemini2_5pro-noupspl.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-gemini2_5pro-noupspl.flac).
 
+<a id="conv-claude3_7sonnet-noupspl" href="#toc">Top</a>
+
+#### Anthropic Claude 3.7 Sonnet's Response
+
+I'll implement a distortion function that applies gain boosting and
+tanh non-linearity while minimizing aliasing without oversampling.
+Here's an efficient implementation that uses a combination of gain
+control and anti-aliasing filtering:
+
+    import numpy as np
+    from scipy import signal
+    
+    def distort(samples, gain_db=14.0, sample_rate=44100.0, channels=2):
+        """
+        Apply gain boosting and tanh non-linearity to audio samples with anti-aliasing.
+        
+        Parameters:
+        -----------
+        samples : numpy.ndarray
+            Input audio samples of shape (N, channels)
+        gain_db : float
+            Gain to be applied in dB
+        sample_rate : float
+            Sampling rate in Hz
+        channels : int
+            Number of audio channels
+        
+        Returns:
+        --------
+        numpy.ndarray
+            Distorted audio samples
+        """
+        distorted = np.zeros_like(samples)
+        
+        # Convert gain from dB to linear
+        gain_linear = 10.0 ** (gain_db / 20.0)
+        
+        # Calculate the Nyquist frequency
+        nyquist = sample_rate / 2.0
+        
+        # Design a low-pass filter to prevent aliasing
+        # We'll use a Butterworth filter as a good balance between 
+        # performance and quality for real-time audio
+        order = 4  # Filter order - balance between steepness and CPU load
+        cutoff_hz = nyquist * 0.85  # Set cutoff at 85% of Nyquist
+        
+        # Normalize cutoff frequency to Nyquist
+        normalized_cutoff = cutoff_hz / nyquist
+        
+        # Get filter coefficients
+        b, a = signal.butter(order, normalized_cutoff, btype='low')
+        
+        # Process each channel separately
+        for ch in range(channels):
+            # Apply pre-filtering to prevent high-frequency content that could cause aliasing
+            filtered_input = signal.filtfilt(b, a, samples[:, ch])
+            
+            # Apply gain
+            boosted = filtered_input * gain_linear
+            
+            # Apply soft clipping using tanh non-linearity
+            # tanh naturally limits the output to [-1, 1] range
+            distorted_signal = np.tanh(boosted)
+            
+            # Apply post-distortion filtering to further reduce any potential aliasing
+            # This is less aggressive than pre-filtering
+            post_cutoff = nyquist * 0.9
+            normalized_post_cutoff = post_cutoff / nyquist
+            post_b, post_a = signal.butter(3, normalized_post_cutoff, btype='low')
+            filtered_output = signal.filtfilt(post_b, post_a, distorted_signal)
+            
+            # Store the processed channel
+            distorted[:, ch] = filtered_output
+        
+        return distorted
+
+This implementation takes several steps to minimize aliasing without
+oversampling:
+
+1. **Pre-filtering**: Before applying distortion, we filter the input
+   signal with a Butterworth low-pass filter to remove high frequencies
+   that could cause aliasing when non-linearly distorted.
+
+2. **Gain Boosting**: We convert the gain from dB to linear scale and
+   apply it to the signal.
+
+3. **Soft Clipping**: The tanh function provides natural soft clipping
+   that limits the output to [-1, 1] while adding harmonics in a
+   musical way.
+
+4. **Post-filtering**: After distortion, we apply another low-pass
+   filter to further reduce any potential aliasing artifacts generated
+   by the non-linear distortion.
+
+The implementation is CPU-friendly and suitable for real-time audio
+processing:
+
+ * It uses scipy's efficient signal processing functions
+ * The Butterworth filter provides a good balance between quality
+   and computational cost
+ * Each channel is processed separately for clarity and to avoid
+   unwanted cross-channel effects
+ * The filtfilt function applies zero-phase filtering to avoid phase
+   distortion
+
+This approach achieves good-quality distortion while minimizing
+aliasing artifacts, even without oversampling.
+
+<a id="result-claude3_7sonnet-noupspl" href="#toc">Top</a>
+
+##### Result
+
+<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-claude3_7sonnet-noupspl.png" alt="Spectrogram: Anthropic Claude 3.7 Sonnet No Upsampling (AI)" />
+
+The result: [sound-claude3_7sonnet-noupspl.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-claude3_7sonnet-noupspl.flac).
+
+<a id="conv-o3mini-noupspl" href="#toc">Top</a>
+
+#### OpenAI o3-mini's Response
+
+Below is one implementation in Python that uses a Differentiated
+Parabolic Waveshaping (DPW) approach. DPW helps to reduce aliasing
+when implementing static nonlinearities (like the tanh waveshaper)
+without resorting to oversampling. In this implementation, we first
+apply a dB-to-linear gain, then compute an antiderivative of the
+nonlinearity (using log(cosh(u)) which differentiates to tanh(u)), and
+finally approximate the derivative with a finite difference along the
+sample axis. This produces an output that in the linear (small-signal)
+limit approximates a linear gain while greatly reducing aliasing from
+the nonlinearity.
+
+Below is the complete code example:
+
+    import numpy as np
+    
+    def distort(samples, gain_db=14.0, sample_rate=44100.0, channels=2):
+        """
+        Apply gain boosting and tanh non-linearity to an audio signal while minimizing aliasing
+        using a Differentiated Parabolic Waveshaping (DPW) approach. The DPW method applies
+        a differentiation to the antiderivative of the nonlinearity (here, log(cosh(u)) for tanh(u))
+        to obtain an alias-reduced approximation of the static waveshaper.
+
+        Parameters:
+          samples (np.ndarray): Audio samples, shape (N, channels), with float32 values typically in [-1, 1].
+          gain_db (float): Gain in dB applied to the input signal.
+          sample_rate (float): Sampling rate of the audio signal.
+          channels (int): Number of audio channels.
+
+        Returns:
+          np.ndarray: Distorted audio signal with the same shape as input.
+        """
+        # Convert gain from dB to linear scale.
+        gain = 10 ** (gain_db / 20)
+        
+        # Apply gain to the input samples.
+        u = gain * samples
+        
+        # Compute the antiderivative of tanh, which is log(cosh(u)).
+        # Its derivative d/du [log(cosh(u))] equals tanh(u), our waveshaping function.
+        F = np.log(np.cosh(u))
+        
+        # Compute the finite difference along the sample axis (axis 0).
+        # This approximates the derivative of the antiderivative.
+        dF = np.diff(F, axis=0)
+        du = np.diff(u, axis=0)
+        
+        # Use a small epsilon (machine epsilon for float32) to avoid numerical division issues.
+        eps = np.finfo(np.float32).eps
+        dpw = dF / (du + eps)
+        
+        # For the first sample (where diff is not defined), fall back to the direct evaluation.
+        first_sample = np.tanh(u[0:1, :])
+        
+        # Concatenate the first sample with the DPW-processed samples.
+        distorted = np.concatenate([first_sample, dpw], axis=0)
+        
+        return distorted
+
+In this code:
+
+ * We boost the input by converting gain from dB to a linear multiplier.
+ * The function F = log(cosh(u)) is computed as an antiderivative of
+   tanh.
+ * np.diff is used along the sample axis to differentiate F and u.
+ * We use a tiny epsilon value to avoid division by zero.
+ * The first sample is handled separately since the difference
+   operation reduces the array’s length.
+
+This method is CPU-friendly and avoids oversampling while still keeping
+aliasing under control.
+
+<a id="result-o3mini-noupspl" href="#toc">Top</a>
+
+##### Result
+
+<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-o3mini-noupspl.png" alt="Spectrogram: OpenAI o3-mini No Upsampling (AI)" />
+
+The result: [sound-o3mini-noupspl.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-o3mini-noupspl.flac).
+
 <a id="prompt-adaa" href="#toc">Top</a>
 
 ### ADAA
@@ -3377,6 +3843,174 @@ Here's a thinking process to arrive at the Python code for the
 <img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-gemini2_5pro-adaa.png" alt="Spectrogram: Google Gemini 2.5 Pro ADAA (AI)" />
 
 The result: [sound-gemini2_5pro-adaa.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-gemini2_5pro-adaa.flac).
+
+<a id="conv-claude3_7sonnet-adaa" href="#toc">Top</a>
+
+#### Anthropic Claude 3.7 Sonnet's Response
+
+I'll implement a distortion function using 1st order Antiderivative
+Anti-Aliasing (ADAA) to control aliasing. This technique helps
+minimize aliasing artifacts when applying nonlinear functions like
+tanh to audio signals.
+
+    import numpy as np
+    
+    def distort(samples, gain_db=14.0, sample_rate=44100.0, channels=2):
+        """
+        Apply gain boosting and tanh nonlinearity to an audio signal with anti-aliasing.
+        
+        Parameters:
+        -----------
+        samples : ndarray
+            Input audio samples of shape (N, channels)
+        gain_db : float
+            Gain to be applied in dB
+        sample_rate : float
+            Sampling rate of the audio
+        channels : int
+            Number of audio channels
+            
+        Returns:
+        --------
+        distorted : ndarray
+            Distorted audio samples
+        """
+        # Convert gain from dB to linear scale
+        gain_linear = 10 ** (gain_db / 20.0)
+        
+        # Apply gain to input
+        x = samples * gain_linear
+        
+        # 1st order ADAA implementation
+        # Calculate current and previous samples for differentiation
+        x_current = x
+        x_prev = np.vstack([np.zeros((1, channels)), x[:-1]])
+        
+        # Calculate the antiderivative of tanh(x): log(cosh(x))
+        antideriv_current = np.log(np.cosh(x_current))
+        antideriv_prev = np.log(np.cosh(x_prev))
+        
+        # Calculate the difference between current and previous samples
+        dx = x_current - x_prev
+        
+        # Handle division by zero: where dx is close to zero, use tanh(x) directly
+        # as it approaches the limit of the ADAA expression
+        mask = np.abs(dx) < 1e-10
+        
+        # Initialize output array
+        distorted = np.zeros_like(samples)
+        
+        # Where dx is significant, apply ADAA formula
+        distorted[~mask] = (antideriv_current[~mask] - antideriv_prev[~mask]) / dx[~mask]
+        
+        # Where dx is very small, use tanh directly to avoid division by zero
+        distorted[mask] = np.tanh(x_current[mask])
+        
+        return distorted
+
+This implementation applies gain boosting followed by a tanh
+nonlinearity with first-order Antiderivative Anti-Aliasing (ADAA) to
+minimize aliasing artifacts. Let me explain the key components:
+
+1. First, we convert the input gain from dB to linear scale
+
+2. Then, we apply the gain to the input samples
+
+3. For ADAA, we:
+    * Calculate current and previous sample values
+    * Compute the antiderivative of tanh(x), which is log(cosh(x))
+    * Calculate the ADAA formula:
+      (antideriv_current - antideriv_prev) / dx
+    * Handle the special case where dx is very small to avoid division
+      by zero
+
+The implementation is fully vectorized to avoid manual looping over
+the NumPy arrays, making it computationally efficient.
+
+Would you like me to explain any part of this implementation in more
+detail?
+
+<a id="result-claude3_7sonnet-adaa" href="#toc">Top</a>
+
+##### Result
+
+<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-claude3_7sonnet-adaa.png" alt="Spectrogram: Anthropic Claude 3.7 Sonnet ADAA (AI)" />
+
+The result: [sound-claude3_7sonnet-adaa.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-claude3_7sonnet-adaa.flac).
+
+<a id="conv-o3mini-adaa" href="#toc">Top</a>
+
+#### OpenAI o3-mini's Response
+
+Below is one implementation. It first boosts the samples by converting
+the dB value to a linear gain, then computes the antiderivative of tanh
+(which is log(cosh(x))) and calculates the finite difference ratio
+between successive samples. When consecutive samples are extremely
+similar (thus risking a division by zero), it simply uses tanh on the
+previous sample. This first-order antiderivative method is a simple
+way to reduce aliasing when applying a non-linear waveshape.
+
+Below is the code:
+
+    import numpy as np
+    
+    def distort(samples, gain_db=14.0, sample_rate=44100.0, channels=2):
+        # Convert gain from dB to linear scale.
+        gain = 10 ** (gain_db / 20.0)
+        
+        # Boost the samples
+        x = samples * gain
+        
+        # Compute the antiderivative of tanh:
+        #   F(x) = log(cosh(x)), since d/dx log(cosh(x)) = tanh(x)
+        F = np.log(np.cosh(x))
+        
+        # Prepare an output array
+        distorted = np.empty_like(x)
+        
+        # Use the standard nonlinearity for the first sample
+        distorted[0] = np.tanh(x[0])
+        
+        # Compute differences along the time (first) axis
+        dx = np.diff(x, axis=0)
+        dF = np.diff(F, axis=0)
+        
+        # To avoid division-by-zero problems when consecutive samples are nearly identical,
+        # use a small threshold.
+        eps = 1e-10
+        
+        # Compute the antialiased output for the rest of the samples
+        # If dx is too small, fall back to the standard nonlinearity.
+        # Otherwise, use the finite difference of the antiderivative.
+        # This operation is done vectorized across all samples.
+        ratio = np.where(np.abs(dx) > eps, dF / dx, np.tanh(x[:-1]))
+        
+        # Store the computed values.
+        distorted[1:] = ratio
+        
+        return distorted
+
+In this implementation:
+
+• The gain is computed as 10^(gain_db/20). • The x array represents the
+input after gain boosting. • The antiderivative F(x)=log(cosh(x)) is
+computed elementwise. • The differences along the sample axis yield an
+estimate of the average slope of F. Dividing these differences gives an
+anti-aliased approximation of tanh(x). • For cases where two successive
+samples are almost identical (dx nearly 0), we substitute tanh(x)
+directly to avoid numerical issues. • No explicit loops are used; the
+entire computation is vectorized with NumPy.
+
+This simple first-order ADAA (Antiderivative Anti-Aliasing) technique
+helps keep aliasing in check when applying distortion.
+
+<a id="result-o3mini-adaa" href="#toc">Top</a>
+
+##### Result
+
+<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-o3mini-adaa.png" alt="Spectrogram: OpenAI o3-mini ADAA (AI)" />
+
+The result: [sound-o3mini-adaa.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-o3mini-adaa.flac).
 
 <a id="manual-adaa" href="#toc">Top</a>
 

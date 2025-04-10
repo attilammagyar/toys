@@ -1,0 +1,10 @@
+You are an expert in Python and audio processing. Implement the following function which applies gain boosting and tanh non-linearity to an audio signal while keeping aliasing to a minimum without oversampling:
+
+    def distort(samples, gain_db=14.0, sample_rate=44100.0, channels=2):
+        distorted = np.zeros_like(samples)
+        # Your code here
+        return distorted
+
+The `samples` parameter is a NumPy array of shape `(N, channels)` where `N` is the number of audio samples, the samples are float32 numbers (usually between -1.0 and 1.0), the `gain_db` parameter is the gain to be applied in dB, the `sample_rate` specifies the sampling rate, and the `channels` parameter specifies the number of audio channels.
+
+Use the fastest state of the art antialiasing method. Keep it CPU-friendly enough for real-time audio. Upsampling is not allowed.

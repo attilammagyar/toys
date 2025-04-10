@@ -39,6 +39,12 @@ def main():
         ("r1-adaa", "DeepSeek R1 ADAA (AI)", 100, distort_r1_adaa),
         ("r1-unspectechnique", "DeepSeek R1 Unspecified Technique (AI)", 100, distort_r1_unspectechnique),
         ("r1-noupspl", "DeepSeek R1 No Upsampling (AI)", 100, distort_r1_noupspl),
+        ("claude3_7sonnet-unspectechnique", "Anthropic Claude 3.7 Sonnet Unspecified Technique (AI)", 100, distort_claude3_7sonnet_unspectechnique),
+        ("claude3_7sonnet-noupspl", "Anthropic Claude 3.7 Sonnet No Upsampling (AI)", 100, distort_claude3_7sonnet_noupspl),
+        ("claude3_7sonnet-adaa", "Anthropic Claude 3.7 Sonnet ADAA (AI)", 100, distort_claude3_7sonnet_adaa),
+        ("o3mini-unspectechnique", "OpenAI o3-mini Unspecified Technique (AI)", 100, distort_o3mini_unspectechnique),
+        ("o3mini-noupspl", "OpenAI o3-mini No Upsampling (AI)", 100, distort_o3mini_noupspl),
+        ("o3mini-adaa", "OpenAI o3-mini ADAA (AI)", 100, distort_o3mini_adaa),
     )
     input_samples = read_wav(input_filename)
     results = []
@@ -75,9 +81,21 @@ def main():
 
     print("""\
   </tbody>
-</table>\
+</table>
 """
     )
+
+    for experiment_name, experiment_title, _ in results:
+        print(f"""\
+<a id="result-{experiment_name}" href="#toc">Top</a>
+
+##### Result
+
+<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-{experiment_name}.png" alt="Spectrogram: {experiment_title}" />
+
+The result: [sound-{experiment_name}.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-{experiment_name}.flac).
+""")
+
 
 
 def run_test(input_samples, experiment_name, repeats, distortion_func):
@@ -862,6 +880,284 @@ def distort_gemini2_5pro_noupspl(samples, gain_db, sample_rate, channels):
 
     # Ensure output dtype is float32, consistent with input expectation
     return distorted_filtered.astype(np.float32)
+
+
+def distort_claude3_7sonnet_unspectechnique(samples, gain_db, sample_rate, channels):
+    """
+    Apply gain boosting and tanh non-linearity with antialiasing using polyphase filtering.
+    This version is more CPU efficient for real-time processing.
+    """
+    # Input validation
+    if samples.ndim == 1:
+        samples = samples.reshape(-1, 1)
+
+    # Prepare output array
+    distorted = np.zeros_like(samples)
+
+    # Convert dB gain to linear amplitude
+    gain_linear = 10 ** (gain_db / 20.0)
+
+    # Oversampling factor
+    oversample = 4
+
+    # Design anti-aliasing filter
+    cutoff = 0.45 * sample_rate
+    nyquist = sample_rate * oversample / 2.0
+    normalized_cutoff = cutoff / nyquist
+
+    # Shorter filter for real-time performance
+    filter_order = 32
+    lpf = signal.firwin(filter_order, normalized_cutoff)
+
+    # Process each channel separately
+    for ch in range(min(channels, samples.shape[1])):
+        # 1. Upsample using polyphase implementation (much faster)
+        upsampled = signal.resample_poly(samples[:, ch], oversample, 1, window=('kaiser', 5.0))
+
+        # 2. Apply gain and distortion
+        distorted_upsampled = np.tanh(upsampled * gain_linear)
+
+        # 3. Downsample using polyphase implementation (much faster)
+        downsampled = signal.resample_poly(distorted_upsampled, 1, oversample, window=('kaiser', 5.0))
+
+        # 4. Ensure correct length and store result
+        result_len = min(samples.shape[0], len(downsampled))
+        distorted[:result_len, ch] = downsampled[:result_len]
+
+    return distorted
+
+
+def distort_claude3_7sonnet_noupspl(samples, gain_db, sample_rate, channels):
+    """
+    Apply gain boosting and tanh non-linearity to audio samples with anti-aliasing.
+
+    Parameters:
+    -----------
+    samples : numpy.ndarray
+        Input audio samples of shape (N, channels)
+    gain_db : float
+        Gain to be applied in dB
+    sample_rate : float
+        Sampling rate in Hz
+    channels : int
+        Number of audio channels
+
+    Returns:
+    --------
+    numpy.ndarray
+        Distorted audio samples
+    """
+    distorted = np.zeros_like(samples)
+
+    # Convert gain from dB to linear
+    gain_linear = 10.0 ** (gain_db / 20.0)
+
+    # Calculate the Nyquist frequency
+    nyquist = sample_rate / 2.0
+
+    # Design a low-pass filter to prevent aliasing
+    # We'll use a Butterworth filter as a good balance between 
+    # performance and quality for real-time audio
+    order = 4  # Filter order - balance between steepness and CPU load
+    cutoff_hz = nyquist * 0.85  # Set cutoff at 85% of Nyquist
+
+    # Normalize cutoff frequency to Nyquist
+    normalized_cutoff = cutoff_hz / nyquist
+
+    # Get filter coefficients
+    b, a = signal.butter(order, normalized_cutoff, btype='low')
+
+    # Process each channel separately
+    for ch in range(channels):
+        # Apply pre-filtering to prevent high-frequency content that could cause aliasing
+        filtered_input = signal.filtfilt(b, a, samples[:, ch])
+
+        # Apply gain
+        boosted = filtered_input * gain_linear
+
+        # Apply soft clipping using tanh non-linearity
+        # tanh naturally limits the output to [-1, 1] range
+        distorted_signal = np.tanh(boosted)
+
+        # Apply post-distortion filtering to further reduce any potential aliasing
+        # This is less aggressive than pre-filtering
+        post_cutoff = nyquist * 0.9
+        normalized_post_cutoff = post_cutoff / nyquist
+        post_b, post_a = signal.butter(3, normalized_post_cutoff, btype='low')
+        filtered_output = signal.filtfilt(post_b, post_a, distorted_signal)
+
+        # Store the processed channel
+        distorted[:, ch] = filtered_output
+
+    return distorted
+
+
+def distort_claude3_7sonnet_adaa(samples, gain_db, sample_rate, channels):
+    """
+    Apply gain boosting and tanh nonlinearity to an audio signal with anti-aliasing.
+
+    Parameters:
+    -----------
+    samples : ndarray
+        Input audio samples of shape (N, channels)
+    gain_db : float
+        Gain to be applied in dB
+    sample_rate : float
+        Sampling rate of the audio
+    channels : int
+        Number of audio channels
+
+    Returns:
+    --------
+    distorted : ndarray
+        Distorted audio samples
+    """
+    # Convert gain from dB to linear scale
+    gain_linear = 10 ** (gain_db / 20.0)
+
+    # Apply gain to input
+    x = samples * gain_linear
+
+    # 1st order ADAA implementation
+    # Calculate current and previous samples for differentiation
+    x_current = x
+    x_prev = np.vstack([np.zeros((1, channels)), x[:-1]])
+
+    # Calculate the antiderivative of tanh(x): log(cosh(x))
+    antideriv_current = np.log(np.cosh(x_current))
+    antideriv_prev = np.log(np.cosh(x_prev))
+
+    # Calculate the difference between current and previous samples
+    dx = x_current - x_prev
+
+    # Handle division by zero: where dx is close to zero, use tanh(x) directly
+    # as it approaches the limit of the ADAA expression
+    mask = np.abs(dx) < 1e-10
+
+    # Initialize output array
+    distorted = np.zeros_like(samples)
+
+    # Where dx is significant, apply ADAA formula
+    distorted[~mask] = (antideriv_current[~mask] - antideriv_prev[~mask]) / dx[~mask]
+
+    # Where dx is very small, use tanh directly to avoid division by zero
+    distorted[mask] = np.tanh(x_current[mask])
+
+    return distorted
+
+
+def distort_o3mini_unspectechnique(samples, gain_db, sample_rate, channels):
+    """
+    Applies distortion to the input signal using gain boosting and a tanh non-linearity,
+    with oversampling to reduce aliasing. The oversampled signal is nonlinearly processed,
+    then filtered and downsampled back to the original sample rate.
+
+    Args:
+        samples (np.ndarray): Array of shape (N, channels) containing float32 values.
+        gain_db (float): Amount of gain (in dB) to apply.
+        sample_rate (float): Sampling rate of the signal.
+        channels (int): Number of channels.
+    Returns:
+        np.ndarray: The distorted signal with the same shape as the input.
+    """
+    # Convert gain from dB to linear factor
+    gain = 10 ** (gain_db / 20.0)
+
+    # Choose an oversampling factor
+    oversample_factor = 2  # You can adjust this factor. Higher factors might reduce aliasing further,
+                           # but will increase computational cost.
+
+    # Oversample the signal (upsample along the time axis, axis=0)
+    oversampled = resample_poly(samples, oversample_factor, 1, axis=0)
+
+    # Apply gain and non-linear tanh for distortion
+    distorted_oversampled = np.tanh(gain * oversampled)
+
+    # Downsample back to the original sample rate
+    distorted = resample_poly(distorted_oversampled, 1, oversample_factor, axis=0)
+
+    return distorted
+
+
+def distort_o3mini_noupspl(samples, gain_db, sample_rate, channels):
+    """
+    Apply gain boosting and tanh non-linearity to an audio signal while minimizing aliasing
+    using a Differentiated Parabolic Waveshaping (DPW) approach. The DPW method applies
+    a differentiation to the antiderivative of the nonlinearity (here, log(cosh(u)) for tanh(u))
+    to obtain an alias-reduced approximation of the static waveshaper.
+
+    Parameters:
+      samples (np.ndarray): Audio samples, shape (N, channels), with float32 values typically in [-1, 1].
+      gain_db (float): Gain in dB applied to the input signal.
+      sample_rate (float): Sampling rate of the audio signal.
+      channels (int): Number of audio channels.
+
+    Returns:
+      np.ndarray: Distorted audio signal with the same shape as input.
+    """
+    # Convert gain from dB to linear scale.
+    gain = 10 ** (gain_db / 20)
+
+    # Apply gain to the input samples.
+    u = gain * samples
+
+    # Compute the antiderivative of tanh, which is log(cosh(u)).
+    # Its derivative d/du [log(cosh(u))] equals tanh(u), our waveshaping function.
+    F = np.log(np.cosh(u))
+
+    # Compute the finite difference along the sample axis (axis 0).
+    # This approximates the derivative of the antiderivative.
+    dF = np.diff(F, axis=0)
+    du = np.diff(u, axis=0)
+
+    # Use a small epsilon (machine epsilon for float32) to avoid numerical division issues.
+    eps = np.finfo(np.float32).eps
+    dpw = dF / (du + eps)
+
+    # For the first sample (where diff is not defined), fall back to the direct evaluation.
+    first_sample = np.tanh(u[0:1, :])
+
+    # Concatenate the first sample with the DPW-processed samples.
+    distorted = np.concatenate([first_sample, dpw], axis=0)
+
+    return distorted
+
+
+def distort_o3mini_adaa(samples, gain_db, sample_rate, channels):
+    # Convert gain from dB to linear scale.
+    gain = 10 ** (gain_db / 20.0)
+
+    # Boost the samples
+    x = samples * gain
+
+    # Compute the antiderivative of tanh:
+    #   F(x) = log(cosh(x)), since d/dx log(cosh(x)) = tanh(x)
+    F = np.log(np.cosh(x))
+
+    # Prepare an output array
+    distorted = np.empty_like(x)
+
+    # Use the standard nonlinearity for the first sample
+    distorted[0] = np.tanh(x[0])
+
+    # Compute differences along the time (first) axis
+    dx = np.diff(x, axis=0)
+    dF = np.diff(F, axis=0)
+
+    # To avoid division-by-zero problems when consecutive samples are nearly identical,
+    # use a small threshold.
+    eps = 1e-10
+
+    # Compute the antialiased output for the rest of the samples
+    # If dx is too small, fall back to the standard nonlinearity.
+    # Otherwise, use the finite difference of the antiderivative.
+    # This operation is done vectorized across all samples.
+    ratio = np.where(np.abs(dx) > eps, dF / dx, np.tanh(x[:-1]))
+
+    # Store the computed values.
+    distorted[1:] = ratio
+
+    return distorted
 
 
 if __name__ == "__main__":
