@@ -404,7 +404,10 @@ Conclusion
 
  * For this particular task at this particular moment (April, 2025),
    domain knowledge is still required for LLM-aided coding to produce
-   good results.
+   good results. The best performing experiments were the ones where
+   the code was almost entirely or entirely written by a human, or where
+   the prompt was asking for a specific solution informed by domain
+   knowledge.
 
  * However, the models acted confident and convincing even when their
    solution required further tweaking to be useful or when it was
