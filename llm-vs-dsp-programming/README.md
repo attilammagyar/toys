@@ -255,7 +255,9 @@ Aliasing:
  * **none**: no or extremely low aliasing.
  * **inaudible**: inaudible or almost inaudible aliasing; may be
    noticable with good quality speakers or headphones in a quiet
-   listening environment with a relatively loud playback volume.
+   listening environment with a relatively loud playback volume,
+   and maybe by younger people with less
+   [age-related hearing loss](https://en.wikipedia.org/wiki/Presbycusis).
  * **loud**: clearly audible, loud aliasing.
  * **fail**: numerical problems in the implementation or the
    anti-aliasing method itself caused audible damage to the sound,
