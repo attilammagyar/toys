@@ -171,7 +171,7 @@ side of the user.
    looking for the entire program, which was refined iteratively in
    several steps, restricted to using only the Python standard library
    and [NumPy](https://numpy.org/).
- * ***Conversation 2 Prompt 1-2**: A shorter conversation with OpenAI
+ * **Conversation 2 Prompt 1-2**: A shorter conversation with OpenAI
    ChatGPT 4o based on the results of the previous one, with weaker
    restrictions, still looking for the whole program.
  * **Unspecified Technique**: A specific prompt looking for the
