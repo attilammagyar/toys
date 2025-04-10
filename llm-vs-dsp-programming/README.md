@@ -198,7 +198,13 @@ sound, and compared the results. I also measured the average running
 time of the implementations after multiple executions.
 
 The test sound was a sine wave which started at 110 Hz, stayed there for
-3 seconds, then climbed up to 3630 Hz in 12 seconds.
+3 seconds, then climbed up to 3630 Hz in 12 seconds. The first part of
+the sound makes it easy to identify various problems in the effect
+implementations, and the second part reveals how the solutions deal
+with the aliasing inducing higher frequencies. The changing pitch makes
+it easier to visually identify aliasing on a spectrogram: frequency
+components which move in the opposite direction of the original pitch
+are the aliased frequencies.
 
 The spectrogram of the test sound (the horizontal axis is time, the
 vertical is frequency, and the brightness of the colors shows  intensity
