@@ -230,14 +230,13 @@ sound files and their spectrograms can be found in the [Appendix](#prompt-adaa).
    Even though the `tanh` function should stay within the `[-1.0, +1.0]`
    interval, the up- and downsampling may push some samples slightly
    outside this interval, which then causes hard clipping and aliasing.
-   [OpenAI ChatGPT 4o](#conv-chatgpt4o-unspectechnique) and
-   [Google Gemini 2.5 Pro](#conv-gemini2_5pro-unspectechnique) ignored
-   the issue, which can be the right thing to do when assuming that the
-   waveshaping takes place as a part of a complex audio pipeline where
-   the clipping should be addressed at the very last step.
-   [DeepSeek R1](#conv-r1-unspectechnique) however included hard digital
-   clipping as the last step of its implementation, ruining its
-   otherwise correctly implemented 2x upsampling.
+   The models usually chose to ignore the issue, which can be the right
+   thing to do when assuming that the waveshaping takes place as a part
+   of a complex audio signal chain where the clipping should be
+   addressed at the very last step. [DeepSeek R1](#conv-r1-unspectechnique)
+   however included hard digital clipping as the last step of its
+   implementation, ruining its otherwise correctly implemented 2x
+   upsampling.
 
  * LLMs in multiple experiments chose to use non-vectorized loops to
    process the signal in the audio channels dimension, but
