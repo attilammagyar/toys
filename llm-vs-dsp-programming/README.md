@@ -217,7 +217,8 @@ loud levels):
 The test sound: [sound.wav](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound.wav).
 
 The full LLM conversations, my own implementations, and the resulting
-sound files and their spectrograms can be found in the [Appendix](#prompt-adaa).
+sound files and their spectrograms can be found in the
+[Appendix](#conv-chatgpt4o-c1p1).
 
 <a id="mistakes" href="#toc">Top</a>
 
