@@ -167,20 +167,24 @@ They simulate various levels of domain knowledge in the field of
 [DSP](https://en.wikipedia.org/wiki/Digital_signal_processing) on the
 side of the user.
 
- * A conversation with OpenAI ChatGPT 4o looking for the entire program,
-   which was refined iteratively in several steps, restricted to using
-   only the Python standard library and [NumPy](https://numpy.org/).
- * A shorter conversation with OpenAI ChatGPT 4o based on the results of
-   the previous one, with weaker restrictions, still looking for the
-   whole program.
- * A specific prompt looking for the implementation of only the effect.
-   "*Use the fastest state of the art antialiasing method. Keep it
-   CPU-friendly enough for real-time audio.*"
- * The same prompt as above, with an additional restriction forbidding
-   the use of upsampling.
- * A specific prompt looking for the implementation of only the effect.
-   "*Use 1st order ADAA to control aliasing. Avoid looping over NumPy
-   arrays manually. Do not overthink.*"
+ * **Conversation 1 Prompt 1-7**: A conversation with OpenAI ChatGPT 4o
+   looking for the entire program, which was refined iteratively in
+   several steps, restricted to using only the Python standard library
+   and [NumPy](https://numpy.org/).
+ * ***Conversation 2 Prompt 1-2**: A shorter conversation with OpenAI
+   ChatGPT 4o based on the results of the previous one, with weaker
+   restrictions, still looking for the whole program.
+ * **Unspecified Technique**: A specific prompt looking for the
+   implementation of only the effect, but without specifying the
+   antialiasing algorithm. "*Use the fastest state of the
+   art antialiasing method. Keep it CPU-friendly enough for real-time
+   audio.*"
+ * **No Upsampling**: The same prompt as above, with an additional
+   restriction forbidding the use of upsampling.
+ * **ADAA**: A specific prompt looking for the implementation of only
+   the effect, explicitly requesting the use of ADAA. "*Use 1st order
+   ADAA to control aliasing. Avoid looping over NumPy arrays manually.
+   Do not overthink.*"
 
 While reviewing the implementations for the prompt which was explicitly
 looking for 1st order ADAA, I noticed that the LLMs used a simpler
