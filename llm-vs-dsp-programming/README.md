@@ -4,7 +4,7 @@ Programming With AI: Forget "We Have Always Done It This Way", Enter "The Corpus
 I was curious whether popular [large language models](https://en.wikipedia.org/wiki/Large_language_model)
 can implement a simple audio effect in [Python](https://www.python.org/),
 and if yes, then how do they balance computational cost and audio quality,
-and how do their solutions compare to my handcrafted, no AI-aided version.
+and how do their solutions compare to my handcrafted, non-AI-aided version.
 
 TL;DR:
 
