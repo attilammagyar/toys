@@ -31,8 +31,8 @@ Table of Contents
 
  * [The Problem](#problem)
  * [Experiments](#experiments)
-    * [Stupid Mistakes](#mistakes)
     * [Results](#results)
+    * [Stupid Mistakes](#mistakes)
  * [Conclusion](#conclusion)
  * [Appendix](#conv-chatgpt4o-c1p1)
     * [OpenAI ChatGPT 4o Conversation 1 (NumPy)](#conv-chatgpt4o-c1p1)
@@ -220,44 +220,6 @@ The full LLM conversations, my own implementations, and the resulting
 sound files and their spectrograms can be found in the
 [Appendix](#conv-chatgpt4o-c1p1).
 
-<a id="mistakes" href="#toc">Top</a>
-
-### Stupid Mistakes
-
- * All of the LLMs went with an upsampling-based approach in the
-   [Unspecified Technique (AI)](#prompt-unspectechnique) experiment,
-   and all of them were prone to running into the problem of
-   [digital hard clipping](https://en.wikipedia.org/wiki/Clipping_%28audio%29).
-   Even though the `tanh` function should stay within the `[-1.0, +1.0]`
-   interval, the up- and downsampling may push some samples slightly
-   outside this region, which then causes hard clipping and aliasing
-   again. The models usually chose to ignore the issue, which can be
-   the right thing to do when assuming that the waveshaping takes place
-   as a part of a complex audio signal chain where the clipping should
-   be addressed at the very last step. For the comparisons, I have
-   normalized the output of every implementation, so that the hard
-   clipping wouldn't occur. However, [DeepSeek R1](#conv-r1-unspectechnique)
-   included hard digital clipping as the last step of its
-   implementation, ruining its otherwise correctly implemented 2x
-   upsampling.
-
- * LLMs in multiple experiments chose to use non-vectorized loops to
-   process the signal in the audio channels dimension, but
-   [OpenAI ChatGPT 4o](#conv-chatgpt4o-c1p5) used a non-vectorized loop
-   in an instance to loop through the individual samples as well, and
-   then when it was told to replace that with a vectorized operation,
-   it [falsely claimed that it did](#conv-chatgpt4o-c1p6).
-
- * When upsampling was forbidden but the method to use was not
-   explicitly named, [OpenAI o3 mini attempted using ADAA](#conv-o3mini-noupspl),
-   but with a made-up, hallucinated name (there's no such thing as
-   "*Differentiated Parabolic Waveshaping*", but there's an
-   anti-aliasing technique for digital oscillators named
-   "[Differentiated Parabolic Wave](https://mac.kaist.ac.kr/pubs/ValimakiNamSmithAbel-taslp2010.pdf)",
-   though that's a different story) and its implementation had
-   numerical stability problems which the model tried and failed to
-   manage, rendering the [resulting sound unusable](#result-o3mini-noupspl).
-
 <a id="results" href="#toc">Top</a>
 
 ### Results
@@ -410,6 +372,43 @@ script in this repository.
 </table>
 
 <a id="conclusion" href="#toc">Top</a>
+
+<a id="mistakes" href="#toc">Top</a>
+
+### Stupid Mistakes
+
+ * All of the LLMs went with an upsampling-based approach in the
+   [Unspecified Technique (AI)](#prompt-unspectechnique) experiment,
+   and all of them were prone to running into the problem of
+   [digital hard clipping](https://en.wikipedia.org/wiki/Clipping_%28audio%29).
+   Even though the `tanh` function should stay within the `[-1.0, +1.0]`
+   interval, the up- and downsampling may push some samples slightly
+   outside this range, which then causes hard clipping and aliasing
+   again. The models usually chose to ignore the issue, which can be
+   the right thing to do when assuming that the waveshaping takes place
+   as a part of a complex audio signal chain where the clipping should
+   be addressed at the very last step. I normalized the output of every
+   implementation for the comparison so that the hard clipping wouldn't
+   occur. However, [DeepSeek R1](#conv-r1-unspectechnique) included
+   hard digital clipping as the last step of its implementation,
+   ruining its otherwise correctly implemented 2x upsampling.
+
+ * LLMs in multiple experiments chose to use non-vectorized loops to
+   process the signal in the audio channels dimension, but
+   [OpenAI ChatGPT 4o](#conv-chatgpt4o-c1p5) used a non-vectorized loop
+   in an instance to loop through the individual samples as well, and
+   then when it was told to replace that with a vectorized operation,
+   it [falsely claimed that it did](#conv-chatgpt4o-c1p6).
+
+ * When upsampling was forbidden but the method to use was not
+   explicitly named, [OpenAI o3 mini attempted using ADAA](#conv-o3mini-noupspl),
+   but with a made-up, hallucinated name (there's no such thing as
+   "*Differentiated Parabolic Waveshaping*", but there's an
+   anti-aliasing technique for digital oscillators named
+   "[Differentiated Parabolic Wave](https://mac.kaist.ac.kr/pubs/ValimakiNamSmithAbel-taslp2010.pdf)",
+   though that's a different story) and its implementation had
+   numerical stability problems which the model tried and failed to
+   manage, rendering the [resulting sound unusable](#result-o3mini-noupspl).
 
 Conclusion
 ----------
