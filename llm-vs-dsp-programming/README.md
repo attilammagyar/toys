@@ -191,7 +191,7 @@ looking for 1st order ADAA, I noticed that the LLMs used a simpler
 antiderivative than mine, so I made a version of my own implementation
 of the effect using this antiderivative. This turned out to be slightly
 faster than the original, and also accumulating less floating point
-errors.
+rounding errors.
 
 Then I ran all of the implementations of the effect on a test
 sound, and compared the results. I also measured the average running
