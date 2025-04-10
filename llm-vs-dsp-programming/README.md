@@ -226,16 +226,18 @@ sound files and their spectrograms can be found in the
 
  * All of the LLMs went with an upsampling-based approach in the
    [Unspecified Technique (AI)](#prompt-unspectechnique) experiment,
-   and all of them ran into the problem of
-   [digital hard clipping](https://en.wikipedia.org/wiki/Clipping_(audio)).
+   and all of them were prone to running into the problem of
+   [digital hard clipping](https://en.wikipedia.org/wiki/Clipping_%28audio%29).
    Even though the `tanh` function should stay within the `[-1.0, +1.0]`
    interval, the up- and downsampling may push some samples slightly
-   outside this interval, which then causes hard clipping and aliasing.
-   The models usually chose to ignore the issue, which can be the right
-   thing to do when assuming that the waveshaping takes place as a part
-   of a complex audio signal chain where the clipping should be
-   addressed at the very last step. [DeepSeek R1](#conv-r1-unspectechnique)
-   however included hard digital clipping as the last step of its
+   outside this region, which then causes hard clipping and aliasing
+   again. The models usually chose to ignore the issue, which can be
+   the right thing to do when assuming that the waveshaping takes place
+   as a part of a complex audio signal chain where the clipping should
+   be addressed at the very last step. For the comparisons, I have
+   normalized the output of every implementation, so that the hard
+   clipping wouldn't occur. However, [DeepSeek R1](#conv-r1-unspectechnique)
+   included hard digital clipping as the last step of its
    implementation, ruining its otherwise correctly implemented 2x
    upsampling.
 
