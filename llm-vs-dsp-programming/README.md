@@ -24,6 +24,16 @@ TL;DR:
    algorithm, will either reject it with flawed reasoning, or implement
    it badly.
 
+ * An LLM by definition is a statistical model which contains a
+   distillation of the average programmer from numerous code bases and
+   forum threads. When an experienced software developer is
+   [pair programming](https://en.wikipedia.org/wiki/Pair_programming)
+   with the average coder in the form of an LLM, they might be
+   elevating the AI's performance to their experience level, while a
+   novice doing [vibe coding](https://en.wikipedia.org/wiki/Vibe_coding)
+   might be bringing the AI's performance down. The investigation of
+   this hypothesis needs further research.
+
 <a id="toc"></a>
 
 Table of Contents
@@ -34,6 +44,7 @@ Table of Contents
     * [Results](#results)
     * [Stupid Mistakes](#mistakes)
  * [Conclusion](#conclusion)
+ * [Limitations and Further Research](#further)
  * [Appendix](#conv-chatgpt4o-c1p1)
     * [OpenAI ChatGPT 4o Conversation 1 (NumPy)](#conv-chatgpt4o-c1p1)
        * [Prompt 1 and Response](#conv-chatgpt4o-c1p1)
@@ -460,7 +471,39 @@ Conclusion
    its recent developments may result in slower adaptation of newly
    invented techniques on the long run.
 
-<a id="conv-chatgpt4o-c1p1" href="#toc">Top</a>
+<a id="">Top</a>
+
+ * An LLM by definition is a statistical model which contains a
+   distillation of the average programmer from numerous code bases and
+   forum threads. When an experienced software developer is
+   [pair programming](https://en.wikipedia.org/wiki/Pair_programming)
+   with the average coder in the form of an LLM, they might be
+   elevating the AI's performance to their experience level, while a
+   novice doing [vibe coding](https://en.wikipedia.org/wiki/Vibe_coding)
+   might be bringing the AI's performance down. The investigation of
+   this theory needs further research.
+
+
+<a id="further" href="#toc">Top</a>
+
+Limitations and Further Research
+--------------------------------
+
+Comparing the performance of a single professional software developer
+with formal training and decades of experience against LLMs for a single
+specific problem is definitely biased. It would be more fair to gather
+a diverse group of programmers, from novices to seniors, have them
+solve a varied set of problems, and use their code as a baseline.
+However, an LLM, by definition, is a statistical model which happens
+to contain a distillation of the average programmer from numerous code
+bases and forum threads on the Internet.
+
+This seems to suggest that when an experienced software developer is
+pair programming with the average coder in the form of an LLM, what
+might be happening is that they are elevating the AI's performance to
+their experience level, while a novice programmer doing vibe coding
+might be bringing the AI's performance down. The investigation of this
+hypothesis needs further research.
 
 Appendix
 --------
