@@ -77,6 +77,10 @@ Table of Contents
           * [Result](#result-claude3_7sonnet-unspectechnique)
        * [OpenAI o3-mini's Response](#conv-o3mini-unspectechnique)
           * [Result](#result-o3mini-unspectechnique)
+       * [Perplexity's Response](#conv-perplexity-unspectechnique)
+          * [Tasks](#conv-perplexity-unspectechnique)
+          * [Response](#conv-perplexity-unspectechnique-response)
+          * [Result](#result-perplexity-unspectechnique)
     * [No upsampling](#prompt-noupspl)
        * [Prompt](#prompt-noupspl)
        * [OpenAI ChatGPT 4o's Response](#conv-chatgpt4o-noupspl)
@@ -91,6 +95,10 @@ Table of Contents
           * [Result](#result-claude3_7sonnet-noupspl)
        * [OpenAI o3-mini's Response](#conv-o3mini-noupspl)
           * [Result](#result-o3mini-noupspl)
+       * [Perplexity's Response](#conv-perplexity-noupspl)
+          * [Tasks](#conv-perplexity-noupspl)
+          * [Response](#conv-perplexity-noupspl-response)
+          * [Result](#result-perplexity-noupspl)
     * [ADAA](#prompt-adaa)
        * [Prompt](#prompt-adaa)
        * [OpenAI ChatGPT 4o's Response](#conv-chatgpt4o-adaa)
@@ -105,6 +113,10 @@ Table of Contents
           * [Result](#result-claude3_7sonnet-adaa)
        * [OpenAI o3-mini's Response](#conv-o3mini-adaa)
           * [Result](#result-o3mini-adaa)
+       * [Perplexity's Response](#conv-perplexity-adaa)
+          * [Tasks](#conv-perplexity-adaa)
+          * [Response](#conv-perplexity-adaa-response)
+          * [Result](#result-perplexity-adaa)
        * [Manual Implementation](#manual-adaa)
           * [Improved With Ideas From AI](#manual-adaa-improved)
 
@@ -172,6 +184,17 @@ following popular LLMs:
  * [Google Gemini 2.5 Pro](https://gemini.google.com/).
  * [Anthropic Claude 3.7 Sonnet](https://claude.ai/)
  * [OpenAI o3-mini](https://openai.com/index/openai-o3-mini/)
+ * [Perplexity](https://www.perplexity.ai)\*
+
+\*The responses from Perplexity were generated with the 3 Pro searches
+available in the free subscription, before the wider availability of
+the [Memory](https://www.perplexity.ai/help-center/en/articles/10968016-memory)
+feature, but after the first version of this case study was published
+on GitHub. Depending on how fast it might have been indexed by search
+engines, this may or may not have influenced the AI's responses.
+Though I suspect that there was no influence, because the responses
+were nowhere near any of the good or at least sensible solutions listed
+here...
 
 The experiments below were run in newly created, clear conversations.
 They simulate various levels of domain knowledge in the field of
@@ -246,7 +269,8 @@ Aliasing:
  * **loud**: clearly audible, loud aliasing.
  * **fail**: numerical problems in the implementation or the
    anti-aliasing method itself caused audible damage to the sound,
-   making more harm than the original aliasing.
+   making more harm than the original aliasing; or the model failed to
+   implement the specified antialiasing method.
 
 The 3 fastest methods that were able to reduce aliasing to an inaudible
 level are highlighted in the table below.
@@ -266,117 +290,132 @@ script in this repository.
   <tbody>
     <tr>
       <td><a href="#result-chatgpt4o-noupspl">OpenAI ChatGPT 4o No Upsampling (AI)</a></td>
-      <td>0.003852 s</td>
+      <td>0.003874 s</td>
       <td>loud</td>
     </tr>
     <tr>
       <td><a href="#result-chatgpt4o-c1p1">OpenAI ChatGPT 4o Conversation 1 Prompt 1 (AI)</a></td>
-      <td>0.014842 s</td>
+      <td>0.014836 s</td>
       <td>loud</td>
     </tr>
     <tr>
       <td><a href="#result-o3mini-noupspl">OpenAI o3-mini No Upsampling (AI)</a></td>
-      <td>0.016839 s</td>
+      <td>0.016400 s</td>
       <td>fail</td>
     </tr>
     <tr>
       <td><strong><a href="#result-manual-adaa-improved">Improved Manual ADAA Implementation (human + ideas from AI)</a></strong></td>
-      <td><strong>0.023833 s</strong></td>
+      <td><strong>0.024866 s</strong></td>
       <td><strong>inaudible</strong></td>
     </tr>
     <tr>
       <td><a href="#result-chatgpt4o-c1p2">OpenAI ChatGPT 4o Conversation 1 Prompt 2 (AI)</a></td>
-      <td>0.024933 s</td>
+      <td>0.025112 s</td>
       <td>loud</td>
     </tr>
     <tr>
       <td><strong><a href="#result-manual-adaa">Manual ADAA Implementation (human)</a></strong></td>
-      <td><strong>0.025767 s</strong></td>
+      <td><strong>0.025713 s</strong></td>
       <td><strong>inaudible</strong></td>
     </tr>
     <tr>
+      <td><a href="#result-perplexity-noupspl">Perplexity No Upsampling (AI)</a></td>
+      <td>0.032577 s</td>
+      <td>loud</td>
+    </tr>
+    <tr>
       <td><a href="#result-chatgpt4o-c1p7">OpenAI ChatGPT 4o Conversation 1 Prompt 7 (AI)</a></td>
-      <td>0.034241 s</td>
+      <td>0.034189 s</td>
       <td>loud</td>
     </tr>
     <tr>
       <td><a href="#result-gemini2_5pro-noupspl">Google Gemini 2.5 Pro No Upsampling (AI)</a></td>
-      <td>0.034252 s</td>
+      <td>0.034282 s</td>
+      <td>loud</td>
+    </tr>
+    <tr>
+      <td><a href="#result-perplexity-unspectechnique">Perplexity Unspecified Technique (AI)</a></td>
+      <td>0.034314 s</td>
       <td>loud</td>
     </tr>
     <tr>
       <td><a href="#result-chatgpt4o-c2p1">OpenAI ChatGPT 4o Conversation 2 Prompt 1 (AI)</a></td>
-      <td>0.035516 s</td>
+      <td>0.035496 s</td>
       <td>loud</td>
     </tr>
     <tr>
+      <td><a href="#result-perplexity-adaa">Perplexity ADAA (AI)</a></td>
+      <td>0.040740 s</td>
+      <td>fail</td>
+    </tr>
+    <tr>
       <td><strong><a href="#result-o3mini-adaa">OpenAI o3-mini ADAA (AI)</a></strong></td>
-      <td><strong>0.041224 s</strong></td>
+      <td><strong>0.041064 s</strong></td>
       <td><strong>inaudible</strong></td>
     </tr>
     <tr>
       <td><a href="#result-r1-noupspl">DeepSeek R1 No Upsampling (AI)</a></td>
-      <td>0.043699 s</td>
+      <td>0.043244 s</td>
       <td>loud</td>
     </tr>
     <tr>
       <td><a href="#result-claude3_7sonnet-adaa">Anthropic Claude 3.7 Sonnet ADAA (AI)</a></td>
-      <td>0.053296 s</td>
+      <td>0.053061 s</td>
       <td>inaudible</td>
     </tr>
     <tr>
       <td><a href="#result-chatgpt4o-adaa">OpenAI ChatGPT 4o ADAA (AI)</a></td>
-      <td>0.056775 s</td>
+      <td>0.056896 s</td>
       <td>inaudible</td>
     </tr>
     <tr>
       <td><a href="#result-claude3_7sonnet-noupspl">Anthropic Claude 3.7 Sonnet No Upsampling (AI)</a></td>
-      <td>0.062058 s</td>
+      <td>0.061746 s</td>
       <td>loud</td>
     </tr>
     <tr>
       <td><a href="#result-gemini2_5pro-adaa">Google Gemini 2.5 Pro ADAA (AI)</a></td>
-      <td>0.075204 s</td>
+      <td>0.075009 s</td>
       <td>inaudible</td>
     </tr>
     <tr>
       <td><a href="#result-chatgpt4o-c1p4">OpenAI ChatGPT 4o Conversation 1 Prompt 4 (AI)</a></td>
-      <td>0.082686 s</td>
+      <td>0.082903 s</td>
       <td>inaudible</td>
     </tr>
     <tr>
       <td><a href="#result-r1-adaa">DeepSeek R1 ADAA (AI)</a></td>
-      <td>0.087224 s</td>
+      <td>0.087023 s</td>
       <td>inaudible</td>
     </tr>
     <tr>
       <td><a href="#result-r1-unspectechnique">DeepSeek R1 Unspecified Technique (AI)</a></td>
-      <td>0.175405 s</td>
+      <td>0.174515 s</td>
       <td>loud</td>
     </tr>
     <tr>
       <td><a href="#result-o3mini-unspectechnique">OpenAI o3-mini Unspecified Technique (AI)</a></td>
-      <td>0.177414 s</td>
+      <td>0.176711 s</td>
       <td>none</td>
     </tr>
     <tr>
       <td><a href="#result-gemini2_5pro-unspectechnique">Google Gemini 2.5 Pro Unspecified Technique (AI)</a></td>
-      <td>0.349820 s</td>
+      <td>0.349734 s</td>
       <td>none</td>
     </tr>
     <tr>
       <td><a href="#result-chatgpt4o-unspectechnique">OpenAI ChatGPT 4o Unspecified Technique (AI)</a></td>
-      <td>0.350058 s</td>
+      <td>0.349754 s</td>
       <td>none</td>
     </tr>
     <tr>
       <td><a href="#result-claude3_7sonnet-unspectechnique">Anthropic Claude 3.7 Sonnet Unspecified Technique (AI)</a></td>
-      <td>0.352586 s</td>
+      <td>0.352505 s</td>
       <td>none</td>
     </tr>
     <tr>
       <td><a href="#result-chatgpt4o-c1p5">OpenAI ChatGPT 4o Conversation 1 Prompt 5 (AI)</a></td>
-      <td>7.685924 s</td>
+      <td>7.648847 s</td>
       <td>fail</td>
     </tr>
   </tbody>
@@ -420,6 +459,17 @@ script in this repository.
    though that's a different story) and its implementation had
    numerical stability problems which the model tried and failed to
    manage, rendering the [resulting sound unusable](#result-o3mini-noupspl).
+
+ * Regardless of the specificied requirements, Perplexity always went
+   with the upsampling based approach, but without performing the up-
+   and downsampling, so it always ended up with naive waveshaping
+   followed by a low-pass filter. (Note that the experiment was carried
+   out before the public rollout of the
+   [Memory](https://www.perplexity.ai/help-center/en/articles/10968016-memory)
+   feature, but after the first version of the case study went online
+   on GitHub. Though, since it contains several good contenders for the
+   best implementation, it is unlikely that it had an influence on the
+   model's responses.)
 
 Conclusion
 ----------
@@ -605,7 +655,9 @@ distortion).
 
 <img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p1.png" alt="Spectrogram: OpenAI ChatGPT 4o Conversation 1 Prompt 1 (AI)" />
 
-The result: [sound-chatgpt4o-c1p1.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p1.flac).
+ * Sound: [sound-chatgpt4o-c1p1.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p1.flac),
+ * Average computation time: 0.014836s,
+ * Aliasing: loud.
 
 <a id="conv-chatgpt4o-c1p2" href="#toc">Top</a>
 
@@ -687,7 +739,9 @@ Want to try asymmetric distortion or dynamic gain shaping next?
 
 <img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p2.png" alt="Spectrogram: OpenAI ChatGPT 4o Conversation 1 Prompt 2 (AI)" />
 
-The result: [sound-chatgpt4o-c1p2.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p2.flac).
+ * Sound: [sound-chatgpt4o-c1p2.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p2.flac),
+ * Average computation time: 0.025112s,
+ * Aliasing: loud.
 
 <a id="conv-chatgpt4o-c1p3" href="#toc">Top</a>
 
@@ -884,7 +938,9 @@ toggle or change the filter kernel.
 
 <img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p4.png" alt="Spectrogram: OpenAI ChatGPT 4o Conversation 1 Prompt 4 (AI)" />
 
-The result: [sound-chatgpt4o-c1p4.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p4.flac).
+ * Sound: [sound-chatgpt4o-c1p4.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p4.flac),
+ * Average computation time: 0.082903s,
+ * Aliasing: inaudible.
 
 <a id="conv-chatgpt4o-c1p5" href="#toc">Top</a>
 
@@ -980,7 +1036,9 @@ Just let me know how deep you wanna go 🎛️
 
 <img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p5.png" alt="Spectrogram: OpenAI ChatGPT 4o Conversation 1 Prompt 5 (AI)" />
 
-The result: [sound-chatgpt4o-c1p5.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p5.flac).
+ * Sound: [sound-chatgpt4o-c1p5.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p5.flac),
+ * Average computation time: 7.648847s,
+ * Aliasing: fail.
 
 <a id="conv-chatgpt4o-c1p6" href="#toc">Top</a>
 
@@ -1134,7 +1192,9 @@ experiment with asymmetric distortion curves.
 
 <img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p7.png" alt="Spectrogram: OpenAI ChatGPT 4o Conversation 1 Prompt 7 (AI)" />
 
-The result: [sound-chatgpt4o-c1p7.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p7.flac).
+ * Sound: [sound-chatgpt4o-c1p7.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c1p7.flac),
+ * Average computation time: 0.034189s,
+ * Aliasing: loud.
 
 <a id="conv-chatgpt4o-c2p1" href="#toc">Top</a>
 
@@ -1243,7 +1303,9 @@ Let me know if you want a version that processes audio chunk-by-chunk
 
 <img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c2p1.png" alt="Spectrogram: OpenAI ChatGPT 4o Conversation 2 Prompt 1 (AI)" />
 
-The result: [sound-chatgpt4o-c2p1.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c2p1.flac).
+ * Sound: [sound-chatgpt4o-c2p1.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-c2p1.flac),
+ * Average computation time: 0.035496s,
+ * Aliasing: loud.
 
 <a id="conv-chatgpt4o-c2p2" href="#toc">Top</a>
 
@@ -1462,7 +1524,9 @@ libraries (like `numba`, `librosa`, `torch`, etc.).
 
 <img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-unspectechnique.png" alt="Spectrogram: OpenAI ChatGPT 4o Unspecified Technique (AI)" />
 
-The result: [sound-chatgpt4o-unspectechnique.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-unspectechnique.flac).
+ * Sound: [sound-chatgpt4o-unspectechnique.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-unspectechnique.flac),
+ * Average computation time: 0.349754s,
+ * Aliasing: none.
 
 <a id="conv-r1-unspectechnique" href="#toc">Top</a>
 
@@ -1567,7 +1631,9 @@ for most audio applications.
 
 <img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-r1-unspectechnique.png" alt="Spectrogram: DeepSeek R1 Unspecified Technique (AI)" />
 
-The result: [sound-r1-unspectechnique.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-r1-unspectechnique.flac).
+ * Sound: [sound-r1-unspectechnique.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-r1-unspectechnique.flac),
+ * Average computation time: 0.174515s,
+ * Aliasing: loud.
 
 <a id="conv-gemini2_5pro-unspectechnique" href="#toc">Top</a>
 
@@ -2189,7 +2255,9 @@ audio applications.
 
 <img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-gemini2_5pro-unspectechnique.png" alt="Spectrogram: Google Gemini 2.5 Pro Unspecified Technique (AI)" />
 
-The result: [sound-gemini2_5pro-unspectechnique.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-gemini2_5pro-unspectechnique.flac).
+ * Sound: [sound-gemini2_5pro-unspectechnique.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-gemini2_5pro-unspectechnique.flac),
+ * Average computation time: 0.349734s,
+ * Aliasing: none.
 
 <a id="conv-claude3_7sonnet-unspectechnique" href="#toc">Top</a>
 
@@ -2322,7 +2390,9 @@ Would you like me to explain how this implementation works and why I chose these
 
 <img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-claude3_7sonnet-unspectechnique.png" alt="Spectrogram: Anthropic Claude 3.7 Sonnet Unspecified Technique (AI)" />
 
-The result: [sound-claude3_7sonnet-unspectechnique.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-claude3_7sonnet-unspectechnique.flac).
+ * Sound: [sound-claude3_7sonnet-unspectechnique.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-claude3_7sonnet-unspectechnique.flac),
+ * Average computation time: 0.352505s,
+ * Aliasing: none.
 
 <a id="conv-o3mini-unspectechnique" href="#toc">Top</a>
 
@@ -2397,7 +2467,112 @@ real-time applications.
 
 <img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-o3mini-unspectechnique.png" alt="Spectrogram: OpenAI o3-mini Unspecified Technique (AI)" />
 
-The result: [sound-o3mini-unspectechnique.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-o3mini-unspectechnique.flac).
+ * Sound: [sound-o3mini-unspectechnique.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-o3mini-unspectechnique.flac),
+ * Average computation time: 0.176711s,
+ * Aliasing: none.
+
+<a id="conv-perplexity-unspectechnique" href="#toc">Top</a>
+
+#### Perplexity's Response
+
+##### Tasks
+
+ * Understanding the requirements for gain boosting and tanh
+   non-linearity in audio processing
+ * Programming / Python
+ * Researching state-of-the-art anti-aliasing methods for audio
+   processing
+ * Implementing the distort function with gain boosting, tanh
+   non-linearity, and anti-aliasing
+ * Testing the distort function to ensure it meets the requirements
+ * Writing answer
+
+<a id="conv-perplexity-unspectechnique-response" href="#toc">Top</a>
+
+##### Response
+
+To implement the `distort` function with gain boosting, tanh
+non-linearity, and anti-aliasing, you can use the following approach.
+This method applies a Butterworth low-pass filter to minimize aliasing,
+which is a common and efficient technique for real-time audio
+processing.
+
+    import numpy as np
+    from scipy.signal import butter, lfilter
+    
+    def distort(samples, gain_db=14.0, sample_rate=44100.0, channels=2):
+        """
+        Applies gain boosting and tanh non-linearity to an audio signal while minimizing aliasing.
+    
+        Parameters:
+        - samples: NumPy array of shape (N, channels) representing the audio signal.
+        - gain_db: Gain in decibels to apply to the signal.
+        - sample_rate: Sampling rate of the audio signal.
+        - channels: Number of audio channels.
+    
+        Returns:
+        - distorted: The distorted audio signal.
+        """
+        distorted = np.zeros_like(samples)
+    
+        # Convert gain from dB to linear scale
+        gain = 10 ** (gain_db / 20.0)
+    
+        # Apply gain to the samples
+        boosted = samples * gain
+    
+        # Apply tanh non-linearity
+        non_linear = np.tanh(boosted)
+    
+        # Design a low-pass filter to minimize aliasing
+        nyquist = 0.5 * sample_rate
+        cutoff = nyquist / 2  # Set cutoff frequency to half of Nyquist frequency
+        b, a = butter(4, cutoff / nyquist, btype='low')
+    
+        # Apply the low-pass filter to each channel
+        for ch in range(channels):
+            distorted[:, ch] = lfilter(b, a, non_linear[:, ch])
+    
+        return distorted
+
+Explanation:
+
+ * **Gain Boosting**: The gain is converted from decibels to a linear
+   scale using the formula $\text{gain}=10^{\frac{\text{gain_db}}{20}}$.
+   This gain is then applied to the audio samples.
+
+ * **Tanh Non-linearity**: The hyperbolic tangent function ($\tanh⁡(x)$)
+   is used to introduce non-linearity into the signal. This function
+   maps the input to a range between -1 and 1, which helps in
+   simulating overdrive or distortion effects.
+
+ * **Anti-aliasing**: A fourth-order Butterworth low-pass filter is
+   designed with a cutoff frequency set to half of the Nyquist
+   frequency. This filter is applied to each channel of the audio
+   signal to reduce aliasing artifacts that may arise from the
+   non-linear processing.
+
+Performance Considerations:
+
+ * **CPU Efficiency**: The use of NumPy and SciPy functions ensures
+   that the operations are vectorized and optimized for CPU
+   performance, making it suitable for real-time audio processing.
+
+ * **State-of-the-Art Anti-aliasing**: While more advanced methods like
+   oversampling and downsampling exist, the Butterworth filter provides
+   a good balance between simplicity and effectiveness for real-time
+   applications. For more complex scenarios, consider using
+   higher-order filters or more sophisticated anti-aliasing techniques.
+
+<a id="result-perplexity-unspectechnique" href="#toc">Top</a>
+
+##### Result
+
+<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-perplexity-unspectechnique.png" alt="Spectrogram: Perplexity Unspecified Technique (AI)" />
+
+ * Sound: [sound-perplexity-unspectechnique.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-perplexity-unspectechnique.flac),
+ * Average computation time: 0.034314s,
+ * Aliasing: loud.
 
 <a id="prompt-noupspl" href="#toc">Top</a>
 
@@ -2495,7 +2670,9 @@ waveshaping!
 
 <img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-noupspl.png" alt="Spectrogram: OpenAI ChatGPT 4o No Upsampling (AI)" />
 
-The result: [sound-chatgpt4o-noupspl.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-noupspl.flac).
+ * Sound: [sound-chatgpt4o-noupspl.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-noupspl.flac),
+ * Average computation time: 0.003874s,
+ * Aliasing: loud.
 
 <a id="conv-r1-noupspl" href="#toc">Top</a>
 
@@ -2588,7 +2765,9 @@ frequency can be adjusted for different quality/performance tradeoffs.
 
 <img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-r1-noupspl.png" alt="Spectrogram: DeepSeek R1 No Upsampling (AI)" />
 
-The result: [sound-r1-noupspl.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-r1-noupspl.flac).
+ * Sound: [sound-r1-noupspl.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-r1-noupspl.flac),
+ * Average computation time: 0.043244s,
+ * Aliasing: loud.
 
 <a id="conv-gemini2_5pro-noupspl" href="#toc">Top</a>
 
@@ -3124,7 +3303,9 @@ upsampling/downsampling stages.
 
 <img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-gemini2_5pro-noupspl.png" alt="Spectrogram: Google Gemini 2.5 Pro No Upsampling (AI)" />
 
-The result: [sound-gemini2_5pro-noupspl.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-gemini2_5pro-noupspl.flac).
+ * Sound: [sound-gemini2_5pro-noupspl.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-gemini2_5pro-noupspl.flac),
+ * Average computation time: 0.034282s,
+ * Aliasing: loud.
 
 <a id="conv-claude3_7sonnet-noupspl" href="#toc">Top</a>
 
@@ -3240,7 +3421,9 @@ aliasing artifacts, even without oversampling.
 
 <img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-claude3_7sonnet-noupspl.png" alt="Spectrogram: Anthropic Claude 3.7 Sonnet No Upsampling (AI)" />
 
-The result: [sound-claude3_7sonnet-noupspl.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-claude3_7sonnet-noupspl.flac).
+ * Sound: [sound-claude3_7sonnet-noupspl.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-claude3_7sonnet-noupspl.flac),
+ * Average computation time: 0.061746s,
+ * Aliasing: loud.
 
 <a id="conv-o3mini-noupspl" href="#toc">Top</a>
 
@@ -3323,7 +3506,124 @@ aliasing under control.
 
 <img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-o3mini-noupspl.png" alt="Spectrogram: OpenAI o3-mini No Upsampling (AI)" />
 
-The result: [sound-o3mini-noupspl.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-o3mini-noupspl.flac).
+ * Sound: [sound-o3mini-noupspl.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-o3mini-noupspl.flac),
+ * Average computation time: 0.016400s,
+ * Aliasing: fail.
+
+<a id="conv-perplexity-noupspl" href="#toc">Top</a>
+
+#### Perplexity's Response
+
+##### Tasks
+
+ * Understanding the requirements for gain boosting and tanh
+   non-linearity in audio processing
+ * Researching state-of-the-art antialiasing methods for audio
+   processing without oversampling
+ * Implementing the distort function with gain boosting, tanh
+   non-linearity, and antialiasing
+ * Writing answer
+
+<a id="conv-perplexity-noupspl-response" href="#toc">Top</a>
+
+##### Response
+
+To implement the function that applies gain boosting and tanh
+non-linearity to an audio signal while minimizing aliasing without
+oversampling, you can use a combination of techniques. Since upsampling
+is not allowed, we'll focus on using a high-quality antialiasing filter
+that is CPU-friendly for real-time audio processing. However, for
+simplicity and efficiency, we'll use a basic approach to minimize
+aliasing by applying a simple low-pass filter after distortion. This
+won't be as effective as oversampling or more complex filtering
+techniques but will still help reduce aliasing.
+
+Here's how you can implement it:
+
+    import numpy as np
+    from scipy import signal
+    
+    def distort(samples, gain_db=14.0, sample_rate=44100.0, channels=2):
+        """
+        Applies gain boosting and tanh non-linearity to an audio signal.
+    
+        Parameters:
+        - samples: NumPy array of shape (N, channels) where N is the number of audio samples.
+        - gain_db: Gain to be applied in dB.
+        - sample_rate: Sampling rate of the audio signal.
+        - channels: Number of audio channels.
+    
+        Returns:
+        - distorted: Distorted audio signal.
+        """
+        # Convert gain from dB to linear scale
+        gain_linear = np.power(10.0, gain_db / 20.0)
+    
+        # Apply gain to the samples
+        amplified = samples * gain_linear
+    
+        # Apply tanh non-linearity
+        distorted = np.tanh(amplified)
+    
+        # Simple low-pass filtering to reduce aliasing
+        # This is a basic approach and might not be as effective as more complex methods
+        nyq = 0.5 * sample_rate
+        cutoff = 0.45 * nyq  # Adjust this value based on your needs
+        order = 5  # Order of the filter
+        normal_cutoff = cutoff / nyq
+        b, a = signal.butter(order, normal_cutoff, btype='low')
+        distorted_filtered = signal.lfilter(b, a, distorted, axis=0)
+    
+        return distorted_filtered
+    
+    # Example usage
+    if __name__ == "__main__":
+        # Generate a sample audio signal
+        sample_rate = 44100.0
+        t = np.linspace(0, 1, int(sample_rate), False)
+        signal = np.sin(2 * np.pi * 1000 * t)[:, np.newaxis]  # Mono signal
+    
+        # Apply distortion
+        distorted_signal = distort(signal, gain_db=14.0, sample_rate=sample_rate, channels=1)
+    
+        # Visualize or play the distorted signal
+        import matplotlib.pyplot as plt
+        plt.plot(distorted_signal)
+        plt.show()
+
+Notes:
+
+1. **Antialiasing**: The example uses a simple Butterworth low-pass
+   filter to reduce aliasing. This method is not as effective as more
+   complex techniques like oversampling or using more sophisticated
+   filters, but it's CPU-friendly and doesn't require upsampling.
+
+2. **Tanh Non-linearity**: The tanh function introduces non-linearity,
+   which can create harmonics and thus potentially aliasing. The
+   low-pass filter helps mitigate this.
+
+3. **Real-time Processing**: For real-time audio processing, ensure
+   that the filtering and distortion operations are performed within
+   the time constraints of your audio buffer size and processing loop.
+
+Future Improvements:
+
+ * **More Advanced Filtering**: Consider using more advanced filtering
+   techniques or libraries optimized for real-time audio processing.
+
+ * **Oversampling (if allowed)**: If upsampling becomes an option, it
+   would significantly improve the quality by allowing more precise
+   filtering before downsampling back to the original rate.
+
+<a id="result-perplexity-noupspl" href="#toc">Top</a>
+
+##### Result
+
+<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-perplexity-noupspl.png" alt="Spectrogram: Perplexity No Upsampling (AI)" />
+
+ * Sound: [sound-perplexity-noupspl.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-perplexity-noupspl.flac),
+ * Average computation time: 0.032577s,
+ * Aliasing: loud.
 
 <a id="prompt-adaa" href="#toc">Top</a>
 
@@ -3403,7 +3703,9 @@ or to support mono input (shape (`N`,)).
 
 <img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-adaa.png" alt="Spectrogram: OpenAI ChatGPT 4o ADAA (AI)" />
 
-The result: [sound-chatgpt4o-adaa.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-adaa.flac).
+ * Sound: [sound-chatgpt4o-adaa.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-chatgpt4o-adaa.flac),
+ * Average computation time: 0.056896s,
+ * Aliasing: inaudible.
 
 <a id="conv-r1-adaa" href="#toc">Top</a>
 
@@ -3485,7 +3787,9 @@ to audio signals.
 
 <img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-r1-adaa.png" alt="Spectrogram: DeepSeek R1 ADAA (AI)" />
 
-The result: [sound-r1-adaa.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-r1-adaa.flac).
+ * Sound: [sound-r1-adaa.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-r1-adaa.flac),
+ * Average computation time: 0.087023s,
+ * Aliasing: inaudible.
 
 <a id="conv-gemini2_5pro-adaa" href="#toc">Top</a>
 
@@ -3901,7 +4205,9 @@ Here's a thinking process to arrive at the Python code for the
 
 <img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-gemini2_5pro-adaa.png" alt="Spectrogram: Google Gemini 2.5 Pro ADAA (AI)" />
 
-The result: [sound-gemini2_5pro-adaa.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-gemini2_5pro-adaa.flac).
+ * Sound: [sound-gemini2_5pro-adaa.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-gemini2_5pro-adaa.flac),
+ * Average computation time: 0.075009s,
+ * Aliasing: inaudible.
 
 <a id="conv-claude3_7sonnet-adaa" href="#toc">Top</a>
 
@@ -3995,7 +4301,9 @@ detail?
 
 <img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-claude3_7sonnet-adaa.png" alt="Spectrogram: Anthropic Claude 3.7 Sonnet ADAA (AI)" />
 
-The result: [sound-claude3_7sonnet-adaa.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-claude3_7sonnet-adaa.flac).
+ * Sound: [sound-claude3_7sonnet-adaa.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-claude3_7sonnet-adaa.flac),
+ * Average computation time: 0.053061s,
+ * Aliasing: inaudible.
 
 <a id="conv-o3mini-adaa" href="#toc">Top</a>
 
@@ -4069,7 +4377,81 @@ helps keep aliasing in check when applying distortion.
 
 <img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-o3mini-adaa.png" alt="Spectrogram: OpenAI o3-mini ADAA (AI)" />
 
-The result: [sound-o3mini-adaa.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-o3mini-adaa.flac).
+ * Sound: [sound-o3mini-adaa.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-o3mini-adaa.flac),
+ * Average computation time: 0.041064s,
+ * Aliasing: inaudible.
+
+<a id="conv-perplexity-adaa" href="#toc">Top</a>
+
+#### Perplexity's Response
+
+##### Tasks
+
+ * Understanding the requirements for implementing the distort function
+   with gain boosting and tanh non-linearity while minimizing aliasing
+
+ * Writing answer
+
+<a id="conv-perplexity-adaa-response" href="#toc">Top</a>
+
+##### Response
+
+To implement the function with gain boosting and tanh non-linearity
+while minimizing aliasing using 1st order ADAA (Anti-Aliasing
+Algorithm), you can follow these steps. The ADAA will be approximated
+by applying a simple low-pass filter after the distortion process.
+Here's how you can do it:
+
+    import numpy as np
+    from scipy import signal
+    
+    def distort(samples, gain_db=14.0, sample_rate=44100.0, channels=2):
+        # Convert gain from dB to linear scale
+        gain_linear = np.power(10.0, gain_db / 20.0)
+        
+        # Apply gain to the samples
+        amplified = samples * gain_linear
+        
+        # Apply tanh non-linearity
+        distorted = np.tanh(amplified)
+        
+        # Simple low-pass filtering to reduce aliasing (1st order ADAA approximation)
+        # Design a low-pass filter with a cutoff frequency at about 20 kHz
+        nyq = 0.5 * sample_rate
+        cutoff = 20000.0
+        normal_cutoff = cutoff / nyq
+        b, a = signal.butter(1, normal_cutoff, btype='low')
+        
+        # Apply the filter to each channel
+        distorted_filtered = np.zeros_like(distorted)
+        for channel in range(channels):
+            distorted_filtered[:, channel] = signal.filtfilt(b, a, distorted[:, channel])
+        
+        return distorted_filtered
+
+This implementation first amplifies the signal by the specified gain,
+applies the tanh non-linearity, and then uses a simple Butterworth
+low-pass filter to reduce aliasing. Note that while this approach helps
+minimize aliasing, it's a basic approximation and might not fully
+eliminate it depending on the specific audio signal and gain applied.
+
+Also, keep in mind that the `filtfilt` function is used here for
+simplicity and to ensure zero-phase distortion, which is important for
+maintaining the original signal's phase characteristics. However, it
+involves filtering the signal twice (forward and backward), which can
+be computationally expensive for large signals. For real-time
+applications or very large datasets, you might need to consider more
+efficient filtering methods or optimizations.
+
+<a id="result-perplexity-adaa" href="#toc">Top</a>
+
+##### Result
+
+<img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-perplexity-adaa.png" alt="Spectrogram: Perplexity ADAA (AI)" />
+
+ * Sound: [sound-perplexity-adaa.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-perplexity-adaa.flac),
+ * Average computation time: 0.040740s,
+ * Aliasing: fail.
 
 <a id="manual-adaa" href="#toc">Top</a>
 
@@ -4115,8 +4497,9 @@ The result: [sound-o3mini-adaa.flac](https://attilammagyar.github.io/toys/llm-vs
 
 <img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-manual-adaa.png" alt="Spectrogram: Manual ADAA Implementation (human)" />
 
-The result: [sound-manual-adaa.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-manual-adaa.flac).
-
+ * Sound: [sound-manual-adaa.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-manual-adaa.flac),
+ * Average computation time: 0.025713s,
+ * Aliasing: inaudible.
 
 <a id="manual-adaa-improved" href="#toc">Top</a>
 
@@ -4162,6 +4545,8 @@ The result: [sound-manual-adaa.flac](https://attilammagyar.github.io/toys/llm-vs
 
 <img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-manual-adaa-improved.png" alt="Spectrogram: Improved Manual ADAA Implementation (human + ideas from AI)" />
 
-The result: [sound-manual-adaa-improved.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-manual-adaa-improved.flac).
+ * Sound: [sound-manual-adaa-improved.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-manual-adaa-improved.flac),
+ * Average computation time: 0.024866s,
+ * Aliasing: inaudible.
 
 <a href="#toc">Top</a>

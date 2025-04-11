@@ -21,38 +21,44 @@ SAMPLE_NORM = 32767.0
 
 def main():
     input_filename = "sound.wav"
+    aliasing_classes = ["none", "inaudible", "loud", "fail", "???"]
+    # Aliasing classes were determined by manual evaluation of the
+    # generated sounds.
     experiments = (
-        ("chatgpt4o-adaa", "OpenAI ChatGPT 4o ADAA (AI)", 100, distort_chatgpt4o_adaa),
-        ("chatgpt4o-c1p1", "OpenAI ChatGPT 4o Conversation 1 Prompt 1 (AI)", 100, distort_chatgpt4o_c1p1),
-        ("chatgpt4o-c1p2", "OpenAI ChatGPT 4o Conversation 1 Prompt 2 (AI)", 100, distort_chatgpt4o_c1p2),
-        ("chatgpt4o-c1p4", "OpenAI ChatGPT 4o Conversation 1 Prompt 4 (AI)", 100, distort_chatgpt4o_c1p4),
-        ("chatgpt4o-c1p5", "OpenAI ChatGPT 4o Conversation 1 Prompt 5 (AI)", 10, distort_chatgpt4o_c1p5),
-        ("chatgpt4o-c1p7", "OpenAI ChatGPT 4o Conversation 1 Prompt 7 (AI)", 100, distort_chatgpt4o_c1p7),
-        ("chatgpt4o-c2p1", "OpenAI ChatGPT 4o Conversation 2 Prompt 1 (AI)", 100, distort_chatgpt4o_c2p1),
-        ("chatgpt4o-unspectechnique", "OpenAI ChatGPT 4o Unspecified Technique (AI)", 100, distort_chatgpt4o_unspectechnique),
-        ("chatgpt4o-noupspl", "OpenAI ChatGPT 4o No Upsampling (AI)", 100, distort_chatgpt4o_noupspl),
-        ("gemini2_5pro-adaa", "Google Gemini 2.5 Pro ADAA (AI)", 100, distort_gemini2_5pro_adaa),
-        ("gemini2_5pro-unspectechnique", "Google Gemini 2.5 Pro Unspecified Technique (AI)", 100, distort_gemini2_5pro_unspectechnique),
-        ("gemini2_5pro-noupspl", "Google Gemini 2.5 Pro No Upsampling (AI)", 100, distort_gemini2_5pro_noupspl),
-        ("manual-adaa", "Manual ADAA Implementation (human)", 100, distort_manual_adaa),
-        ("manual-adaa-improved", "Improved Manual ADAA Implementation (human + ideas from AI)", 100, distort_manual_adaa_improved),
-        ("r1-adaa", "DeepSeek R1 ADAA (AI)", 100, distort_r1_adaa),
-        ("r1-unspectechnique", "DeepSeek R1 Unspecified Technique (AI)", 100, distort_r1_unspectechnique),
-        ("r1-noupspl", "DeepSeek R1 No Upsampling (AI)", 100, distort_r1_noupspl),
-        ("claude3_7sonnet-unspectechnique", "Anthropic Claude 3.7 Sonnet Unspecified Technique (AI)", 100, distort_claude3_7sonnet_unspectechnique),
-        ("claude3_7sonnet-noupspl", "Anthropic Claude 3.7 Sonnet No Upsampling (AI)", 100, distort_claude3_7sonnet_noupspl),
-        ("claude3_7sonnet-adaa", "Anthropic Claude 3.7 Sonnet ADAA (AI)", 100, distort_claude3_7sonnet_adaa),
-        ("o3mini-unspectechnique", "OpenAI o3-mini Unspecified Technique (AI)", 100, distort_o3mini_unspectechnique),
-        ("o3mini-noupspl", "OpenAI o3-mini No Upsampling (AI)", 100, distort_o3mini_noupspl),
-        ("o3mini-adaa", "OpenAI o3-mini ADAA (AI)", 100, distort_o3mini_adaa),
+        ("chatgpt4o-adaa", "OpenAI ChatGPT 4o ADAA (AI)", 100, distort_chatgpt4o_adaa, 1),
+        ("chatgpt4o-c1p1", "OpenAI ChatGPT 4o Conversation 1 Prompt 1 (AI)", 100, distort_chatgpt4o_c1p1, 2),
+        ("chatgpt4o-c1p2", "OpenAI ChatGPT 4o Conversation 1 Prompt 2 (AI)", 100, distort_chatgpt4o_c1p2, 2),
+        ("chatgpt4o-c1p4", "OpenAI ChatGPT 4o Conversation 1 Prompt 4 (AI)", 100, distort_chatgpt4o_c1p4, 1),
+        ("chatgpt4o-c1p5", "OpenAI ChatGPT 4o Conversation 1 Prompt 5 (AI)", 10, distort_chatgpt4o_c1p5, 3),
+        ("chatgpt4o-c1p7", "OpenAI ChatGPT 4o Conversation 1 Prompt 7 (AI)", 100, distort_chatgpt4o_c1p7, 2),
+        ("chatgpt4o-c2p1", "OpenAI ChatGPT 4o Conversation 2 Prompt 1 (AI)", 100, distort_chatgpt4o_c2p1, 2),
+        ("chatgpt4o-unspectechnique", "OpenAI ChatGPT 4o Unspecified Technique (AI)", 100, distort_chatgpt4o_unspectechnique, 0),
+        ("chatgpt4o-noupspl", "OpenAI ChatGPT 4o No Upsampling (AI)", 100, distort_chatgpt4o_noupspl, 2),
+        ("gemini2_5pro-adaa", "Google Gemini 2.5 Pro ADAA (AI)", 100, distort_gemini2_5pro_adaa, 1),
+        ("gemini2_5pro-unspectechnique", "Google Gemini 2.5 Pro Unspecified Technique (AI)", 100, distort_gemini2_5pro_unspectechnique, 0),
+        ("gemini2_5pro-noupspl", "Google Gemini 2.5 Pro No Upsampling (AI)", 100, distort_gemini2_5pro_noupspl, 2),
+        ("manual-adaa", "Manual ADAA Implementation (human)", 100, distort_manual_adaa, 1),
+        ("manual-adaa-improved", "Improved Manual ADAA Implementation (human + ideas from AI)", 100, distort_manual_adaa_improved, 1),
+        ("r1-adaa", "DeepSeek R1 ADAA (AI)", 100, distort_r1_adaa, 1),
+        ("r1-unspectechnique", "DeepSeek R1 Unspecified Technique (AI)", 100, distort_r1_unspectechnique, 2),
+        ("r1-noupspl", "DeepSeek R1 No Upsampling (AI)", 100, distort_r1_noupspl, 2),
+        ("claude3_7sonnet-unspectechnique", "Anthropic Claude 3.7 Sonnet Unspecified Technique (AI)", 100, distort_claude3_7sonnet_unspectechnique, 0),
+        ("claude3_7sonnet-noupspl", "Anthropic Claude 3.7 Sonnet No Upsampling (AI)", 100, distort_claude3_7sonnet_noupspl, 2),
+        ("claude3_7sonnet-adaa", "Anthropic Claude 3.7 Sonnet ADAA (AI)", 100, distort_claude3_7sonnet_adaa, 1),
+        ("o3mini-unspectechnique", "OpenAI o3-mini Unspecified Technique (AI)", 100, distort_o3mini_unspectechnique, 0),
+        ("o3mini-noupspl", "OpenAI o3-mini No Upsampling (AI)", 100, distort_o3mini_noupspl, 3),
+        ("o3mini-adaa", "OpenAI o3-mini ADAA (AI)", 100, distort_o3mini_adaa, 1),
+        ("perplexity-unspectechnique", "Perplexity Unspecified Technique (AI)", 100, distort_perplexity_unspectechnique, 2),
+        ("perplexity-noupspl", "Perplexity No Upsampling (AI)", 100, distort_perplexity_noupspl, 2),
+        ("perplexity-adaa", "Perplexity ADAA (AI)", 100, distort_perplexity_adaa, 3),
     )
     input_samples = read_wav(input_filename)
     results = []
 
-    for experiment_name, experiment_title, repeats, distortion_func in experiments:
+    for experiment_name, experiment_title, repeats, distortion_func, aliasing_cls in experiments:
         print(f"Running {experiment_name}...", file=sys.stderr)
         duration = run_test(input_samples.copy(), experiment_name, repeats, distortion_func)
-        results.append((experiment_name, experiment_title, duration / repeats))
+        results.append((experiment_name, experiment_title, duration / repeats, aliasing_cls))
 
     print(
         """\
@@ -68,13 +74,13 @@ def main():
 """
     )
 
-    for experiment_name, experiment_title, avg_duration in sorted(results, key=lambda r: r[2]):
+    for experiment_name, experiment_title, avg_duration, aliasing_cls in sorted(results, key=lambda r: r[2]):
         print(
             f"""\
     <tr>
       <td><a href="#result-{experiment_name}">{experiment_title}</a></td>
       <td>{avg_duration:.6f} s</td>
-      <td></td>
+      <td>{aliasing_classes[aliasing_cls]}</td>
     </tr>\
 """
         )
@@ -85,7 +91,12 @@ def main():
 """
     )
 
-    for experiment_name, experiment_title, _ in results:
+    for experiment_name, experiment_title, avg_duration, aliasing_cls in sorted(results, key=lambda r: r[2]):
+        print(f" * {avg_duration:.6f}s, aliasing: {aliasing_classes[aliasing_cls]} - {experiment_title},")
+
+    print("")
+
+    for experiment_name, experiment_title, avg_duration, aliasing_cls in results:
         print(f"""\
 <a id="result-{experiment_name}" href="#toc">Top</a>
 
@@ -93,7 +104,9 @@ def main():
 
 <img src="https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-{experiment_name}.png" alt="Spectrogram: {experiment_title}" />
 
-The result: [sound-{experiment_name}.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-{experiment_name}.flac).
+ * Sound: [sound-{experiment_name}.flac](https://attilammagyar.github.io/toys/llm-vs-dsp-programming/sound-{experiment_name}.flac),
+ * Average computation time: {avg_duration:.6f}s,
+ * Aliasing: {aliasing_classes[aliasing_cls]}.
 """)
 
 
@@ -1158,6 +1171,101 @@ def distort_o3mini_adaa(samples, gain_db, sample_rate, channels):
     distorted[1:] = ratio
 
     return distorted
+
+
+def distort_perplexity_unspectechnique(samples, gain_db, sample_rate, channels):
+    """
+    Applies gain boosting and tanh non-linearity to an audio signal while minimizing aliasing.
+
+    Parameters:
+    - samples: NumPy array of shape (N, channels) representing the audio signal.
+    - gain_db: Gain in decibels to apply to the signal.
+    - sample_rate: Sampling rate of the audio signal.
+    - channels: Number of audio channels.
+
+    Returns:
+    - distorted: The distorted audio signal.
+    """
+    distorted = np.zeros_like(samples)
+
+    # Convert gain from dB to linear scale
+    gain = 10 ** (gain_db / 20.0)
+
+    # Apply gain to the samples
+    boosted = samples * gain
+
+    # Apply tanh non-linearity
+    non_linear = np.tanh(boosted)
+
+    # Design a low-pass filter to minimize aliasing
+    nyquist = 0.5 * sample_rate
+    cutoff = nyquist / 2  # Set cutoff frequency to half of Nyquist frequency
+    b, a = butter(4, cutoff / nyquist, btype='low')
+
+    # Apply the low-pass filter to each channel
+    for ch in range(channels):
+        distorted[:, ch] = lfilter(b, a, non_linear[:, ch])
+
+    return distorted
+
+
+def distort_perplexity_noupspl(samples, gain_db, sample_rate, channels):
+    """
+    Applies gain boosting and tanh non-linearity to an audio signal.
+
+    Parameters:
+    - samples: NumPy array of shape (N, channels) where N is the number of audio samples.
+    - gain_db: Gain to be applied in dB.
+    - sample_rate: Sampling rate of the audio signal.
+    - channels: Number of audio channels.
+
+    Returns:
+    - distorted: Distorted audio signal.
+    """
+    # Convert gain from dB to linear scale
+    gain_linear = np.power(10.0, gain_db / 20.0)
+
+    # Apply gain to the samples
+    amplified = samples * gain_linear
+
+    # Apply tanh non-linearity
+    distorted = np.tanh(amplified)
+
+    # Simple low-pass filtering to reduce aliasing
+    # This is a basic approach and might not be as effective as more complex methods
+    nyq = 0.5 * sample_rate
+    cutoff = 0.45 * nyq  # Adjust this value based on your needs
+    order = 5  # Order of the filter
+    normal_cutoff = cutoff / nyq
+    b, a = signal.butter(order, normal_cutoff, btype='low')
+    distorted_filtered = signal.lfilter(b, a, distorted, axis=0)
+
+    return distorted_filtered
+
+
+def distort_perplexity_adaa(samples, gain_db, sample_rate, channels):
+    # Convert gain from dB to linear scale
+    gain_linear = np.power(10.0, gain_db / 20.0)
+
+    # Apply gain to the samples
+    amplified = samples * gain_linear
+
+    # Apply tanh non-linearity
+    distorted = np.tanh(amplified)
+
+    # Simple low-pass filtering to reduce aliasing (1st order ADAA approximation)
+    # Design a low-pass filter with a cutoff frequency at about 20 kHz
+    nyq = 0.5 * sample_rate
+    cutoff = 20000.0
+    normal_cutoff = cutoff / nyq
+    b, a = signal.butter(1, normal_cutoff, btype='low')
+
+    # Apply the filter to each channel
+    distorted_filtered = np.zeros_like(distorted)
+    for channel in range(channels):
+        distorted_filtered[:, channel] = signal.filtfilt(b, a, distorted[:, channel])
+
+    return distorted_filtered
 
 
 if __name__ == "__main__":
