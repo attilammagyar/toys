@@ -468,7 +468,7 @@ script in this repository.
    [Memory](https://www.perplexity.ai/help-center/en/articles/10968016-memory)
    feature, but after the first version of the case study went online
    on GitHub. Though, since it contains several good contenders for the
-   best implementation, it is unlikely that it had an influence on the
+   best implementation, it is unlikely that it had any influence on the
    model's responses.)
 
 Conclusion
