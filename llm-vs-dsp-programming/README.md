@@ -421,8 +421,6 @@ script in this repository.
   </tbody>
 </table>
 
-<a id="conclusion" href="#toc">Top</a>
-
 <a id="mistakes" href="#toc">Top</a>
 
 ### Stupid Mistakes
@@ -470,6 +468,8 @@ script in this repository.
    on GitHub. Though, since it contains several good contenders for the
    best implementation, it is unlikely that it had any influence on the
    model's responses.)
+
+<a id="conclusion" href="#toc">Top</a>
 
 Conclusion
 ----------
