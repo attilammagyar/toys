@@ -181,10 +181,10 @@ following popular LLMs:
 
  * [OpenAI ChatGPT 4o](https://openai.com/index/hello-gpt-4o),
  * [DeepSeek R1](https://www.deepseek.com/),
- * [Google Gemini 2.5 Pro](https://gemini.google.com/).
- * [Anthropic Claude 3.7 Sonnet](https://claude.ai/)
- * [OpenAI o3-mini](https://openai.com/index/openai-o3-mini/)
- * [Perplexity](https://www.perplexity.ai)\*
+ * [Google Gemini 2.5 Pro](https://gemini.google.com/),
+ * [Anthropic Claude 3.7 Sonnet](https://claude.ai/),
+ * [OpenAI o3-mini](https://openai.com/index/openai-o3-mini/),
+ * [Perplexity](https://www.perplexity.ai)\*.
 
 \*The responses from Perplexity were generated with the 3 Pro searches
 available in the free subscription, before the wider availability of
