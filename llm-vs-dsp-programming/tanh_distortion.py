@@ -51,6 +51,10 @@ def main():
         ("perplexity-unspectechnique", "Perplexity Unspecified Technique (AI)", 100, distort_perplexity_unspectechnique, 2),
         ("perplexity-noupspl", "Perplexity No Upsampling (AI)", 100, distort_perplexity_noupspl, 2),
         ("perplexity-adaa", "Perplexity ADAA (AI)", 100, distort_perplexity_adaa, 3),
+        ("llama4-unspectechnique", "Meta Llama 4 Unspecified Technique (AI)", 100, distort_llama4_unspectechnique, 0),
+        ("llama4-noupspl", "Meta Llama 4 No Upsampling (AI)", 100, distort_llama4_noupspl, 2),
+        ("llama4-adaa", "Meta Llama 4 ADAA (AI)", 100, distort_llama4_adaa, 3),
+        ("llama4-adaa-simpl", "Meta Llama 4 ADAA simplified (AI)", 100, distort_llama4_adaa_simplified, 2),
     )
     input_samples = read_wav(input_filename)
     results = []
@@ -1266,6 +1270,143 @@ def distort_perplexity_adaa(samples, gain_db, sample_rate, channels):
         distorted_filtered[:, channel] = signal.filtfilt(b, a, distorted[:, channel])
 
     return distorted_filtered
+
+
+def distort_llama4_unspectechnique(samples, gain_db, sample_rate, channels):
+    """
+    Applies gain boosting and tanh non-linearity to an audio signal while keeping aliasing to a minimum.
+
+    Parameters:
+    samples (numpy array): Audio signal with shape (N, channels) where N is the number of samples.
+    gain_db (float): Gain to be applied in dB. Defaults to 14.0.
+    sample_rate (float): Sampling rate of the audio signal. Defaults to 44100.0.
+    channels (int): Number of audio channels. Defaults to 2.
+
+    Returns:
+    distorted (numpy array): Distorted audio signal with the same shape as the input.
+    """
+
+    # Calculate gain factor from dB
+    gain = np.power(10.0, gain_db / 20.0)
+
+    # Define oversampling factor
+    oversampling_factor = 4
+
+    # Resample the signal to a higher rate
+    samples_oversampled = resample_poly(samples, oversampling_factor, 1, axis=0)
+
+    # Apply gain and tanh non-linearity
+    distorted_oversampled = np.tanh(samples_oversampled * gain)
+
+    # Downsample the distorted signal back to the original rate
+    distorted = resample_poly(distorted_oversampled, 1, oversampling_factor, axis=0)
+
+    # Ensure the output has the same shape and dtype as the input
+    distorted = distorted[:samples.shape[0], :]  # Trim any extra samples
+    distorted = distorted.astype(samples.dtype)
+
+    return distorted
+
+
+def distort_llama4_noupspl(samples, gain_db, sample_rate, channels):
+    """
+    Applies gain boosting and tanh non-linearity to an audio signal.
+
+    Parameters:
+    samples (numpy array): Audio samples of shape (N, channels) with float32 values.
+    gain_db (float): Gain to be applied in dB. Defaults to 14.0.
+    sample_rate (float): Sampling rate of the audio signal. Defaults to 44100.0.
+    channels (int): Number of audio channels. Defaults to 2.
+
+    Returns:
+    distorted (numpy array): Distorted audio samples.
+    """
+
+    # Calculate the gain factor from dB
+    gain = np.power(10.0, gain_db / 20.0)
+
+    # Apply gain boost
+    boosted_samples = samples * gain
+
+    # Apply tanh non-linearity (soft clipping)
+    distorted = np.tanh(boosted_samples)
+
+    # Normalize the output to prevent excessive loudness
+    normalization_factor = 1.0 / np.max(np.abs(distorted))
+    distorted *= normalization_factor * 0.9  # Leave some headroom
+
+    return distorted
+
+
+def distort_llama4_adaa(samples, gain_db, sample_rate, channels):
+    """
+    Applies gain boosting and tanh non-linearity to an audio signal while keeping aliasing to a minimum.
+
+    Parameters:
+    samples (numpy array): Input audio signal with shape (N, channels)
+    gain_db (float): Gain to be applied in dB (default: 14.0)
+    sample_rate (float): Sampling rate (default: 44100.0)
+    channels (int): Number of audio channels (default: 2)
+
+    Returns:
+    distorted (numpy array): Distorted audio signal with shape (N, channels)
+    """
+    distorted = np.zeros_like(samples)
+
+    # Convert gain from dB to linear
+    gain = np.power(10.0, gain_db / 20.0)
+
+    # Apply gain
+    samples_gained = samples * gain
+
+    # 1st order ADAA (Antiderivative Anti-Aliasing)
+    # Calculate the antiderivative of the tanh function
+    antiderivative = np.log(np.cosh(samples_gained))
+
+    # Calculate the derivative of the input signal
+    derivative = np.gradient(samples_gained, axis=0)
+
+    # Apply the non-linearity using ADAA
+    distorted = np.tanh(samples_gained) - (1.0 / gain) * derivative * (np.tanh(samples_gained) - (antiderivative / samples_gained))
+
+    # Simplify the ADAA formula by removing the division by samples_gained
+    # when samples_gained is close to zero to avoid division by zero
+    mask = np.abs(samples_gained) < 1e-6
+    distorted[mask] = np.tanh(samples_gained[mask]) - (1.0 / gain) * derivative[mask] * (samples_gained[mask] / 3.0)
+
+    distorted[~mask] = np.tanh(samples_gained[~mask]) - (1.0 / gain) * derivative[~mask] * ((np.tanh(samples_gained[~mask]) / samples_gained[~mask]) - (np.log(np.cosh(samples_gained[~mask])) / (samples_gained[~mask] ** 2)))
+
+    return distorted
+
+
+def distort_llama4_adaa_simplified(samples, gain_db, sample_rate, channels):
+    """
+    Applies gain boosting and tanh non-linearity to an audio signal while keeping aliasing to a minimum.
+
+    Parameters:
+    samples (numpy array): Input audio signal with shape (N, channels)
+    gain_db (float): Gain to be applied in dB (default: 14.0)
+    sample_rate (float): Sampling rate (default: 44100.0)
+    channels (int): Number of audio channels (default: 2)
+
+    Returns:
+    distorted (numpy array): Distorted audio signal with shape (N, channels)
+    """
+    # Convert gain from dB to linear
+    gain = np.power(10.0, gain_db / 20.0)
+
+    # Apply gain and tanh non-linearity with ADAA
+    derivative = np.gradient(samples, axis=0)
+    distorted = np.tanh(samples * gain) - (1.0 / gain) * derivative * (np.tanh(samples * gain) / (samples * gain) - np.log(np.cosh(samples * gain)) / ((samples * gain) ** 2))
+
+    # Simplify the ADAA formula by removing the division by samples
+    # when samples is close to zero to avoid division by zero
+    mask = np.abs(samples) < 1e-6
+    distorted[mask] = np.tanh(samples[mask] * gain) - (1.0 / gain) * derivative[mask] * (samples[mask] * gain / 3.0)
+
+    distorted[~mask] = np.tanh(samples[~mask] * gain) - (1.0 / gain) * derivative[~mask] * ((np.tanh(samples[~mask] * gain) / (samples[~mask] * gain)) - (np.log(np.cosh(samples[~mask] * gain)) / ((samples[~mask] * gain) ** 2)))
+
+    return distorted
 
 
 if __name__ == "__main__":
