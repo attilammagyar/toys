@@ -130,7 +130,11 @@ def run_test(input_samples, experiment_name, repeats, distortion_func):
 
     assert distorted_samples.shape == input_samples.shape, f"Shape mismatch: {experiment_name=}, {input_samples.shape=}, {distorted_samples.shape=}"
 
-    distorted_samples /= np.max(np.abs(distorted_samples))
+    norm = np.max(np.abs(distorted_samples))
+
+    if norm > 1e-6:
+        distorted_samples /= norm
+
     output_filename = f"sound-{experiment_name}.wav"
     write_wav(output_filename, np.clip(distorted_samples, -1.0, 1.0))
 
