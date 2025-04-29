@@ -20,48 +20,53 @@ SAMPLE_NORM = 32767.0
 
 
 def main():
-    input_filename = "sound.wav"
     aliasing_classes = ["none", "inaudible", "loud", "fail", "???"]
     # Aliasing classes were determined by manual evaluation of the
     # generated sounds.
     experiments = (
-        ("chatgpt4o-adaa", "OpenAI ChatGPT 4o ADAA (AI)", 100, distort_chatgpt4o_adaa, 1),
         ("chatgpt4o-c1p1", "OpenAI ChatGPT 4o Conversation 1 Prompt 1 (AI)", 100, distort_chatgpt4o_c1p1, 2),
         ("chatgpt4o-c1p2", "OpenAI ChatGPT 4o Conversation 1 Prompt 2 (AI)", 100, distort_chatgpt4o_c1p2, 2),
         ("chatgpt4o-c1p4", "OpenAI ChatGPT 4o Conversation 1 Prompt 4 (AI)", 100, distort_chatgpt4o_c1p4, 1),
         ("chatgpt4o-c1p5", "OpenAI ChatGPT 4o Conversation 1 Prompt 5 (AI)", 10, distort_chatgpt4o_c1p5, 3),
         ("chatgpt4o-c1p7", "OpenAI ChatGPT 4o Conversation 1 Prompt 7 (AI)", 100, distort_chatgpt4o_c1p7, 2),
+
         ("chatgpt4o-c2p1", "OpenAI ChatGPT 4o Conversation 2 Prompt 1 (AI)", 100, distort_chatgpt4o_c2p1, 2),
+
         ("chatgpt4o-unspectechnique", "OpenAI ChatGPT 4o Unspecified Technique (AI)", 100, distort_chatgpt4o_unspectechnique, 0),
-        ("chatgpt4o-noupspl", "OpenAI ChatGPT 4o No Upsampling (AI)", 100, distort_chatgpt4o_noupspl, 2),
-        ("gemini2_5pro-adaa", "Google Gemini 2.5 Pro ADAA (AI)", 100, distort_gemini2_5pro_adaa, 1),
-        ("gemini2_5pro-unspectechnique", "Google Gemini 2.5 Pro Unspecified Technique (AI)", 100, distort_gemini2_5pro_unspectechnique, 0),
-        ("gemini2_5pro-noupspl", "Google Gemini 2.5 Pro No Upsampling (AI)", 100, distort_gemini2_5pro_noupspl, 2),
-        ("manual-adaa", "Manual ADAA Implementation (human)", 100, distort_manual_adaa, 1),
-        ("manual-adaa-improved", "Improved Manual ADAA Implementation (human + ideas from AI)", 100, distort_manual_adaa_improved, 1),
-        ("r1-adaa", "DeepSeek R1 ADAA (AI)", 100, distort_r1_adaa, 1),
         ("r1-unspectechnique", "DeepSeek R1 Unspecified Technique (AI)", 100, distort_r1_unspectechnique, 2),
-        ("r1-noupspl", "DeepSeek R1 No Upsampling (AI)", 100, distort_r1_noupspl, 2),
+        ("gemini2_5pro-unspectechnique", "Google Gemini 2.5 Pro Unspecified Technique (AI)", 100, distort_gemini2_5pro_unspectechnique, 0),
         ("claude3_7sonnet-unspectechnique", "Anthropic Claude 3.7 Sonnet Unspecified Technique (AI)", 100, distort_claude3_7sonnet_unspectechnique, 0),
-        ("claude3_7sonnet-noupspl", "Anthropic Claude 3.7 Sonnet No Upsampling (AI)", 100, distort_claude3_7sonnet_noupspl, 2),
-        ("claude3_7sonnet-adaa", "Anthropic Claude 3.7 Sonnet ADAA (AI)", 100, distort_claude3_7sonnet_adaa, 1),
         ("o3mini-unspectechnique", "OpenAI o3-mini Unspecified Technique (AI)", 100, distort_o3mini_unspectechnique, 0),
-        ("o3mini-noupspl", "OpenAI o3-mini No Upsampling (AI)", 100, distort_o3mini_noupspl, 3),
-        ("o3mini-adaa", "OpenAI o3-mini ADAA (AI)", 100, distort_o3mini_adaa, 1),
         ("perplexity-unspectechnique", "Perplexity Unspecified Technique (AI)", 100, distort_perplexity_unspectechnique, 2),
-        ("perplexity-noupspl", "Perplexity No Upsampling (AI)", 100, distort_perplexity_noupspl, 2),
-        ("perplexity-adaa", "Perplexity ADAA (AI)", 100, distort_perplexity_adaa, 3),
         ("llama4-unspectechnique", "Meta Llama 4 Unspecified Technique (AI)", 100, distort_llama4_unspectechnique, 0),
+
+        ("chatgpt4o-noupspl", "OpenAI ChatGPT 4o No Upsampling (AI)", 100, distort_chatgpt4o_noupspl, 2),
+        ("r1-noupspl", "DeepSeek R1 No Upsampling (AI)", 100, distort_r1_noupspl, 2),
+        ("gemini2_5pro-noupspl", "Google Gemini 2.5 Pro No Upsampling (AI)", 100, distort_gemini2_5pro_noupspl, 2),
+        ("claude3_7sonnet-noupspl", "Anthropic Claude 3.7 Sonnet No Upsampling (AI)", 100, distort_claude3_7sonnet_noupspl, 2),
+        ("o3mini-noupspl", "OpenAI o3-mini No Upsampling (AI)", 100, distort_o3mini_noupspl, 3),
+        ("perplexity-noupspl", "Perplexity No Upsampling (AI)", 100, distort_perplexity_noupspl, 2),
         ("llama4-noupspl", "Meta Llama 4 No Upsampling (AI)", 100, distort_llama4_noupspl, 2),
+
+        ("chatgpt4o-adaa", "OpenAI ChatGPT 4o ADAA (AI)", 100, distort_chatgpt4o_adaa, 1),
+        ("r1-adaa", "DeepSeek R1 ADAA (AI)", 100, distort_r1_adaa, 1),
+        ("gemini2_5pro-adaa", "Google Gemini 2.5 Pro ADAA (AI)", 100, distort_gemini2_5pro_adaa, 1),
+        ("claude3_7sonnet-adaa", "Anthropic Claude 3.7 Sonnet ADAA (AI)", 100, distort_claude3_7sonnet_adaa, 1),
+        ("o3mini-adaa", "OpenAI o3-mini ADAA (AI)", 100, distort_o3mini_adaa, 1),
+        ("perplexity-adaa", "Perplexity ADAA (AI)", 100, distort_perplexity_adaa, 3),
         ("llama4-adaa", "Meta Llama 4 ADAA (AI)", 100, distort_llama4_adaa, 3),
         ("llama4-adaa-simpl", "Meta Llama 4 ADAA simplified (AI)", 100, distort_llama4_adaa_simplified, 2),
+
+        ("manual-adaa", "Manual ADAA Implementation (human)", 100, distort_manual_adaa, 1),
+        ("manual-adaa-improved", "Improved Manual ADAA Implementation (human + ideas from AI)", 100, distort_manual_adaa_improved, 1),
+        ("manual-adaa-improved2", "Improved Manual ADAA Implementation (human + ideas from AI + further optimizations)", 100, distort_manual_adaa_improved2, 1),
     )
-    input_samples = read_wav(input_filename)
+    input_samples = read_wav("sound.wav")
     results = []
 
     for experiment_name, experiment_title, repeats, distortion_func, aliasing_cls in experiments:
         print(f"Running {experiment_name}...", file=sys.stderr)
-        duration = run_test(input_samples.copy(), experiment_name, repeats, distortion_func)
+        duration = run_test(input_samples.copy(), experiment_name, repeats, distortion_func, "sound-{}.wav")
         results.append((experiment_name, experiment_title, duration / repeats, aliasing_cls))
 
     print(
@@ -115,7 +120,7 @@ def main():
 
 
 
-def run_test(input_samples, experiment_name, repeats, distortion_func):
+def run_test(input_samples, experiment_name, repeats, distortion_func, output_filename_tpl=None):
     begin = time.time()
 
     for i in range(repeats):
@@ -135,8 +140,8 @@ def run_test(input_samples, experiment_name, repeats, distortion_func):
     if norm > 1e-6:
         distorted_samples /= norm
 
-    output_filename = f"sound-{experiment_name}.wav"
-    write_wav(output_filename, np.clip(distorted_samples, -1.0, 1.0))
+    if output_filename_tpl is not None:
+        write_wav(output_filename_tpl.format(experiment_name), np.clip(distorted_samples, -1.0, 1.0))
 
     return end - begin
 
@@ -664,6 +669,26 @@ def distort_manual_adaa_improved(samples, gain_db, sample_rate, channels):
     distorted_samples[deltas_too_small] = f(samples[deltas_too_small])
 
     return distorted_samples
+
+
+def distort_manual_adaa_improved2(samples, gain_db, sample_rate, channels):
+    x = samples * db_to_linear(gain_db)
+
+    dx = x.copy()
+    dx[1:] -= x[:-1]
+
+    dx_too_small = np.abs(dx) < 1e-7
+
+    y = np.log(np.cosh(x))
+    y[1:] -= y[:-1]
+    y[0] -= np.log(np.cosh(0.0))
+
+    y[dx_too_small] = np.tanh(x[dx_too_small])
+    dx[dx_too_small] = 1.0
+
+    y /= dx
+
+    return y
 
 
 def distort_r1_adaa(samples, gain_db, sample_rate, channels):
