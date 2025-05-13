@@ -33,6 +33,7 @@ TARGETS = \
 	./ann/ann_notes.pdf \
 	./calcle/index.html \
 	./chimp-mem-game/index.html \
+	./csv6d/index.html \
 	./flashcards/index.html \
 	./js-80/index.html \
 	./kanji-practice/index.html \
@@ -61,6 +62,12 @@ clean:
 		./chimp-mem-game/src/chimp-mem-game.html \
 		./chimp-mem-game/src/chimp-mem-game.css \
 		./chimp-mem-game/src/chimp-mem-game.js
+	$(BUILD_SINGLE_HTML)
+
+./csv6d/index.html: \
+		./csv6d/src/csv6d.html \
+		./csv6d/src/csv6d.css \
+		./csv6d/src/csv6d.js
 	$(BUILD_SINGLE_HTML)
 
 ./flashcards/index.html: \

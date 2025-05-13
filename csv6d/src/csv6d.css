@@ -1,0 +1,125 @@
+html, body, div, ul, li {
+  padding: 0;
+  margin: 0;
+}
+
+* {
+  font-family: Arial, sans-serif;
+}
+
+html, body, input, select, option {
+  background: #000;
+  color: #ddd;
+}
+
+button {
+  border: outset 2px #888;
+  border-radius: 5px;
+  background: #222;
+  color: #ddd;
+}
+
+.hidden {
+  display: none;
+}
+
+#file-picker-screen {
+  text-align: center;
+  margin-top: 20vh;
+}
+
+#main-form {
+}
+
+#main-canvas-container {
+  display: inline-block;
+  vertical-align: top;
+}
+
+#main-canvas {
+  vertical-align: top;
+  width: 95vmin;
+  min-width: 59vw;
+  height: 95vmin;
+  margin-top: 1vh;
+  margin-left: 2.5vw;
+  border: inset 2px #888;
+  border-radius: 5px;
+}
+
+#main-settings {
+  padding: 5px;
+  margin: 0;
+  text-align: center;
+  width: 510px;
+  display: inline-block;
+}
+
+#main-settings input,
+#main-settings select,
+#images-container select {
+  border: inset 2px #888;
+  border-radius: 5px;
+}
+
+#main-settings option {
+}
+
+#main-settings label {
+  text-align: center;
+  padding: 0 5px;
+}
+
+#main-settings > div {
+  display: inline-block;
+  margin: 5px;
+  width: 500px;
+}
+
+#main-settings > div > svg {
+  float: right;
+  width: 50px;
+  height: 50px;
+}
+
+#main-settings > div > svg rect {
+  background: #0ff;
+  fill: #7bf;
+}
+
+#main-settings > div > div {
+  display: inline-block;
+  width: 450px;
+}
+
+#main-settings > div > div > label {
+  display: inline-block;
+  width: 90px;
+  text-align: right;
+}
+
+#main-settings > div > div:nth-child(3n+2) > label {
+  text-align: left;
+}
+
+#main-settings div > select:nth-child(4n+2) {
+  width: 140px;
+}
+
+#main-settings div > input:nth-child(4n+3) {
+  width: 60px;
+}
+
+#main-settings div > select:nth-child(4n+0) {
+  width: 100px;
+}
+
+#file-picker-screen input[type="checkbox"],
+#main-settings input[type="checkbox"] {
+}
+
+#main-settings ul li {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}

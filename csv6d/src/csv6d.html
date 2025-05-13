@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>CSV 6D (WIP)</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="description" content="A quick and dirty data visualizer tool." />
+  <meta name="viewport" content="width=device-width" />
+
+  <link rel="stylesheet" href="csv6d.css" />
+</head>
+<body>
+  <div id="file-picker-screen">
+    <form id="file-picker-form" action="#" method="get">
+      <div>
+        <label for="file-picker">Data CSV:</label>
+        <input id="file-picker" name="file-picker" type="file" />
+        <button id="file-picker-form-submit" type="submit">Open</button>
+      </div>
+      <div>
+        <input id="file-picker-header" name="file-picker-header" type="checkbox" checked="checked" value="1" />
+        <label for="file-picker-header">First row is headers</label>
+      </div>
+    </form>
+  </div>
+
+  <div id="main-screen" class="hidden">
+    <form id="main-form" action="#" method="get">
+      <div id="main-settings"></div>
+      <div id="main-canvas-container"><canvas id="main-canvas"></canvas></div>
+    </form>
+  </div>
+
+  <script type="text/javascript" src="csv6d.js"></script>
+</body>
+</html>
