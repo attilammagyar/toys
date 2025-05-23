@@ -198,12 +198,19 @@ function init_presets()
 
     preset_names = {
         "default": "default",
-        "crystal": "crystal",
-        "digital": "digital",
+        "metal1_low": "metal 1 (low)",
         "metal2": "metal 2",
-        "pixel": "pixel",
-        "mixed": "mixed",
+        "metal2_low": "metal 2 (low)",
+        "crystal": "crystal",
+        "crystal_low": "crystal (low)",
         "synth": "synth",
+        "synth_low": "synth (low)",
+        "mixed": "mixed",
+        "mixed_low": "mixed (low)",
+        "digital": "digital",
+        "digital_low": "digital (low)",
+        "pixel": "pixel",
+        "pixel_low": "pixel (low)"
     };
 
     s = copy_settings(presets["default"]);
@@ -218,14 +225,33 @@ function init_presets()
     s["bowl_8_tone"] = "crystal";
     presets["mixed"] = s;
 
+    s = copy_settings_mod(presets["default"], "metal1", 0.5);
+    s["bowl_0_tone"] = "metal1";
+    s["bowl_1_tone"] = "synth";
+    s["bowl_2_tone"] = "metal1";
+    s["bowl_3_tone"] = "metal2";
+    s["bowl_4_tone"] = "synth";
+    s["bowl_5_tone"] = "metal2";
+    s["bowl_6_tone"] = "crystal";
+    s["bowl_7_tone"] = "synth";
+    s["bowl_8_tone"] = "crystal";
+    presets["mixed_low"] = s;
+
     for (i in preset_names) {
-        if (preset_names.hasOwnProperty(i) && !presets.hasOwnProperty(i)) {
+        if (preset_names.hasOwnProperty(i) && !presets.hasOwnProperty(i) && (i.indexOf("_low") < 0)) {
             s = copy_settings(presets["default"]);
 
             for (j = 0; j < 9; ++j) {
                 s["bowl_" + String(j) + "_tone"] = i;
             }
 
+            presets[i] = s;
+        }
+    }
+
+    for (i in preset_names) {
+        if (preset_names.hasOwnProperty(i) && !presets.hasOwnProperty(i) && (i.indexOf("_low") >= 0)) {
+            s = copy_settings_mod(presets["default"], i.replace("_low", ""), 0.5);
             presets[i] = s;
         }
     }
@@ -1346,6 +1372,20 @@ function copy_settings(settings)
         if (settings.hasOwnProperty(i)) {
             copy[i] = settings[i];
         }
+    }
+
+    return copy;
+}
+
+
+function copy_settings_mod(settings, tone, freq_scale)
+{
+    var copy = copy_settings(settings),
+        i;
+
+    for (i = 0; i < BOWLS; ++i) {
+        copy["bowl_" + String(i) + "_tone"] = tone;
+        copy["bowl_" + String(i) + "_freq"] *= freq_scale;
     }
 
     return copy;
