@@ -30,7 +30,6 @@
 
 TARGETS = \
 	./index.html \
-	./ann/ann_notes.pdf \
 	./calcle/index.html \
 	./chimp-mem-game/index.html \
 	./csv6d/index.html \
@@ -50,9 +49,6 @@ clean:
 
 ./index.html: toys.html toys.css
 	$(BUILD_SINGLE_HTML)
-
-./ann/ann_notes.pdf: ./ann/ann_notes.tex
-	$(MAKE) -C ./ann
 
 ./calcle/index.html: \
 		./calcle/src/calcle.html ./calcle/src/calcle.css ./calcle/src/calcle.js
