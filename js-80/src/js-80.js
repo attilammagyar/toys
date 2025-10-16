@@ -56,6 +56,7 @@
         MIDI_CONTROLS = null,
         BASE_MIDI_CONTROLS = {
             "none": "",
+            "learn": "MIDI learn",
             "pitch": "pitch wheel",
             "chan": "channel pressure",
             "mod": "CC 1 (mod wheel)",
@@ -502,6 +503,8 @@
             [0.0, -0.125, 0.0, 0.125, 0.0, -0.125, 0.0, 0.125, 0.0, -0.125, 0.0, 0.125, 0.0, -0.125, 0.0, 0.125, 0.0]
         ),
         RANDOMS = 300,
+        PITCH_BEND_CHANGE_CC = 128,
+        CHANNEL_PRESSURE_CC = 129,
         random_numbers = [],
         synth_ui = null,
         synth_obj = null,
@@ -1152,12 +1155,6 @@
             freqs[i] = Math.pow(2.0, ((i - 117.0) / 12.0)) * 440.0;
         }
 
-        this._pitch_ctl = new MIDIController(this, 0.5);
-        this._channel_pressure_ctl = new MIDIController(this, 0.0);
-        this._note_ctl = new MIDIController(this, 0.5);
-        this._velocity_ctl = new MIDIController(this, 0.6);
-        this._midi_ctls = [];
-
         this._virt_note_ctl = new MIDIController(this, 0.5);
         this._virt_vel_ctl = new MIDIController(this, 0.6);
         this._seq_note_ctl = new MIDIController(this, 0.5);
@@ -1169,80 +1166,108 @@
         this.touch_2_x_ctl = new MIDIController(this, 0.2);
         this.touch_2_y_ctl = new MIDIController(this, 0.2);
 
+        this._note_ctl = new MIDIController(this, 0.5);
+        this._velocity_ctl = new MIDIController(this, 0.6);
+
+        this._pitch_ctl = new MIDIController(this, 0.5);
+        this._channel_pressure_ctl = new MIDIController(this, 0.0);
+
+        this._midi_ctls = Array(130);
+        this._ctl_keys_by_cc = Array(130);
+
         for (i = 0; i < 128; ++i) {
             this._midi_ctls[i] = null;
+            this._ctl_keys_by_cc[i] = null;
+        }
+
+        this._ctl_keys_by_cc[PITCH_BEND_CHANGE_CC] = "pitch";
+        this._ctl_keys_by_cc[CHANNEL_PRESSURE_CC] = "chan";
+
+        this._midi_ctls[PITCH_BEND_CHANGE_CC] = this._pitch_ctl;
+        this._midi_ctls[CHANNEL_PRESSURE_CC] = this._channel_pressure_ctl;
+
+        this._midi_learn_ctl = new MIDILearnController(
+            this, this._midi_ctls, this._ctl_keys_by_cc
+        );
+
+        function create_cc_ctl(key, cc, default_value)
+        {
+            this._ctl_keys_by_cc[cc] = key;
+
+            return this._midi_ctls[cc] = new MIDIController(this, default_value);
         }
 
         this.controllers = {
+            "learn": this._midi_learn_ctl,
             "pitch": this._pitch_ctl,
             "chan": this._channel_pressure_ctl,
-            "mod": this._midi_ctls[1] = new MIDIController(this, 0.25),
-            "breath": this._midi_ctls[2] = new MIDIController(this, 0.5),
-            "cc3": this._midi_ctls[3] = new MIDIController(this, 0.5),
-            "cc4": this._midi_ctls[4] = new MIDIController(this, 0.5),
-            "cc5": this._midi_ctls[5] = new MIDIController(this, 0.5),
-            "volume": this._midi_ctls[7] = new MIDIController(this, 0.5),
-            "pan": this._midi_ctls[10] = new MIDIController(this, 0.5),
-            "expr": this._midi_ctls[11] = new MIDIController(this, 0.5),
-            "cc12": this._midi_ctls[12] = new MIDIController(this, 0.5),
-            "cc13": this._midi_ctls[13] = new MIDIController(this, 0.5),
-            "cc14": this._midi_ctls[14] = new MIDIController(this, 0.5),
-            "cc15": this._midi_ctls[15] = new MIDIController(this, 0.5),
-            "gp1": this._midi_ctls[16] = new MIDIController(this, 0.5),
-            "gp2": this._midi_ctls[17] = new MIDIController(this, 0.5),
-            "gp3": this._midi_ctls[18] = new MIDIController(this, 0.5),
-            "gp4": this._midi_ctls[19] = new MIDIController(this, 0.5),
-            "cc20": this._midi_ctls[20] = new MIDIController(this, 0.5),
-            "cc21": this._midi_ctls[21] = new MIDIController(this, 0.5),
-            "cc22": this._midi_ctls[22] = new MIDIController(this, 0.5),
-            "cc23": this._midi_ctls[23] = new MIDIController(this, 0.5),
-            "cc24": this._midi_ctls[24] = new MIDIController(this, 0.5),
-            "cc25": this._midi_ctls[25] = new MIDIController(this, 0.5),
-            "cc26": this._midi_ctls[26] = new MIDIController(this, 0.5),
-            "cc27": this._midi_ctls[27] = new MIDIController(this, 0.5),
-            "cc28": this._midi_ctls[28] = new MIDIController(this, 0.5),
-            "cc29": this._midi_ctls[29] = new MIDIController(this, 0.5),
-            "cc30": this._midi_ctls[30] = new MIDIController(this, 0.5),
-            "cc31": this._midi_ctls[31] = new MIDIController(this, 0.5),
-            "cc70": this._midi_ctls[70] = new MIDIController(this, 0.5),
-            "cc71": this._midi_ctls[71] = new MIDIController(this, 0.5),
-            "cc72": this._midi_ctls[72] = new MIDIController(this, 0.5),
-            "cc73": this._midi_ctls[73] = new MIDIController(this, 0.5),
-            "cc74": this._midi_ctls[74] = new MIDIController(this, 0.5),
-            "cc75": this._midi_ctls[75] = new MIDIController(this, 0.5),
-            "cc76": this._midi_ctls[76] = new MIDIController(this, 0.5),
-            "cc77": this._midi_ctls[77] = new MIDIController(this, 0.5),
-            "cc78": this._midi_ctls[78] = new MIDIController(this, 0.5),
-            "cc79": this._midi_ctls[79] = new MIDIController(this, 0.5),
-            "cc85": this._midi_ctls[85] = new MIDIController(this, 0.5),
-            "cc86": this._midi_ctls[86] = new MIDIController(this, 0.5),
-            "cc87": this._midi_ctls[87] = new MIDIController(this, 0.5),
-            "cc88": this._midi_ctls[88] = new MIDIController(this, 0.5),
-            "cc89": this._midi_ctls[89] = new MIDIController(this, 0.5),
-            "cc90": this._midi_ctls[90] = new MIDIController(this, 0.5),
-            "fx1": this._midi_ctls[91] = new MIDIController(this, 0.5),
-            "fx2": this._midi_ctls[92] = new MIDIController(this, 0.5),
-            "fx3": this._midi_ctls[93] = new MIDIController(this, 0.5),
-            "fx4": this._midi_ctls[94] = new MIDIController(this, 0.5),
-            "fx5": this._midi_ctls[95] = new MIDIController(this, 0.5),
-            "cc102": this._midi_ctls[102] = new MIDIController(this, 0.5),
-            "cc103": this._midi_ctls[103] = new MIDIController(this, 0.5),
-            "cc104": this._midi_ctls[104] = new MIDIController(this, 0.5),
-            "cc105": this._midi_ctls[105] = new MIDIController(this, 0.5),
-            "cc106": this._midi_ctls[106] = new MIDIController(this, 0.5),
-            "cc107": this._midi_ctls[107] = new MIDIController(this, 0.5),
-            "cc108": this._midi_ctls[108] = new MIDIController(this, 0.5),
-            "cc109": this._midi_ctls[109] = new MIDIController(this, 0.5),
-            "cc110": this._midi_ctls[110] = new MIDIController(this, 0.5),
-            "cc111": this._midi_ctls[111] = new MIDIController(this, 0.5),
-            "cc112": this._midi_ctls[112] = new MIDIController(this, 0.5),
-            "cc113": this._midi_ctls[113] = new MIDIController(this, 0.5),
-            "cc114": this._midi_ctls[114] = new MIDIController(this, 0.5),
-            "cc115": this._midi_ctls[115] = new MIDIController(this, 0.5),
-            "cc116": this._midi_ctls[116] = new MIDIController(this, 0.5),
-            "cc117": this._midi_ctls[117] = new MIDIController(this, 0.5),
-            "cc118": this._midi_ctls[118] = new MIDIController(this, 0.5),
-            "cc119": this._midi_ctls[119] = new MIDIController(this, 0.5),
+            "mod": create_cc_ctl.call(this, "mod", 1, 0.25),
+            "breath": create_cc_ctl.call(this, "breath", 2, 0.5),
+            "cc3": create_cc_ctl.call(this, "cc3", 3, 0.5),
+            "cc4": create_cc_ctl.call(this, "cc4", 4, 0.5),
+            "cc5": create_cc_ctl.call(this, "cc5", 5, 0.5),
+            "volume": create_cc_ctl.call(this, "volume", 7, 0.5),
+            "pan": create_cc_ctl.call(this, "pan", 10, 0.5),
+            "expr": create_cc_ctl.call(this, "expr", 11, 0.5),
+            "cc12": create_cc_ctl.call(this, "cc12", 12, 0.5),
+            "cc13": create_cc_ctl.call(this, "cc13", 13, 0.5),
+            "cc14": create_cc_ctl.call(this, "cc14", 14, 0.5),
+            "cc15": create_cc_ctl.call(this, "cc15", 15, 0.5),
+            "gp1": create_cc_ctl.call(this, "gp1", 16, 0.5),
+            "gp2": create_cc_ctl.call(this, "gp2", 17, 0.5),
+            "gp3": create_cc_ctl.call(this, "gp3", 18, 0.5),
+            "gp4": create_cc_ctl.call(this, "gp4", 19, 0.5),
+            "cc20": create_cc_ctl.call(this, "cc20", 20, 0.5),
+            "cc21": create_cc_ctl.call(this, "cc21", 21, 0.5),
+            "cc22": create_cc_ctl.call(this, "cc22", 22, 0.5),
+            "cc23": create_cc_ctl.call(this, "cc23", 23, 0.5),
+            "cc24": create_cc_ctl.call(this, "cc24", 24, 0.5),
+            "cc25": create_cc_ctl.call(this, "cc25", 25, 0.5),
+            "cc26": create_cc_ctl.call(this, "cc26", 26, 0.5),
+            "cc27": create_cc_ctl.call(this, "cc27", 27, 0.5),
+            "cc28": create_cc_ctl.call(this, "cc28", 28, 0.5),
+            "cc29": create_cc_ctl.call(this, "cc29", 29, 0.5),
+            "cc30": create_cc_ctl.call(this, "cc30", 30, 0.5),
+            "cc31": create_cc_ctl.call(this, "cc31", 31, 0.5),
+            "cc70": create_cc_ctl.call(this, "cc70", 70, 0.5),
+            "cc71": create_cc_ctl.call(this, "cc71", 71, 0.5),
+            "cc72": create_cc_ctl.call(this, "cc72", 72, 0.5),
+            "cc73": create_cc_ctl.call(this, "cc73", 73, 0.5),
+            "cc74": create_cc_ctl.call(this, "cc74", 74, 0.5),
+            "cc75": create_cc_ctl.call(this, "cc75", 75, 0.5),
+            "cc76": create_cc_ctl.call(this, "cc76", 76, 0.5),
+            "cc77": create_cc_ctl.call(this, "cc77", 77, 0.5),
+            "cc78": create_cc_ctl.call(this, "cc78", 78, 0.5),
+            "cc79": create_cc_ctl.call(this, "cc79", 79, 0.5),
+            "cc85": create_cc_ctl.call(this, "cc85", 85, 0.5),
+            "cc86": create_cc_ctl.call(this, "cc86", 86, 0.5),
+            "cc87": create_cc_ctl.call(this, "cc87", 87, 0.5),
+            "cc88": create_cc_ctl.call(this, "cc88", 88, 0.5),
+            "cc89": create_cc_ctl.call(this, "cc89", 89, 0.5),
+            "cc90": create_cc_ctl.call(this, "cc90", 90, 0.5),
+            "fx1": create_cc_ctl.call(this, "fx1", 91, 0.5),
+            "fx2": create_cc_ctl.call(this, "fx2", 92, 0.5),
+            "fx3": create_cc_ctl.call(this, "fx3", 93, 0.5),
+            "fx4": create_cc_ctl.call(this, "fx4", 94, 0.5),
+            "fx5": create_cc_ctl.call(this, "fx5", 95, 0.5),
+            "cc102": create_cc_ctl.call(this, "cc102", 102, 0.5),
+            "cc103": create_cc_ctl.call(this, "cc103", 103, 0.5),
+            "cc104": create_cc_ctl.call(this, "cc104", 104, 0.5),
+            "cc105": create_cc_ctl.call(this, "cc105", 105, 0.5),
+            "cc106": create_cc_ctl.call(this, "cc106", 106, 0.5),
+            "cc107": create_cc_ctl.call(this, "cc107", 107, 0.5),
+            "cc108": create_cc_ctl.call(this, "cc108", 108, 0.5),
+            "cc109": create_cc_ctl.call(this, "cc109", 109, 0.5),
+            "cc110": create_cc_ctl.call(this, "cc110", 110, 0.5),
+            "cc111": create_cc_ctl.call(this, "cc111", 111, 0.5),
+            "cc112": create_cc_ctl.call(this, "cc112", 112, 0.5),
+            "cc113": create_cc_ctl.call(this, "cc113", 113, 0.5),
+            "cc114": create_cc_ctl.call(this, "cc114", 114, 0.5),
+            "cc115": create_cc_ctl.call(this, "cc115", 115, 0.5),
+            "cc116": create_cc_ctl.call(this, "cc116", 116, 0.5),
+            "cc117": create_cc_ctl.call(this, "cc117", 117, 0.5),
+            "cc118": create_cc_ctl.call(this, "cc118", 118, 0.5),
+            "cc119": create_cc_ctl.call(this, "cc119", 119, 0.5),
             "note": this._note_ctl,
             "vel": this._velocity_ctl,
             "vrt1": this.virt_ctls[0],
@@ -1929,6 +1954,7 @@
 
                 if (midi_ctl !== null) {
                     midi_ctl.set_value(d2 / 0x7f);
+                    this._midi_learn_ctl.learn(d1);
                 }
 
                 break;
@@ -1939,6 +1965,7 @@
                 }
 
                 this._channel_pressure_ctl.set_value(d1 / 0x7f);
+                this._midi_learn_ctl.learn(CHANNEL_PRESSURE_CC);
                 break;
 
             case 0xe0: // pitch bend change, d2 = MSB, d1 = LSB
@@ -1947,6 +1974,7 @@
                 }
 
                 this._pitch_ctl.set_value(((d2 << 7) | d1) / 0x3fff);
+                this._midi_learn_ctl.learn(PITCH_BEND_CHANGE_CC);
                 break;
         }
 
@@ -5251,8 +5279,6 @@
 
     MIDIController.prototype.set_value = function (new_value)
     {
-        var synth = this._synth;
-
         this.value = new_value;
         this.control_params();
     };
@@ -5265,6 +5291,44 @@
 
         for (i = 0, l = params.length; i < l; ++i) {
             params[i].control_value(value);
+        }
+    };
+
+    function MIDILearnController(synth, midi_ctls, ctl_keys_by_cc)
+    {
+        MIDIController.call(this, synth, 0.0);
+
+        this._midi_ctls = midi_ctls;
+        this._ctl_keys_by_cc = ctl_keys_by_cc;
+    }
+
+    MIDILearnController.prototype.control = MIDIController.prototype.control;
+    MIDILearnController.prototype.update_params = MIDIController.prototype.update_params;
+    MIDILearnController.prototype.release = MIDIController.prototype.release;
+    MIDILearnController.prototype.set_value = MIDIController.prototype.set_value;
+    MIDILearnController.prototype.control_params = MIDIController.prototype.control_params;
+
+    MIDILearnController.prototype.learn = function (cc)
+    {
+        var ctl_key = this._ctl_keys_by_cc[cc],
+            ctl, params, param,
+            i, l;
+
+        if (ctl_key === null) {
+            return;
+        }
+
+        ctl = this._midi_ctls[cc];
+        params = this._params;
+
+        this._params = [];
+        this._connections = {};
+        this._next_conn = 0;
+
+        for (i = 0, l = params.length; i < l; ++i) {
+            param = params[i];
+            param.disconnect();
+            param.connect_midi_ctl(ctl_key, ctl);
         }
     };
 
