@@ -116,7 +116,7 @@ def find_next_move_o(board: str) -> str:
     def minimax(board_state, maximizing):
         winner = find_winner(board_state)
 
-        if winner == "O": return 2
+        if winner == "O": return 1
         if winner == "X": return -1
         if is_full(board_state): return 0
 
