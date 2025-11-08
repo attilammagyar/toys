@@ -75,21 +75,21 @@ def explore(board: str):
 
                 continue
 
-            next_move_o = board[:i] + "O" + board[i + 1:]
+            next_move_x = board[:i] + "X" + board[i + 1:]
 
-            if is_full(next_move_o):
-                queue.append(next_move_o)
+            if is_full(next_move_x):
+                queue.append(next_move_x)
 
-                next_move_o_id = board_to_id(next_move_o)
-                print(f'<a href="#{next_move_o_id}"> </a>', end='')
+                next_move_x_id = board_to_id(next_move_x)
+                print(f'<a href="#{next_move_x_id}"> </a>', end='')
 
                 continue
 
-            next_move_x = find_next_move_x(next_move_o)
-            queue.append(next_move_x)
+            next_move_o = find_next_move_o(next_move_x)
+            queue.append(next_move_o)
 
-            next_move_x_id = board_to_id(next_move_x)
-            print(f'<a href="#{next_move_x_id}"> </a>', end='')
+            next_move_o_id = board_to_id(next_move_o)
+            print(f'<a href="#{next_move_o_id}"> </a>', end='')
 
         print("</b>")
 
@@ -112,12 +112,12 @@ def board_to_id(board: str) -> str:
     return "b" + board_id
 
 
-def find_next_move_x(board: str) -> str:
+def find_next_move_o(board: str) -> str:
     def minimax(board_state, maximizing):
         winner = find_winner(board_state)
 
-        if winner == "X": return 2
-        if winner == "O": return -1
+        if winner == "O": return 2
+        if winner == "X": return -1
         if is_full(board_state): return 0
 
         if maximizing:
@@ -125,7 +125,7 @@ def find_next_move_x(board: str) -> str:
 
             for i in range(9):
                 if board_state[i] == " ":
-                    new_state = board_state[:i] + "X" + board_state[i + 1:]
+                    new_state = board_state[:i] + "O" + board_state[i + 1:]
                     best = max(best, minimax(new_state, False))
 
             return best
@@ -135,7 +135,7 @@ def find_next_move_x(board: str) -> str:
 
             for i in range(9):
                 if board_state[i] == " ":
-                    new_state = board_state[:i] + "O" + board_state[i + 1:]
+                    new_state = board_state[:i] + "X" + board_state[i + 1:]
                     best = min(best, minimax(new_state, True))
 
             return best
@@ -145,7 +145,7 @@ def find_next_move_x(board: str) -> str:
 
     for i in range(9):
         if board[i] == " ":
-            new_board = board[:i] + "X" + board[i + 1:]
+            new_board = board[:i] + "O" + board[i + 1:]
             score = minimax(new_board, False)
 
             if score > best_score:
