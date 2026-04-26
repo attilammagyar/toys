@@ -7975,6 +7975,9 @@ $$</p>
 </ul>
 <h3 id="Notes">Notes<a class="anchor-link" href="#Notes">¶</a></h3><ul>
 <li><p>Loosely speaking, the $\text{softmax}$ function can be thought of as a smooth version of a normalized $\max(x, 0)$ function, i.e. normalized $\text{ReLU}$. (There's a reason why the name is "soft-max".)</p>
+<ul>
+<li>According to the <a href="https://arxiv.org/abs/2309.08586">literature</a>, in some circumstances, it may even be beneficial to replace $\text{softmax}$ with scaled $\text{ReLU}$, since it can help with parallelization while achieving similar performance e.g. in <a href="https://en.wikipedia.org/wiki/Vision_transformer">Vision Transformers</a>.</li>
+</ul>
 </li>
 <li><p>$W^{(1)}$ and $W^{(2)}$ can be thought of as low-rank decompositions of some $W_*^{(1)}$ and $W_*^{(2)}$ weight matrices.</p>
 </li>
