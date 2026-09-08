@@ -7878,13 +7878,13 @@ $$</p>
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
 <h2 id="QKV-Attention">QKV-Attention<a class="anchor-link" href="#QKV-Attention">¶</a></h2><p>The heart and soul of the Transformer (besides <a href="https://en.wikipedia.org/wiki/Residual_neural_network">residual connections</a> and a few other tricks) is the multi-headed scaled dot-product attention, with optional masking (depending on the problem).</p>
 <p>A single attention head calculates the following expression (row-major notation):</p>
-<p>For some $d_m,\ d_s \in \mathbb{N}$ and $X^Q,\ X^K,\ X^V \in \mathbb{R}^{d_s \times d_m}$ input matrices:</p>
+<p>For some $d_m,\ d_q,\ d_{kv} \in \mathbb{N}$ and $X^Q \in \mathbb{R}^{d_q \times d_m}$ and $X^K,\ X^V \in \mathbb{R}^{d_{kv} \times d_m}$ input matrices:</p>
 <p>$$
 \begin{align*}
   Y = &amp; \text{Attention}(Q, K, V) \\
     = &amp; \text{softmax}\left( \frac{Q \cdot K^T}{\sqrt{d^K}} + M \right)
         \cdot V
-    \quad \in \mathbb{R}^{d_s \times d^V}
+    \quad \in \mathbb{R}^{d_q \times d^V}
 \end{align*}
 $$</p>
 <p>where:</p>
@@ -7895,7 +7895,7 @@ $$</p>
 </li>
 <li><p>$\text{softmax}$ is taken row-wise independently,</p>
 </li>
-<li><p>and $M \in \mathbb{R}^{d_s \times d_s}$ is a constant called the "<em>mask</em>" and is used for suppressing certain attention weights during training autoregressive models, otherwise it can be omitted by setting $M = 0 \in \mathbb{R}^{d_s \times d_s}$.</p>
+<li><p>and $M \in \mathbb{R}^{d_q \times d_{kv}}$ is a constant called the "<em>mask</em>" and is used for suppressing certain attention weights during training autoregressive models, otherwise it can be omitted by setting $M = 0 \in \mathbb{R}^{d_q \times d_{kv}}$.</p>
 </li>
 </ul>
 <p>The resulting $Y$ vectors from the individual attention heads are then concatenated to form higher dimensional vectors which then can be used in residual connections.</p>
@@ -7920,7 +7920,7 @@ $$</p>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h4 id="Self-attention-(transformer-encoder)">Self-attention (transformer encoder)<a class="anchor-link" href="#Self-attention-(transformer-encoder)">¶</a></h4><p>For some $X \in \mathbb{R}^{d_s \times d_m}$, let $X^Q = X^K = X^V = X$.</p>
+<h4 id="Self-attention-(transformer-encoder)">Self-attention (transformer encoder)<a class="anchor-link" href="#Self-attention-(transformer-encoder)">¶</a></h4><p>For some $d_s \in \mathbb{N}$ and $X \in \mathbb{R}^{d_s \times d_m}$, let $X^Q = X^K = X^V = X$.</p>
 </div>
 </div>
 </div>
@@ -7931,7 +7931,7 @@ $$</p>
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput" data-mime-type="text/markdown">
-<h4 id="Cross-attention-(transformer-decoder)">Cross-attention (transformer decoder)<a class="anchor-link" href="#Cross-attention-(transformer-decoder)">¶</a></h4><p>For some $X_1, X_2 \in \mathbb{R}^{d_s \times d_m}$ pair of inputs, let $X^Q = X_1$ and let $X^K = X^V = X_2$.</p>
+<h4 id="Cross-attention-(transformer-decoder)">Cross-attention (transformer decoder)<a class="anchor-link" href="#Cross-attention-(transformer-decoder)">¶</a></h4><p>For some $d_1,\ d_2 \in \mathbb{N}$ and $X_1 \in \mathbb{R}^{d_1 \times d_m}$ and $X_2 \in \mathbb{R}^{d_2 \times d_m}$ pair of inputs, let $X^Q = X_1$ and let $X^K = X^V = X_2$.</p>
 </div>
 </div>
 </div>
@@ -7951,7 +7951,7 @@ Y &amp; = \text{Attention}\left( X^Q \cdot W^Q, \quad X^K \cdot W^K, \quad X^V \
           \left( X^Q \cdot W^Q \right) \cdot \left( X^K \cdot W^K \right)^T
         }{\sqrt{d^K}} + M \right)
         \cdot X^V \cdot W^V
-      &amp; \in \mathbb{R}^{d_s \times d^V} \\
+      &amp; \in \mathbb{R}^{d_q \times d^V} \\
   &amp; = \text{softmax} \left(
             X^Q
             \cdot \left( \frac{1}{\sqrt{d^K}} \cdot W^Q \cdot \left( W^K \right)^T \right)
@@ -7966,10 +7966,10 @@ $$</p>
 \begin{align*}
   W^{(1)} &amp; = \frac{1}{\sqrt{d^K}} \cdot W^Q \cdot \left( W^K \right)^T &amp; \in \mathbb{R}^{d_m \times d_m} \\
   W^{(2)} &amp; = W^V &amp; \in \mathbb{R}^{d_m \times d^V} \\
-  W_{X^K}^{(1)} &amp; = W^{(1)} \cdot \left( X^K \right)^T &amp; \in \mathbb{R}^{d_m \times d_s} \\
-  W_{X^V}^{(2)} &amp; = X^V \cdot W^{(2)} &amp; \in \mathbb{R}^{d_s\times d^V} \\
-  B^{(1)} &amp; = M &amp; \in \mathbb{R}^{d_s \times d_s}\\
-  B^{(2)} &amp; = 0 &amp; \in \mathbb{R}^{d_s \times d^V} \\
+  W_{X^K}^{(1)} &amp; = W^{(1)} \cdot \left( X^K \right)^T &amp; \in \mathbb{R}^{d_m \times d_{kv}} \\
+  W_{X^V}^{(2)} &amp; = X^V \cdot W^{(2)} &amp; \in \mathbb{R}^{d_{kv} \times d^V} \\
+  B^{(1)} &amp; = M &amp; \in \mathbb{R}^{d_q \times d_{kv}}\\
+  B^{(2)} &amp; = 0 &amp; \in \mathbb{R}^{d_q \times d^V} \\
   f^{(1)} &amp; = \text{softmax} &amp;
 \end{align*}
 $$</p>
@@ -7985,7 +7985,7 @@ Y = f^{(1)} \left( X \cdot W^{(1)} \cdot X^T + B^{(1)} \right)
     \cdot \left( X \cdot W^{(2)} \right) + B^{(2)}
 $$</p>
 </li>
-<li><p>Cross-attention for $X_1, X_2 \in \mathbb{R}^{d_s \times d_m}$ becomes:</p>
+<li><p>Cross-attention for $X_1 \in \mathbb{R}^{d_1 \times d_m}$ and $X_2 \in \mathbb{R}^{d_2 \times d_m}$ becomes:</p>
 <p>$$
 Y = f^{(1)} \left( X_1 \cdot W^{(1)} \cdot X_2^T + B^{(1)} \right)
     \cdot \left( X_2 \cdot W^{(2)} \right) + B^{(2)}
