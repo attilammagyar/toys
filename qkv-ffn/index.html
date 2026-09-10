@@ -7895,7 +7895,7 @@ $$</p>
 </li>
 <li><p>$\text{softmax}$ is taken row-wise independently,</p>
 </li>
-<li><p>and $M \in \mathbb{R}^{d_q \times d_{kv}}$ is a constant called the "<em>mask</em>" and is used for suppressing certain attention weights during training autoregressive models, otherwise it can be omitted by setting $M = 0 \in \mathbb{R}^{d_q \times d_{kv}}$.</p>
+<li><p>and $M \in \mathbb{R}^{d_q \times d_{kv}}$ is a constant called the "<em>mask</em>" and is used for specifically suppressing certain attention weights by adding $-\infty$ (or at least, a large magnitude negative value) to them, which will then be turned into $0$ weights by the $\text{softmax}$ function, e.g. during training autoregressive models; it can be omitted when not necessary by setting $M = 0 \in \mathbb{R}^{d_q \times d_{kv}}$.</p>
 </li>
 </ul>
 <p>The resulting $Y$ vectors from the individual attention heads are then concatenated to form higher dimensional vectors which then can be used in residual connections.</p>
